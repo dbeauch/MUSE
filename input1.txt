@@ -1,0 +1,10 @@
+Jezebel problem. Bare plutonium sphere with nickel shell
+c Cell Cards
+1 1 0.04029 -1 imp:n=1
+
+c Surface Cards
+1 so 6.38493
+
+c Data Cards
+kcode 1000 1.0 15 115
+
