@@ -9,7 +9,7 @@ class CellCard:
             self.density = "\t"
 
     def __str__(self):
-        result = f"{self.number} {self.material} {self.density} "
+        result = f"{self.number}\t{self.material}\t{self.density}\t"
         for surface in self.geom:
             result += f"{surface} "
         return result + f"{self.params}"
@@ -22,7 +22,10 @@ class SurfaceCard:
         self.dimensions = dimensions
 
     def __str__(self):
-        return f"{self.number} {self.mnemonic} {self.dimensions}"
+        result = f"{self.number}\t{self.mnemonic}\t"
+        for num in self.dimensions:
+            result += f"{num} "
+        return result
 
 
 class DataCard:
@@ -38,7 +41,7 @@ class KCode(DataCard):
         self.kct = kct
 
     def __str__(self):
-        return f"{self.name} {self.nsrck} {self.rkk} {self.ikz} {self.kct}"
+        return f"{self.name}\t{self.nsrck}\t{self.rkk}\t{self.ikz}\t{self.kct}"
 
 
 class KSrc(DataCard):
@@ -48,9 +51,9 @@ class KSrc(DataCard):
         self.locations = locations
 
     def __str__(self):
-        result = f"{self.name}"
+        result = f"{self.name}\t"
         for location in self.locations:
-            result += f"{location[0]} {location[1]} {location[2]} "
+            result += f"{location[0]} {location[1]} {location[2]}\t"
         return result
 
 
@@ -61,7 +64,7 @@ class Material(DataCard):
         self.zaid_fracs = zaid_fracs
 
     def __str__(self):
-        result = f"{self.mname} "
+        result = f"{self.mname}\t"
         for zaid_frac in self.zaid_fracs:
             result += f"{zaid_frac[0]} {zaid_frac[1]}\t"
         return result
