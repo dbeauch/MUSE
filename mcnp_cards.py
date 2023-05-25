@@ -5,9 +5,14 @@ class CellCard:
         self.density = density
         self.geom = geom
         self.params = params
+        if material == 0:
+            self.density = "\t"
 
     def __str__(self):
-        return f"{self.number} {self.material} {self.density} {self.geom} {self.params}"
+        result = f"{self.number} {self.material} {self.density} "
+        for surface in self.geom:
+            result += f"{surface} "
+        return result + f"{self.params}"
 
 
 class SurfaceCard:
@@ -38,7 +43,7 @@ class KCode(DataCard):
 
 class KSrc(DataCard):
     # location expected as a list length 3
-    def __init__(self, name, locations):
+    def __init__(self, locations):
         self.name = "ksrc"
         self.locations = locations
 
@@ -51,12 +56,12 @@ class KSrc(DataCard):
 
 class Material(DataCard):
     # zaid_frac expected as a tuple: (zaid, fraction)
-    def __init__(self, name, number, zaid_fracs):
-        self.name = name
-        self.number = number
+    def __init__(self, mname, zaid_fracs):
+        self.mname = mname
         self.zaid_fracs = zaid_fracs
 
     def __str__(self):
-        result = f"{self.name}{self.number} "
+        result = f"{self.mname} "
         for zaid_frac in self.zaid_fracs:
-            result += f"{zaid_frac[0]}{zaid_frac[1]}"
+            result += f"{zaid_frac[0]} {zaid_frac[1]}\t"
+        return result

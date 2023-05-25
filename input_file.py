@@ -45,6 +45,6 @@ class InputFile:
         print("c Data Cards", file=f)
         for data in self.all_data_cards:
             print(data, file=f)
-        print(blank_line_delimiter, file=f)  # optional eof
+        # print(blank_line_delimiter, file=f)  # optional eof
 
         f.close()
