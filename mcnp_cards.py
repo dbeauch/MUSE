@@ -1,3 +1,22 @@
+#########################################################################################################
+#                                      Created by: Duncan Beauch                                        #
+#                                       TEMPLATE FOR MCNP CARDS                                         #
+#                                                                                                       #
+#       CellCard(number, material number, density, array of geom, optional param string)                #
+#                                           CellCard(, , , [], "")                                      #
+#                                                                                                       #
+#       SurfaceCard(number, mnemonic, array of numbers)                                                 #
+#                                           SurfaceCard(, , [])                                         #
+#                                                                                                       #
+#       KCode(nsrck neutrons per cycle, rkk initial keff guess, ikz cycles skipped, kct cycles to run)  #
+#                                              KCode(, , , )                                            #
+#                                                                                                       #
+#       KSrc(array of arrays representing x-y-z locations)                                              #
+#                                              KSrc([[, , ]])                                           #
+#       Material(name, array of tuples for each zaid-fraction pair)                                     #
+#                                            Material(, [(, )])                                         #
+#                                                                                                       #
+#########################################################################################################
 class CellCard:
     def __init__(self, number, material, density, geom, params=""):
         self.number = number
