@@ -30,19 +30,19 @@ class InputFile:
         print(self.title_card, file=f)
 
         # CELL CARDS
-        print("c Cell Cards", file=f)
+        print("C\tCell Cards", file=f)
         for cell in self.all_cell_cards:
             print(cell, file=f)
         print(blank_line_delimiter, file=f)
 
         # SURFACE CARDS
-        print("c Surface Cards", file=f)
+        print("C\tSurface Cards", file=f)
         for surface in self.all_surface_cards:
             print(surface, file=f)
         print(blank_line_delimiter, file=f)
 
         # DATA CARDS
-        print("c Data Cards", file=f)
+        print("C\tData Cards", file=f)
         for data in self.all_data_cards:
             print(data, file=f)
         # print(blank_line_delimiter, file=f)  # optional eof

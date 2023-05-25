@@ -2,11 +2,11 @@
 #                                      Created by: Duncan Beauch                                        #
 #                                       TEMPLATE FOR MCNP CARDS                                         #
 #                                                                                                       #
-#       CellCard(number, material number, density, array of geom, optional param string)                #
-#                                           CellCard(, , , [], "")                                      #
+#       CellCard(number, material number, density, geom string, optional param string)                  #
+#                                           CellCard(, , , "", "")                                      #
 #                                                                                                       #
 #       SurfaceCard(number, mnemonic, array of numbers)                                                 #
-#                                           SurfaceCard(, , [])                                         #
+#                                           SurfaceCard(, "", [])                                       #
 #                                                                                                       #
 #       KCode(nsrck neutrons per cycle, rkk initial keff guess, ikz cycles skipped, kct cycles to run)  #
 #                                              KCode(, , , )                                            #
@@ -14,7 +14,7 @@
 #       KSrc(array of arrays representing x-y-z locations)                                              #
 #                                              KSrc([[, , ]])                                           #
 #       Material(name, array of tuples for each zaid-fraction pair)                                     #
-#                                            Material(, [(, )])                                         #
+#                                            Material("", [(, )])                                         #
 #                                                                                                       #
 #########################################################################################################
 class CellCard:
@@ -28,10 +28,7 @@ class CellCard:
             self.density = "\t"
 
     def __str__(self):
-        result = f"{self.number}\t{self.material}\t{self.density}\t"
-        for surface in self.geom:
-            result += f"{surface} "
-        return result + f"{self.params}"
+        return f"{self.number}\t{self.material}\t{self.density}\t{self.geom}\t{self.params}"
 
 
 class SurfaceCard:
@@ -83,7 +80,7 @@ class Material(DataCard):
         self.zaid_fracs = zaid_fracs
 
     def __str__(self):
-        result = f"{self.mname}\t"
+        result = f"{self.mname}\t\t"
         for zaid_frac in self.zaid_fracs:
             result += f"{zaid_frac[0]} {zaid_frac[1]}\t"
         return result
