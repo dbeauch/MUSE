@@ -17,6 +17,11 @@ class InputFile:
             self.all_surface_cards.append(card)
         if isinstance(card, DataCard):
             self.all_data_cards.append(card)
+        if isinstance(card, SquareLattice):
+            for cell in card.cells:
+                self.all_cell_cards.append(cell)
+            for surface in card.surfaces:
+                self.all_surface_cards.append(surface)
 
     def print_to_file(self, file=""):
         if file == "":

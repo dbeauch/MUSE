@@ -9,14 +9,29 @@
 #                                           SurfaceCard(, "", [])                                       #
 #                                                                                                       #
 #       KCode(nsrck neutrons per cycle, rkk initial keff guess, ikz cycles skipped, kct cycles to run)  #
-#                                              KCode(, , , )                                            #
+#                                             KCode(, , , )                                             #
 #                                                                                                       #
 #       KSrc(array of arrays representing x-y-z locations)                                              #
-#                                              KSrc([[, , ]])                                           #
-#       Material(name, array of tuples for each zaid-fraction pair)                                     #
-#                                            Material("", [(, )])                                         #
+#                                             KSrc([[, , ]])                                            #
 #                                                                                                       #
+#       Material(name, array of tuples for each zaid-fraction pair)                                     #
+#                                            Material("", [(, )])                                       #
+#                                                                                                       #
+#       Moderator(name, material identifier)                                                            #
+#                                             Moderator("", "")                                         #
 #########################################################################################################
+
+# Global static section
+global curr_number
+curr_number = 99999
+
+
+def get_number():
+    result = curr_number
+    curr_number -= 1
+    return result
+
+
 class CellCard:
     def __init__(self, number, material, density, geom, params=""):
         self.number = number
@@ -26,6 +41,7 @@ class CellCard:
         self.params = params
         if material == 0:
             self.density = "\t"
+        self.universe = 0
 
     def __str__(self):
         return f"{self.number}\t{self.material}\t{self.density}\t{self.geom}\t{self.params}"
@@ -84,3 +100,44 @@ class Material(DataCard):
         for zaid_frac in self.zaid_fracs:
             result += f"{zaid_frac[0]} {zaid_frac[1]}\t"
         return result
+
+
+class Moderator(DataCard):
+    def __init__(self, name, identifier):
+        self.name = name
+        self.identifier = identifier
+
+    def __str__(self):
+        return f"{self.name} {self.identifier}"
+
+
+class SquareLattice():
+    def __init__(self, rows, cols, width, entries):
+        self.rows = rows
+        self.cols = cols
+        self.width = width
+        self.entries = entries
+
+        self.surfaces = []
+        # Planes defining element (0, 0, 0)
+        boundary1 = SurfaceCard()
+        boundary2 = SurfaceCard()
+        boundary3 = SurfaceCard()
+        boundary4 = SurfaceCard()
+
+        # Planes defining edge of lattice
+        window1 = SurfaceCard()
+        window2 = SurfaceCard()
+        window3 = SurfaceCard()
+        window4 = SurfaceCard()
+
+        self.cells = []
+        lat_universe = get_number()
+        lat_cell = CellCard(get_number(), 0, 0,
+                            f"-{boundary1.number} {boundary2.number} -{boundary3.number} {boundary4.number}", f"lat={get_number()}\tfill={self.entries}\tu={lat_universe}\timp:n=1")
+        window_cell = CellCard(get_number(), 0, 0, f"={window1} {window2} -{window3} {window4}", f"fill={lat_universe}\timp:n=1")
+        self.cells.append(lat_cell)
+        self.cells.append(window_cell)
+
+    def __str__(self):
+        return f"This shouldn't print to file but its the SquareLattice number {self.number}"
