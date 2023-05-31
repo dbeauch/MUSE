@@ -3,7 +3,7 @@ from mcnp_cards import *
 
 input_file = InputFile("square_lattice.txt", "Test of Square Lattice Card")
 
-lattice = SquareLattice(3, 2, 17.79, 1)
+lattice = SquareLattice(3, 2, 17.79, f"0:2 0:1 0:0\t0 1 1 0 1 0")
 
 all_cards = [
     CellCard(1, 1, 9.9270e-2, "-1 5 -6", "u=1 imp:n=1"),
