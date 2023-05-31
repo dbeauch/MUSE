@@ -114,11 +114,11 @@ class Moderator(DataCard):
 
 
 class SquareLattice:
-    def __init__(self, rows, cols, radius, entries):
+    def __init__(self, rows, cols, radius, filler):
         self.rows = rows
         self.cols = cols
         self.radius = Decimal(f"{radius}")
-        self.entries = entries
+        self.filler = filler
 
         # Lattice Initial Settings
         # no z_ceiling
@@ -149,12 +149,12 @@ class SquareLattice:
         self.surfaces.append(window4)
 
         self.cells = []
-        lat_universe = get_number()
+        self.lat_universe = get_number()
         lat_cell = CellCard(get_number(), 0, 0,
                             f"-{boundary1.number} {boundary2.number} -{boundary3.number} {boundary4.number}",
-                            f"lat={get_number()}\tfill={self.entries}\tu={lat_universe}\timp:n=1\t$ lattice")
+                            f"lat={get_number()}\tfill={self.filler}\tu={self.lat_universe}\timp:n=1\t$ lattice")
         window_cell = CellCard(get_number(), 0, 0, f"{window0.number} -{window1.number} {window2.number} -{window3.number} {window4.number}",
-                               f"fill={lat_universe}\timp:n=1\t$ window")
+                               f"fill={self.lat_universe}\timp:n=1\t$ window")
         self.cells.append(lat_cell)
         self.cells.append(window_cell)
 
@@ -162,4 +162,4 @@ class SquareLattice:
 
 
     def __str__(self):
-        return f"This shouldn't print to file but its the SquareLattice number {self.number}"
+        return f"This shouldn't print to file but its the SquareLattice number {self.lat_universe}"
