@@ -162,4 +162,4 @@ class SquareLattice:
 
 
     def __str__(self):
-        return f"This shouldn't print to file but its the SquareLattice number {self.lat_universe}"
+        return f"This shouldn't print to file but its the SquareLattice universe number {self.lat_universe}"
