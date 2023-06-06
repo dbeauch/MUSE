@@ -21,12 +21,11 @@ def print_file(out_filename):
     out_filename = '../mcnp_templates/test.i'
     f_write = open(out_filename, 'w')
 
-    print(all_cells)
     for line in all_cells:
         print(line.strip('\n'), file=f_write)
-    for line in all_surfaces:
+    """for line in all_surfaces:
         print(line.strip('\n'), file=f_write)
     for line in all_options:
-        print(line.strip('\n'), file=f_write)
+        print(line.strip('\n'), file=f_write)"""
     f_write.close()
     return out_filename

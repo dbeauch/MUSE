@@ -16,7 +16,7 @@ app.layout = html.Div(children=[
         dcc.Input(id='filename', value='File to print to', type='text'),
     ]),
     html.Button('Submit Edit', id='submit-edit', n_clicks=0),
-    html.Button('Print File', id='print', n_clicks=0),
+    html.Button('Print File', id='print-button', n_clicks=0),
     html.Hr(),
     html.Div(id='output'),
     html.Hr(),
@@ -36,9 +36,10 @@ def change_material(number, material, button):
         regex_search = r'^' + re.escape(number) + r'\s+\d+\s'
         for i in range(len(template.all_cells)):
             line = template.all_cells[i]
-            if :
+            if re.search(regex_search, line) is not None:
+                template.all_cells[i] = re.sub(regex_search, f"{number}\t{material}", line)
                 message = f"Cell {number} changed to {material}"
-            else:
+            elif re.search(regex_search, line) is None:
                 message = "Did not find cell"
     return message
 
@@ -46,12 +47,12 @@ def change_material(number, material, button):
 @app.callback(
     Output(component_id='print_message', component_property='children'),
     Input(component_id='filename', component_property='value'),
-    Input(component_id='print', component_property='n_clicks'),
+    Input(component_id='print-button', component_property='n_clicks'),
 )
 def print_button(filename, button):
-    if "print" == ctx.triggered_id:
+    if "print-button" == ctx.triggered_id:
         printed = template.print_file(filename)
-        return f"Printed to {printed}"
+        return f"The new file was printed to: {printed}"
     else:
         return ""
 
