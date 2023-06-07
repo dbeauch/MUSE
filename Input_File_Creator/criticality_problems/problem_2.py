@@ -1,5 +1,5 @@
 from Input_File_Creator.input_file import *
-from Input_File_Creator.mcnp_cards import *
+from Template_Editor.mcnp_cards import *
 
 input_file = InputFile("problem_2.txt", "pu_cylinder_radial_reflector")
 all_cards = [

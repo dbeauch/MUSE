@@ -1,5 +1,5 @@
 from Input_File_Creator.input_file import *
-from Input_File_Creator.mcnp_cards import *
+from Template_Editor.mcnp_cards import *
 
 input_file = InputFile("square_lattice.txt", "Test of Square Lattice Card")
 

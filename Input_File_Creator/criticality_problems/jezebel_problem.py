@@ -1,5 +1,5 @@
 from Input_File_Creator.input_file import *
-from Input_File_Creator.mcnp_cards import *
+from Template_Editor.mcnp_cards import *
 
 input = InputFile("jezebel.txt", "Jezebel problem. Bare plutonium sphere with nickel shell")
 all_cards = [

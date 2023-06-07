@@ -1,4 +1,6 @@
-from Input_File_Creator.mcnp_cards import *
+from Template_Editor.mcnp_cards import *
+
+
 class InputFile:
     def __init__(self, file_name, title_card="No Title"):
         self.file_name = file_name
