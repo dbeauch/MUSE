@@ -23,11 +23,10 @@ def change_material(number, material, button):
 
 
 
-
-arry = ["c this is a comment", "1 2 3 this is $not", "next &", "line &", "here", "awe4gaw&", "fawer"]
+"""word = "word"
+arry = ["c this is a comment", "1 2 3 this is $not", "next", "      line", "      here", "awe4gaw&", "fawer"]
 fin = []
 print(arry)
 template_handler.join_card_pieces(arry, fin)
 print(arry)
-print(fin)
-
+print(fin)"""

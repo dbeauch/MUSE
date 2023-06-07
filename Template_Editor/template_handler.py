@@ -22,31 +22,39 @@ def read_template(in_filename):
     for line in f_read.readlines():
         if re.search(r'\bBegin Surfaces\b', line):
             curr_list = surface_line_pieces
+            break
         elif re.search(r'\bBegin Options\b', line):
             curr_list = data_line_pieces
-
         curr_list.append(line)
     f_read.close()
 
-    clear_dollar_comments(cell_line_pieces)
-    clear_dollar_comments(surface_line_pieces)
-    clear_dollar_comments(data_line_pieces)
+    clean_pieces(cell_line_pieces)
+    clean_pieces(surface_line_pieces)
+    clean_pieces(data_line_pieces)
+    print(cell_line_pieces)
+
     join_card_pieces(cell_line_pieces, cell_lines)
     join_card_pieces(surface_line_pieces, surface_lines)
     join_card_pieces(data_line_pieces, data_lines)
-    make_cards()
+    #make_cards()
     return
 
 
-def clear_dollar_comments(array):
+def clean_pieces(array):
     i = 0
     for line in array:
-        comment_index = re.search(r'\$', line)  # line has a '$' comment; removed along with leading white space
-        if comment_index:
+        array[i] = line.replace("\n", "")                      # remove \n
+        comment_index = re.search(r'[ \t]*\$', line)           # remove $ comment along with leading white space
+        if comment_index is not None:
             array[i] = line[0: comment_index.span()[0]]
+        if re.search(r'^[ \t]{0,5}[cC]\s', line) is not None:  # remove 'c' comment # TODO: still add to cell_lines
+            array.remove(array[i])
+            i -= 1
         i += 1
     return
 
+# TODO: Cells following a c are omitted entirely (cell 700)
+# TODO: End of cell section is written twice to file
 
 def join_card_pieces(line_pieces, line_array):
     skip = 0
@@ -60,27 +68,35 @@ def join_card_pieces(line_pieces, line_array):
             result += line_pieces[i+j]
         skip += num_lines_continues
         line_array.append(result)
+        if i == len(line_pieces):
+            break
     return
 
 
 def line_continues(index, pieces):
     start_line = pieces[index]
-    if re.search(r'^[ \t]{0,5}[cC]\s', start_line) is not None:    # line is a 'c' comment so still added to cell_lines
-        return 0
-    if re.search(r'[ \t]*&', start_line):                                           # line continues with & on the next line; & and leading white space removed, one space added after and next line appended
-        return recurse_ampersand(pieces, index, 0)
-    if re.search(r'^ {6,}\S+', pieces[index+1]):
-        return recurse_space(pieces, index, 0)
+    if re.search(r'[ \t]*&', start_line):                        # line continues with & on the next line; & and leading white space removed, one space added after and next line appended
+        return recurse_continue(pieces, index, 0)
+    elif len(pieces)-1 > index:
+        if re.search(r'^ {6,}\S+', pieces[index+1]):
+            pieces[index] += " "                                   # Space between continued lines when joined
+            return recurse_continue(pieces, index, 0)
     return 0
 
 
-def recurse_ampersand(pieces, start_index, num):
+def recurse_continue(pieces, start_index, num):
+    space_index = None
     ampersand_index = re.search(r'[ \t]*&', pieces[start_index + num])
-    if ampersand_index is None:
+    if len(pieces) - 1 > start_index + num:
+        space_index = re.search(r'^ {6,}\S', pieces[start_index + 1 + num])
+    if ampersand_index is None and space_index is None:
         return num
-    else:
+    elif ampersand_index is not None:
         pieces[start_index + num] = pieces[start_index + num][0: ampersand_index.span()[0]] + " "
-        return recurse_ampersand(pieces, start_index, num + 1)
+        return recurse_continue(pieces, start_index, num + 1)
+    elif space_index is not None:
+        pieces[start_index + 1 + num] = pieces[start_index + 1 + num][space_index.span()[1] - 1:] + " "
+        return recurse_continue(pieces, start_index, num + 1)   # TODO: this infinite with material cards
 
 
 def make_cards():
@@ -91,9 +107,9 @@ def make_cards():
 def print_file(out_filename):
     f_write = open(out_filename, 'w')
 
-    """for line in all_cells:
+    for line in cell_lines:
         print(line.strip('\n'), file=f_write)
-    for line in all_surfaces:
+    """for line in all_surfaces:
         print(line.strip('\n'), file=f_write)
     for line in all_options:
         print(line.strip('\n'), file=f_write)"""
