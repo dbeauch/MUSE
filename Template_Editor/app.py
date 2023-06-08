@@ -1,7 +1,8 @@
 from dash import Dash, dcc, Input, Output, html, ctx
 import template_handler
-import re
+import sys
 
+sys.setrecursionlimit(8000)
 app = Dash(__name__)
 
 df = template_handler.read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
