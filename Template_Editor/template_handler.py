@@ -1,5 +1,5 @@
-#   Regex for non-void cell cards: ^\d{1,6}[ \t]+\d{1,6}[ \t]+-?\d+(\.\d+)?e?-?\d*[ \t]+\(?-?\d+(([ \t]|:)-?\(?\d+\)?)*\)?[ \t]+.*$
-#   Regex for void cell cards: ^\d{1,6}[ \t]+0[ \t]+\(?-?\d+(([ \t]|:)-?\(?\d+\)?)*\)?[ \t]+.*$
+#   Regex for non-void cell cards: (^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?e?-?\d*[ \t]+\(?-?\d+(([ \t]|:|#)-?\(?\d+\)?)*\)?[ \t]+.*$)
+#   Regex for void cell cards: ^\d{1,6}[ \t]+0[ \t]+\(?-?\d+(([ \t]|:|#)-?\(?\d+\)?)*\)?[ \t]+.*$
 
 import re
 
