@@ -86,6 +86,7 @@ def join_card_pieces(line_pieces, line_array):
             result += line_pieces[index + j] + " "
         index += num_lines_continues
         result = result.replace("\n", "")                  # remove \n
+        result = re.sub(r'[ \t]{2,}', " ", result)
         line_array.append(result)
         index += 1
     return
@@ -97,7 +98,7 @@ def recurse_continue(pieces, start_index, num=0):
     :param pieces: array containing cleaned line pieces
     :param start_index: line index of start of card
     :param num: parameter passed to next call; initial call should be 0
-    :return:
+    :return: final num param
     """
     space_index = None
     ampersand_index = re.search(r'[ \t]*&', pieces[start_index + num])
