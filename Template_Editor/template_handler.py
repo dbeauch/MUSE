@@ -1,7 +1,24 @@
-#   Regex for non-void cell cards: (^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?e?-?\d*[ \t]+\(?-?\d+(([ \t]|:|#)-?\(?\d+\)?)*\)?[ \t]+.*$)
-#   Regex for void cell cards: ^\d{1,6}[ \t]+0[ \t]+\(?-?\d+(([ \t]|:|#)-?\(?\d+\)?)*\)?[ \t]+.*$
-
 import re
+from mcnp_cards import *
+
+#   Verified that cell regex together recognize only and all cell cards in entire template
+regular_cell_regex = r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?e?-?\d*[ \t]+\(?-?\d+(([ \t]|:|#)-?\(?\d+\)?)*\)?[ \t]+.*$'
+void_cell_regex = r'^\d{1,6}[ \t]+0[ \t]+\(?-?\d+(([ \t]|:|#)-?\(?\d+\)?)*\)?[ \t]+.*$'
+like_but_cell_regex = r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]but[ \t]+.+$'
+
+#   Surfaces regex
+regular_surface_regex = r''
+transform_surface_regex = r''
+
+#   Options regex
+mode_regex = r''
+kcode_regex = r''
+ksrc_regex = r''
+transform_regex = r''
+
+#   Material/Moderators regex
+material_regex = r''
+moderator_regex = r''
 
 cell_line_pieces = []
 surface_line_pieces = []
@@ -41,7 +58,9 @@ def read_template(in_filename):
     join_card_pieces(surface_line_pieces, surface_lines)
     join_card_pieces(data_line_pieces, data_lines)
 
-    # make_cards()
+    make_cards(cell_lines)
+    make_cards(surface_lines)
+    make_cards(data_lines)
     return
 
 
@@ -117,7 +136,45 @@ def recurse_continue(pieces, start_index, num=0):
         print("Error: recurse_continue()")
 
 
-def make_cards():
+def make_cards(line_array):
+    for line in line_array:
+        made_card = None
+        if re.search(regular_cell_regex, line) is not None:
+            made_card = CellCard()
+            all_cells[made_card.number] = made_card
+        elif re.search(void_cell_regex, line) is not None:
+            made_card = CellCard()
+            all_cells[made_card.number] = made_card
+        elif re.search(like_but_cell_regex, line) is not None:
+            made_card = CellCard()
+            all_cells[made_card.number] = made_card
+        elif re.search(regular_surface_regex, line) is not None:
+            made_card = SurfaceCard()
+            all_surfaces[made_card.number] = made_card
+        elif re.search(transform_surface_regex, line) is not None:
+            made_card = SurfaceCard()
+            all_surfaces[made_card.number] = made_card
+        elif re.search(mode_regex, line) is not None:
+            made_card = Mode()
+            all_options.append(made_card)
+        elif re.search(kcode_regex, line) is not None:
+            made_card = KCode()
+            all_options.append(made_card)
+        elif re.search(ksrc_regex, line) is not None:
+            made_card = KSrc()
+            all_options.append(made_card)
+        elif re.search(transform_regex, line) is not None:
+            made_card = Transform()
+            all_options.append(made_card)
+        elif re.search(material_regex, line) is not None:
+            made_card = Material()
+            all_materials[made_card.number] = made_card
+        elif re.search(moderator_regex, line) is not None:
+            made_card = Moderator()
+            all_materials[made_card.number] = made_card
+        else:
+            made_card = Option()
+            all_options.append(made_card)
     return
 
 

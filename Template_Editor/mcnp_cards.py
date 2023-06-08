@@ -14,10 +14,10 @@
 #       KSrc(array of arrays representing x-y-z locations)                                              #
 #                                             KSrc([[, , ]])                                            #
 #                                                                                                       #
-#       Material(name, array of tuples for each zaid-fraction pair)                                     #
+#       Material(number, array of tuples for each zaid-fraction pair)                                   #
 #                                            Material("", [(, )])                                       #
 #                                                                                                       #
-#       Moderator(name, material identifier)                                                            #
+#       Moderator(number, params)                                                                       #
 #                                             Moderator("", "")                                         #
 #########################################################################################################
 
@@ -81,21 +81,47 @@ class KSrc(DataCard):
 
 class Material(DataCard):
     # zaid_frac expected as a tuple: (zaid, fraction)
-    def __init__(self, mname, zaid_fracs):
-        self.mname = mname
+    def __init__(self, number, zaid_fracs):
+        self.number = number
         self.zaid_fracs = zaid_fracs
 
     def __str__(self):
-        result = f"{self.mname}\t\t"
+        result = f"m{self.number}\t\t"
         for zaid_frac in self.zaid_fracs:
             result += f"{zaid_frac[0]} {zaid_frac[1]}\t"
         return result
 
 
 class Moderator(DataCard):
-    def __init__(self, name, identifier):
-        self.name = name
-        self.identifier = identifier
+    def __init__(self, number, params):
+        self.number = number
+        self.params = params
 
     def __str__(self):
-        return f"{self.name}\t\t{self.identifier}"
+        return f"mt{self.number}\t\t{self.params}"
+
+
+class Mode(DataCard):
+    def __init__(self, mode):
+        self.mode = mode
+
+    def __str__(self):
+        return f"mode {self.mode}"
+
+
+class Transform(DataCard):
+    def __init__(self, param):
+        self.param = param
+
+
+    def __str__(self):
+        return f"*tr {self.param}"
+
+
+class Option(DataCard):
+    def __init__(self, code, params):
+        self.code = code
+        self.params = params
+
+    def __str__(self):
+        return f"{self.code}\t{self.params}"
