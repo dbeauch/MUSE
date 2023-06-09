@@ -2,8 +2,8 @@ import re
 from mcnp_cards import *
 
 #   Verified that cell regex together recognize only and all cell cards in entire template
-regular_cell_regex = r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?e?-?\d*[ \t]+\(?-?\d+(([ \t]|:|#)-?\(?\d+\)?)*\)?[ \t]+.*$'
-void_cell_regex = r'^\d{1,6}[ \t]+0[ \t]+\(?-?\d+(([ \t]|:|#)-?\(?\d+\)?)*\)?[ \t]+.*$'
+regular_cell_regex = r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?e?-?\d*[ \t]+[^a-zA-z]+[ \t]+[a-zA-z]+=.*$'
+void_cell_regex = r'^\d{1,6}[ \t]+0[ \t][^a-zA-z]+[ \t]+[a-zA-z]+=.*$'
 like_but_cell_regex = r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]but[ \t]+.+$'
 
 #   Surfaces regex
@@ -14,11 +14,12 @@ transform_surface_regex = r''
 mode_regex = r''
 kcode_regex = r''
 ksrc_regex = r''
+
 transform_regex = r''
 
-#   Material/Moderators regex
+#   Material/Temperature regex
 material_regex = r''
-moderator_regex = r''
+temperature_regex = r''
 
 cell_line_pieces = []
 surface_line_pieces = []
@@ -55,12 +56,12 @@ def read_template(in_filename):
     clean_pieces(data_line_pieces)
 
     join_card_pieces(cell_line_pieces, cell_lines)
-    join_card_pieces(surface_line_pieces, surface_lines)
-    join_card_pieces(data_line_pieces, data_lines)
+    #join_card_pieces(surface_line_pieces, surface_lines)
+    #join_card_pieces(data_line_pieces, data_lines)
 
     make_cards(cell_lines)
-    make_cards(surface_lines)
-    make_cards(data_lines)
+    #make_cards(surface_lines)
+    #make_cards(data_lines)
     return
 
 
@@ -140,53 +141,105 @@ def make_cards(line_array):
     for line in line_array:
         made_card = None
         if re.search(regular_cell_regex, line) is not None:
-            made_card = CellCard()
+            made_card = make_cell(line)
             all_cells[made_card.number] = made_card
         elif re.search(void_cell_regex, line) is not None:
-            made_card = CellCard()
+            made_card = make_void_cell(line)
             all_cells[made_card.number] = made_card
         elif re.search(like_but_cell_regex, line) is not None:
-            made_card = CellCard()
+            made_card = make_like_but_cell(line)
             all_cells[made_card.number] = made_card
-        elif re.search(regular_surface_regex, line) is not None:
-            made_card = SurfaceCard()
-            all_surfaces[made_card.number] = made_card
-        elif re.search(transform_surface_regex, line) is not None:
-            made_card = SurfaceCard()
-            all_surfaces[made_card.number] = made_card
-        elif re.search(mode_regex, line) is not None:
-            made_card = Mode()
-            all_options.append(made_card)
-        elif re.search(kcode_regex, line) is not None:
-            made_card = KCode()
-            all_options.append(made_card)
-        elif re.search(ksrc_regex, line) is not None:
-            made_card = KSrc()
-            all_options.append(made_card)
-        elif re.search(transform_regex, line) is not None:
-            made_card = Transform()
-            all_options.append(made_card)
-        elif re.search(material_regex, line) is not None:
-            made_card = Material()
-            all_materials[made_card.number] = made_card
-        elif re.search(moderator_regex, line) is not None:
-            made_card = Moderator()
-            all_materials[made_card.number] = made_card
-        else:
-            made_card = Option()
-            all_options.append(made_card)
+        # elif re.search(regular_surface_regex, line) is not None:
+        #     made_card = Surface()
+        #     all_surfaces[made_card.number] = made_card
+        # elif re.search(transform_surface_regex, line) is not None:
+        #     made_card = Surface()
+        #     all_surfaces[made_card.number] = made_card
+        # elif re.search(mode_regex, line) is not None:
+        #     made_card = Mode()
+        #     all_options.append(made_card)
+        # elif re.search(kcode_regex, line) is not None:
+        #     made_card = KCode()
+        #     all_options.append(made_card)
+        # elif re.search(ksrc_regex, line) is not None:
+        #     made_card = KSrc()
+        #     all_options.append(made_card)
+        # elif re.search(transform_regex, line) is not None:
+        #     made_card = Transform()
+        #     all_options.append(made_card)
+        # elif re.search(material_regex, line) is not None:
+        #     made_card = Material()
+        #     all_materials[made_card.number] = made_card
+        # elif re.search(temperature_regex, line) is not None:
+        #     made_card = Temperature()
+        #     all_materials[made_card.number] = made_card # need to change; indexes to same number as material
+        # else:
+        #     made_card = Option()
+        #     all_options.append(made_card)
     return
+
+
+# _end = re.search(r'', line).span()[1] + 1
+# = line[_end: _end].strip()
+# r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?e?-?\d*[ \t]+[^a-zA-z]+[ \t]+[a-zA-z]+=.*$'
+def make_cell(line):
+    number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
+    number = line[0: number_end]
+
+    material_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}', line).span()[1] + 1
+    material = line[number_end: material_end].strip()
+
+    density_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?e?-?\d*', line).span()[1] + 1
+    density = line[material_end: density_end].strip()
+
+    geom_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?e?-?\d*[ \t]+[^a-zA-z]+', line).span()[1]
+    geom = line[density_end: geom_end].strip()
+
+    params = line[geom_end:].strip()
+
+    return Cell(number, material, density, geom, params)
+
+
+def make_void_cell(line):
+    number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
+    number = line[0: number_end]
+
+    material_end = re.search(r'^\d{1,6}[ \t]+0', line).span()[1] + 1
+    material = line[number_end: material_end].strip()
+
+    geom_end = re.search(r'^\d{1,6}[ \t]+0[ \t][^a-zA-z]+', line).span()[1]
+    geom = line[material_end: geom_end].strip()
+
+    params = line[geom_end:].strip()
+
+    return Cell(number, material, "\t", geom, params)
+
+
+def make_like_but_cell(line):
+    number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
+    number = line[0: number_end].strip()
+
+    like_end = re.search(r'^\d{1,6}[ \t]+like', line).span()[1] + 1
+
+    related_cell_end = re.search(r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}', line).span()[1] + 1
+    related_cell = line[like_end: related_cell_end].strip()
+
+    but_end = re.search(r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]+but', line).span()[1] + 1
+
+    changes = line[but_end:].strip()
+
+    return LikeCell(number, related_cell, changes)
 
 
 def print_file(out_filename):
     f_write = open(out_filename, 'w')
 
-    for line in cell_lines:
-        print(line.strip('\n'), file=f_write)
-    print("c Begin Surface Cards:", file=f_write)
+    for line in all_cells.values():
+        print(line, file=f_write)
+    print("\nc Begin Surface Cards:", file=f_write)
     for line in surface_lines:
         print(line.strip('\n'), file=f_write)
-    print("c Begin Data Cards:", file=f_write)
+    print("\nc Begin Data Cards:", file=f_write)
     for line in data_lines:
         print(line.strip('\n'), file=f_write)
 

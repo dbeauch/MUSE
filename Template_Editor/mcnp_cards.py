@@ -22,7 +22,7 @@
 #########################################################################################################
 
 
-class CellCard:
+class Cell:
     def __init__(self, number, material, density, geom, params=""):
         self.number = number
         self.material = material
@@ -37,7 +37,17 @@ class CellCard:
         return f"{self.number}\t{self.material}\t{self.density}\t{self.geom}\t{self.params}"
 
 
-class SurfaceCard:
+class LikeCell(Cell):
+    def __init__(self, number, related_cell, changes):
+        self.number = number
+        self.related_cell = related_cell
+        self.changes = changes
+
+    def __str__(self):
+        return f"{self.number} like {self.related_cell} but {self.changes}"
+
+
+class Surface:
     def __init__(self, number, mnemonic, dimensions):
         self.number = number
         self.mnemonic = mnemonic
@@ -92,7 +102,7 @@ class Material(DataCard):
         return result
 
 
-class Moderator(DataCard):
+class Temperature(DataCard):
     def __init__(self, number, params):
         self.number = number
         self.params = params
