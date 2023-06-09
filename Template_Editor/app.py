@@ -20,8 +20,8 @@ app.layout = html.Div(style={'backgroundColor': '#D3D3D3', 'height': '97vh'}, ch
     dbc.Container([
         html.H4('Cell Changes', style={'textAlign': 'left'}),
         dbc.Row([
-            dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell'), width=4),
-            dbc.Col(dcc.Dropdown(id='material_selector', placeholder='Select a Material', style={'color': 'black'}), width=4),
+            dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell Number'), width=4),
+            dbc.Col(dcc.Dropdown(id='material_selector', placeholder='Select a Material Number', style={'color': 'black'}), width=4),
             dbc.Col(html.Button('Apply Changes', id='apply_button', n_clicks=0), width=4),
         ], style={'marginTop': 20}),
 
@@ -64,16 +64,16 @@ def update_output(apply_clicked, print_clicked, cell, material, file_path, curre
 
     if button_id == 'apply_button':
         all_cells.get(cell).material = material
-        message = f'Applied changes: Cell {cell} changed to Material {material}\n'
+        message = f'Applied changes: Cell {cell} changed to Material {material}'
         current_messages.append(message)
 
     elif button_id == 'print_button':
         printed = print_file(file_path)
-        message = f'Printed the file to: {printed}\n'
+        message = f'Printed the file to: {printed}'
         current_messages.append(html.P(message))
 
     return current_messages
-
+# for some reason messages are appending weird
 
 @app.callback(
     Output("cell_selector", "options"),
