@@ -184,7 +184,7 @@ def make_cards(line_array):
 # r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?e?-?\d*[ \t]+[^a-zA-z]+[ \t]+[a-zA-z]+=.*$'
 def make_cell(line):
     number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
-    number = line[0: number_end]
+    number = line[0: number_end].strip()
 
     material_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}', line).span()[1] + 1
     material = line[number_end: material_end].strip()
@@ -202,7 +202,7 @@ def make_cell(line):
 
 def make_void_cell(line):
     number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
-    number = line[0: number_end]
+    number = line[0: number_end].strip()
 
     material_end = re.search(r'^\d{1,6}[ \t]+0', line).span()[1] + 1
     material = line[number_end: material_end].strip()
@@ -232,6 +232,8 @@ def make_like_but_cell(line):
 
 
 def print_file(out_filename):
+    if out_filename == "" or out_filename is None:
+        out_filename = '../mcnp_templates/test.i'
     f_write = open(out_filename, 'w')
 
     for line in all_cells.values():

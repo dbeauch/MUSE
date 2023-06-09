@@ -1,14 +1,9 @@
-import sys
 import dash
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
-from template_handler import *
 
-sys.setrecursionlimit(8000)
-read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
-
 
 app.layout = html.Div(style={'backgroundColor': '#D3D3D3', 'height': '97vh'}, children=[
     html.Header("Py2MCNP Editor",
@@ -20,12 +15,8 @@ app.layout = html.Div(style={'backgroundColor': '#D3D3D3', 'height': '97vh'}, ch
     dbc.Container([
         html.H4('Cell Changes', style={'textAlign': 'left'}),
         dbc.Row([
-            dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell', options=[
-        {'label': 'Cell 1', 'value': '1'},
-        {'label': 'Cell 2', 'value': '2'},
-        {'label': 'Cell 3', 'value': '3'},
-    ], style={'color': 'black'}), width=4),
-            dbc.Col(dcc.Dropdown(id='material_selector', placeholder='Select a Material', style={'color': 'black'}), width=4),
+            dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Cell', style={'color': 'black'}), width=4),
+            dbc.Col(dcc.Dropdown(id='material_selector', placeholder='Material', style={'color': 'black'}), width=4),
             dbc.Col(html.Button('Apply Changes', id='apply_button', n_clicks=0), width=4),
         ], style={'marginTop': 20}),
 
@@ -44,7 +35,7 @@ app.layout = html.Div(style={'backgroundColor': '#D3D3D3', 'height': '97vh'}, ch
     html.Div(
         id='console-output',
         style={'backgroundColor': '#333333', 'color': '#A9A9A9', 'margin-top': '20px', 'border': '1px solid black',
-               'height': '200px', 'overflow': 'scroll', 'marginTop': 350},
+               'height': '200px', 'overflowY': 'scroll', 'marginTop': 350},
     ),
 ])
 
@@ -56,10 +47,10 @@ app.layout = html.Div(style={'backgroundColor': '#D3D3D3', 'height': '97vh'}, ch
     State('cell_selector', 'value'),
     State('material_selector', 'value'),
     State('file_path', 'value'),
-    State('console-output', 'children'),
-    prevent_initial_call=True
+    State('console-output', 'children')
 )
 def update_output(apply_clicked, print_clicked, cell, material, file_path, current_messages):
+    # Add your pre and post processing code here. The following is for demonstration purposes only.
     if not current_messages:
         current_messages = []
 
@@ -67,31 +58,19 @@ def update_output(apply_clicked, print_clicked, cell, material, file_path, curre
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
     if button_id == 'apply_button':
-        all_cells.get(cell).material = material
-        message = f'Applied changes: Cell {cell} changed to Material {material}'
-        current_messages.append(message)
+        # Add the logic for applying changes here
+        new_message = f'Applied changes: Cell {cell} Material {material}'
 
     elif button_id == 'print_button':
-        printed = print_file(file_path)
-        message = f'Printed the file to: {printed}'
-        current_messages.append(html.P(message))
+        # Add the logic for printing the file here
+        new_message = f'Printed the file to: {file_path}'
+
+    current_messages.append(new_message)
+
+    # Convert messages to HTML p elements
+    current_messages = [html.P(message) for message in current_messages]
 
     return current_messages
-
-
-options = [
-    {"label": "New York City", "value": "NYC"},
-    {"label": "Montreal", "value": "MTL"},
-    {"label": "San Francisco", "value": "SF"},
-]
-
-
-@app.callback(
-    Output("cell_selector", "options"),
-    Input("cell_selector", "search_value")
-)
-def update_cell_options(search_value):
-    return [o for o in options if search_value in o["label"]]
 
 
 if __name__ == '__main__':
