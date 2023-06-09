@@ -20,11 +20,7 @@ app.layout = html.Div(style={'backgroundColor': '#D3D3D3', 'height': '97vh'}, ch
     dbc.Container([
         html.H4('Cell Changes', style={'textAlign': 'left'}),
         dbc.Row([
-            dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell', options=[
-        {'label': 'Cell 1', 'value': '1'},
-        {'label': 'Cell 2', 'value': '2'},
-        {'label': 'Cell 3', 'value': '3'},
-    ], style={'color': 'black'}), width=4),
+            dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell'), width=4),
             dbc.Col(dcc.Dropdown(id='material_selector', placeholder='Select a Material', style={'color': 'black'}), width=4),
             dbc.Col(html.Button('Apply Changes', id='apply_button', n_clicks=0), width=4),
         ], style={'marginTop': 20}),
@@ -68,22 +64,15 @@ def update_output(apply_clicked, print_clicked, cell, material, file_path, curre
 
     if button_id == 'apply_button':
         all_cells.get(cell).material = material
-        message = f'Applied changes: Cell {cell} changed to Material {material}'
+        message = f'Applied changes: Cell {cell} changed to Material {material}\n'
         current_messages.append(message)
 
     elif button_id == 'print_button':
         printed = print_file(file_path)
-        message = f'Printed the file to: {printed}'
+        message = f'Printed the file to: {printed}\n'
         current_messages.append(html.P(message))
 
     return current_messages
-
-
-options = [
-    {"label": "New York City", "value": "NYC"},
-    {"label": "Montreal", "value": "MTL"},
-    {"label": "San Francisco", "value": "SF"},
-]
 
 
 @app.callback(
@@ -91,7 +80,18 @@ options = [
     Input("cell_selector", "search_value")
 )
 def update_cell_options(search_value):
-    return [o for o in options if search_value in o["label"]]
+    return [o for o in all_cells]
+
+
+material_options = [1, 2, 3, 4, 'placeholders']
+
+
+@app.callback(
+    Output("material_selector", "options"),
+    Input("material_selector", "search_value")
+)
+def update_cell_options(search_value):
+    return [o for o in material_options]
 
 
 if __name__ == '__main__':
