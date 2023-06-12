@@ -35,9 +35,34 @@ sidebar = html.Div([
 ], style={'color': 'black', 'backgroundColor': sidebar_color, 'width': sidebar_width, 'height': '100vh',
           'position': 'fixed'})
 
+console = html.Div([
+    dbc.Row([
+        dbc.Col("Console", width=4, align='center'),
+        dbc.Col(dcc.Input(id='file_path', type='text', placeholder='File path', debounce=True),
+                width=1, align='center'),
+        dbc.Col(html.Button('Print File', id='print_button', n_clicks=0), width=1, align='center'),
+        dbc.Col(width=6),
+    ], style={'marginTop': 20, 'backgroundColor': 'black', 'color': 'white', 'padding': '5px',
+              'fontSize': '18px'}, className='g-0'),
+
+    html.Div(id='console-output',
+             style={'backgroundColor': '#333333', 'color': '#A9A9A9',
+                    'border': '1px solid black',
+                    'height': console_height, 'overflow': 'scroll'},
+             )
+], style={'marginLeft': sidebar_width, 'position': 'fixed', 'bottom': 0, 'width': 'calc(100%)'})
+
 content = html.Div(id="page-content", style={'marginLeft': sidebar_width, 'backgroundColor': page_background})
 
-app.layout = html.Div([dcc.Location(id="url"), sidebar, content])
+app.layout = html.Div([dcc.Location(id="url"),
+                       dbc.Row([
+                           dbc.Col(sidebar, width='auto'),
+                           dbc.Col([
+                               content,
+                               console
+                           ])
+                       ], justify="start", className="g-0")
+                       ])
 
 
 @app.callback(
@@ -114,28 +139,7 @@ def render_page_content(pathname):
 
                     html.Hr(),
 
-
-
-                ], style={'marginTop': 0, 'marginBottom': 0}),
-
-                html.Div([
-                    dbc.Row([
-                        dbc.Col(width=4),
-                        dbc.Col(dcc.Input(id='file_path', type='text', placeholder='File path', debounce=True),
-                                width=1),
-                        dbc.Col(html.Button('Print File', id='print_button', n_clicks=0), width=1),
-                        dbc.Col(width=6),
-                    ], style={'marginTop': 20}, className='g-0'),
-
-                    html.Div("Console",
-                             style={'backgroundColor': 'black', 'color': 'white', 'padding': '5px',
-                                    'fontSize': '18px'}),
-                    html.Div(id='console-output',
-                             style={'backgroundColor': '#333333', 'color': '#A9A9A9',
-                                    'border': '1px solid black',
-                                    'height': console_height, 'overflow': 'scroll'},
-                             )
-                ], style={'position': 'fixed', 'bottom': 0, 'width': 'calc(100%)'}),
+                ])
             ])
         ]
 
@@ -144,26 +148,7 @@ def render_page_content(pathname):
             html.Div(style={'backgroundColor': page_background, 'height': '100vh'}, children=[
                 dbc.Container([
 
-                ], style={'marginTop': 0, 'marginBottom': 0}),
-
-                html.Div([
-                    dbc.Row([
-                        dbc.Col(width=4),
-                        dbc.Col(dcc.Input(id='file_path', type='text', placeholder='File path', debounce=True),
-                                width=1),
-                        dbc.Col(html.Button('Print File', id='print_button', n_clicks=0), width=1),
-                        dbc.Col(width=6),
-                    ], style={'marginTop': 20}, className='g-0'),
-
-                    html.Div("Console",
-                             style={'backgroundColor': 'black', 'color': 'white', 'padding': '5px',
-                                    'fontSize': '18px'}),
-                    html.Div(id='console-output',
-                             style={'backgroundColor': '#333333', 'color': '#A9A9A9',
-                                    'border': '1px solid black',
-                                    'height': console_height, 'overflow': 'scroll'},
-                             )
-                ], style={'position': 'fixed', 'bottom': 0, 'width': 'calc(100%)'}),
+                ])
             ])
         ]
 
@@ -172,26 +157,7 @@ def render_page_content(pathname):
             html.Div(style={'backgroundColor': page_background, 'height': '100vh'}, children=[
                 dbc.Container([
 
-                ], style={'marginTop': 0, 'marginBottom': 0}),
-
-                html.Div([
-                    dbc.Row([
-                        dbc.Col(width=4),
-                        dbc.Col(dcc.Input(id='file_path', type='text', placeholder='File path', debounce=True),
-                                width=1),
-                        dbc.Col(html.Button('Print File', id='print_button', n_clicks=0), width=1),
-                        dbc.Col(width=6),
-                    ], style={'marginTop': 20}, className='g-0'),
-
-                    html.Div("Console",
-                             style={'backgroundColor': 'black', 'color': 'white', 'padding': '5px',
-                                    'fontSize': '18px'}),
-                    html.Div(id='console-output',
-                             style={'backgroundColor': '#333333', 'color': '#A9A9A9',
-                                    'border': '1px solid black',
-                                    'height': console_height, 'overflow': 'scroll'},
-                             )
-                ], style={'position': 'fixed', 'bottom': 0, 'width': 'calc(100%)'}),
+                ]),
             ])
         ]
 
@@ -200,26 +166,7 @@ def render_page_content(pathname):
             html.Div(style={'backgroundColor': page_background, 'height': '100vh'}, children=[
                 dbc.Container([
 
-                ], style={'marginTop': 0, 'marginBottom': 0}),
-
-                html.Div([
-                    dbc.Row([
-                        dbc.Col(width=4),
-                        dbc.Col(dcc.Input(id='file_path', type='text', placeholder='File path', debounce=True),
-                                width=1),
-                        dbc.Col(html.Button('Print File', id='print_button', n_clicks=0), width=1),
-                        dbc.Col(width=6),
-                    ], style={'marginTop': 20}, className='g-0'),
-
-                    html.Div("Console",
-                             style={'backgroundColor': 'black', 'color': 'white', 'padding': '5px',
-                                    'fontSize': '18px'}),
-                    html.Div(id='console-output',
-                             style={'backgroundColor': '#333333', 'color': '#A9A9A9',
-                                    'border': '1px solid black',
-                                    'height': console_height, 'overflow': 'scroll'},
-                             )
-                ], style={'position': 'fixed', 'bottom': 0, 'width': 'calc(100%)'}),
+                ]),
             ])
         ]
 

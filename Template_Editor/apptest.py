@@ -139,7 +139,7 @@ def render_page_content(pathname):
 
                     html.Hr(),
 
-                ], style={'marginTop': 0, 'marginBottom': 0})
+                ])
             ])
         ]
 
@@ -148,7 +148,7 @@ def render_page_content(pathname):
             html.Div(style={'backgroundColor': page_background, 'height': '100vh'}, children=[
                 dbc.Container([
 
-                ], style={'marginTop': 0, 'marginBottom': 0})
+                ])
             ])
         ]
 
@@ -157,7 +157,7 @@ def render_page_content(pathname):
             html.Div(style={'backgroundColor': page_background, 'height': '100vh'}, children=[
                 dbc.Container([
 
-                ], style={'marginTop': 0, 'marginBottom': 0}),
+                ]),
             ])
         ]
 
@@ -166,7 +166,7 @@ def render_page_content(pathname):
             html.Div(style={'backgroundColor': page_background, 'height': '100vh'}, children=[
                 dbc.Container([
 
-                ], style={'marginTop': 0, 'marginBottom': 0}),
+                ]),
             ])
         ]
 
