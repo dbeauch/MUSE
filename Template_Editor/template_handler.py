@@ -2,7 +2,7 @@ import re
 from mcnp_cards import *
 
 #   Verified that cell regex together recognize only and all cell cards in entire template
-regular_cell_regex = r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?e?-?\d*[ \t]+[^a-zA-z]+[ \t]+[a-zA-z]+=.*$'
+regular_cell_regex = r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+[ \t]+[a-zA-z]+=.*$'
 void_cell_regex = r'^\d{1,6}[ \t]+0[ \t][^a-zA-z]+[ \t]+[a-zA-z]+=.*$'
 like_but_cell_regex = r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]but[ \t]+.+$'
 
@@ -18,7 +18,7 @@ ksrc_regex = r''
 transform_regex = r''
 
 #   Material/Temperature regex
-material_regex = r''
+material_regex = r'^m\d+[ \t]+(\d+[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+)+'
 temperature_regex = r''
 
 cell_line_pieces = []
@@ -30,6 +30,7 @@ surface_lines = []
 data_lines = []
 
 all_cells = {}
+all_like_cells = {}
 all_surfaces = {}
 all_materials = {}
 all_options = []
@@ -56,12 +57,12 @@ def read_template(in_filename):
     clean_pieces(data_line_pieces)
 
     join_card_pieces(cell_line_pieces, cell_lines)
-    #join_card_pieces(surface_line_pieces, surface_lines)
-    #join_card_pieces(data_line_pieces, data_lines)
+    join_card_pieces(surface_line_pieces, surface_lines)
+    join_card_pieces(data_line_pieces, data_lines)
 
     make_cards(cell_lines)
-    #make_cards(surface_lines)
-    #make_cards(data_lines)
+    make_cards(surface_lines)
+    make_cards(data_lines)
     return
 
 
@@ -106,7 +107,7 @@ def join_card_pieces(line_pieces, line_array):
             result += line_pieces[index + j] + " "
         index += num_lines_continues
         result = result.replace("\n", "")                  # remove \n
-        result = re.sub(r'[ \t]{2,}', " ", result)
+        result = re.sub(r'[ \t]{2,}', " ", result)         # remove extra spaces
         line_array.append(result)
         index += 1
     return
@@ -148,7 +149,7 @@ def make_cards(line_array):
             all_cells[made_card.number] = made_card
         elif re.search(like_but_cell_regex, line) is not None:
             made_card = make_like_but_cell(line)
-            all_cells[made_card.number] = made_card
+            all_like_cells[made_card.number] = made_card
         # elif re.search(regular_surface_regex, line) is not None:
         #     made_card = Surface()
         #     all_surfaces[made_card.number] = made_card
@@ -167,9 +168,9 @@ def make_cards(line_array):
         # elif re.search(transform_regex, line) is not None:
         #     made_card = Transform()
         #     all_options.append(made_card)
-        # elif re.search(material_regex, line) is not None:
-        #     made_card = Material()
-        #     all_materials[made_card.number] = made_card
+        elif re.search(material_regex, line) is not None:
+            made_card = make_material(line)
+            all_materials[made_card.number] = made_card
         # elif re.search(temperature_regex, line) is not None:
         #     made_card = Temperature()
         #     all_materials[made_card.number] = made_card # need to change; indexes to same number as material
@@ -181,7 +182,6 @@ def make_cards(line_array):
 
 # _end = re.search(r'', line).span()[1] + 1
 # = line[_end: _end].strip()
-# r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?e?-?\d*[ \t]+[^a-zA-z]+[ \t]+[a-zA-z]+=.*$'
 def make_cell(line):
     number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
     number = line[0: number_end].strip()
@@ -189,10 +189,10 @@ def make_cell(line):
     material_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}', line).span()[1] + 1
     material = line[number_end: material_end].strip()
 
-    density_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?e?-?\d*', line).span()[1] + 1
+    density_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?[eE]?-?\d*', line).span()[1] + 1
     density = line[material_end: density_end].strip()
 
-    geom_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?e?-?\d*[ \t]+[^a-zA-z]+', line).span()[1]
+    geom_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+', line).span()[1]
     geom = line[density_end: geom_end].strip()
 
     params = line[geom_end:].strip()
@@ -229,6 +229,19 @@ def make_like_but_cell(line):
     changes = line[but_end:].strip()
 
     return LikeCell(number, related_cell, changes)
+
+
+# ^m\d+[ \t]+(\d+[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+)+
+def make_material(line):
+    zaid_fracs = []
+    number_end = re.search(r'^m\d+', line).span()[1] + 1
+    number = line[1: number_end].strip()
+
+    zaid_list = re.split(r'[ \t]+', line[number_end:].strip())
+    for i in range(int(len(zaid_list) / 2)):
+        zaid_fracs.append((zaid_list[2 * i], zaid_list[2 * i + 1]))
+
+    return Material(number, zaid_fracs)
 
 
 def print_file(out_filename):

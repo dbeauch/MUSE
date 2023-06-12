@@ -1,15 +1,5 @@
 import re, template_handler
-
-
-car = {
-"brand": "Ford",
-"model": "Mustang",
-"year": 1964
-}
-
-print(car)
-car.update({"brand" : car.get("brand")[1:]})
-print(car)
+from mcnp_cards import *
 
 """
 create a dash app to edit MCNP input files. I have already created all the pre and post processing code that handles making the changes to the file. I want this dash app to be the front end portion of the app that lets the user enter changes to different cards, apply those changes with a button, and a button to print the file. Your methods called by the buttons need only exist and i will fill in the code to activate input file changes. The dash app you should create will just be a testing shell for me to build off of 
@@ -31,6 +21,24 @@ good. make the following changes: increase the size of the top banner and make t
 add a scrolling function to the console log so that the user can see the previous messages 
 """
 
+line = "m4644 92232 -1.80000E-09 92234 -2.34000E-03 "
 
+zaid_fracs = []
+number_end = re.search(r'^m\d+', line).span()[1] + 1
+number = line[1: number_end].strip()
+zaid_list = re.split(r'[ \t]+', line[number_end:].strip())
+for i in range (int(len(zaid_list) / 2)):
+    zaid_fracs.append((zaid_list[2*i], zaid_list[2*i + 1]))
 
+print(zaid_fracs)
 
+# last_pair_end = number_end
+# indexer = number_end
+# curr_pair_end = re.search(r'\d+[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+', line[indexer:]).span()[1] + 1
+# while curr_pair_end is not None:
+#     indexer += last_pair_end
+#     zaid_fracs.append(line[indexer: curr_pair_end].strip())
+#     last_pair_end = curr_pair_end
+#     curr_pair_end = re.search(r'\d+[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+', line[indexer + last_pair_end:]).span()[1] + 1
+
+print(Material(number, zaid_fracs))
