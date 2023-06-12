@@ -7,13 +7,13 @@ void_cell_regex = r'^\d{1,6}[ \t]+0[ \t][^a-zA-z]+[ \t]+[a-zA-z]+=.*$'
 like_but_cell_regex = r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]but[ \t]+.+$'
 
 #   Surfaces regex
-regular_surface_regex = r''
-transform_surface_regex = r''
+regular_surface_regex = r'^\d+[ \t]+[^-\d\.]+[^a-zA-Z]+$'
+transform_surface_regex = r'^\d+[ \t]+\d+[^-\d\.]+[^a-zA-Z]+$'
 
 #   Options regex
-mode_regex = r''
-kcode_regex = r''
-ksrc_regex = r''
+mode_regex = r'^mode[ \t]+\.+$'
+kcode_regex = r'^kcode[ \t]+\.+$'
+ksrc_regex = r'ksrc[ \t]+((-?\d+(\.\d+)?[eE]?-?\d*[ \t]+){3})+$'
 
 transform_regex = r''
 
@@ -139,6 +139,11 @@ def recurse_continue(pieces, start_index, num=0):
 
 
 def make_cards(line_array):
+    """
+    Sorts read input card lines based on regex definition
+    :param line_array: array containing MCNP input cards
+    :return: None
+    """
     for line in line_array:
         made_card = None
         if re.search(regular_cell_regex, line) is not None:
@@ -183,6 +188,11 @@ def make_cards(line_array):
 # _end = re.search(r'', line).span()[1] + 1
 # = line[_end: _end].strip()
 def make_cell(line):
+    """
+    Helper method for make_cards(). Creates a mcnp_card object from line
+    :param line: string containing mcnp input line
+    :return: mcnp_card object
+    """
     number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
     number = line[0: number_end].strip()
 
@@ -201,6 +211,11 @@ def make_cell(line):
 
 
 def make_void_cell(line):
+    """
+    Helper method for make_cards(). Creates a mcnp_card object from line
+    :param line: string containing mcnp input line
+    :return: mcnp_card object
+    """
     number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
     number = line[0: number_end].strip()
 
@@ -216,6 +231,11 @@ def make_void_cell(line):
 
 
 def make_like_but_cell(line):
+    """
+    Helper method for make_cards(). Creates a mcnp_card object from line
+    :param line: string containing mcnp input line
+    :return: mcnp_card object
+    """
     number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
     number = line[0: number_end].strip()
 
@@ -233,6 +253,11 @@ def make_like_but_cell(line):
 
 # ^m\d+[ \t]+(\d+[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+)+
 def make_material(line):
+    """
+    Helper method for make_cards(). Creates a mcnp_card object from line
+    :param line: string containing mcnp input line
+    :return: mcnp_card object
+    """
     zaid_fracs = []
     number_end = re.search(r'^m\d+', line).span()[1] + 1
     number = line[1: number_end].strip()
