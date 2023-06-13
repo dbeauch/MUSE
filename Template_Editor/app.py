@@ -128,15 +128,16 @@ def update_output(apply_clicked, print_clicked, cell, material, density, geom, p
 def update_cell_info(cell):
     if cell is not None:
         selected_cell = all_cells.get(cell)
-        return selected_cell.material, selected_cell.density, selected_cell.geom, selected_cell.param, f"Material {selected_cell.material} Description"
-    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+        return selected_cell.material, selected_cell.get_density(), selected_cell.geom, selected_cell.param, f"Material {selected_cell.material} Description"
+    else:
+        return "", "", "", "", "Material Description" #dash.no_update
 
 
 @app.callback(
     Output("cell_selector", "options"),
     Input("cell_selector", "search_value")
 )
-def update_cell_options(search_value):
+def update_cell_options(search_value): # TODO: Does not display like cells
     return [o for o in all_cells]
 
 
@@ -168,32 +169,32 @@ def render_page_content(pathname):
 
                     # Current Cell dropdown
                     dbc.Row([
-                        dbc.Col(width=4),
+                        dbc.Col(width=2),
                         dbc.Col(html.H4("Current Cell:"), width=2, align="end"),
                         dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell', clearable=True), width=2, align="center"),
-                        dbc.Col(width=4),
+                        dbc.Col(html.H5(id='cell_description', children='Cell Description'), width=6, align="end"),
                     ], justify="center"),
 
                     html.Hr(),
 
                     # Material dropdown
                     dbc.Row([
-                        dbc.Col(html.H5("Material:    "), width='auto', align="end"),
-                        dbc.Col(dcc.Dropdown(id='material_selector', placeholder='Select a Material Number', clearable=False, style={'color': 'black'}), width=3),
+                        dbc.Col(html.H5("Material: "), width='auto', align="end"),
+                        dbc.Col(dcc.Dropdown(id='material_selector', placeholder='', clearable=False, style={'color': 'black'}), width=3),
                         dbc.Col(html.H6(id='material_description', children='Material Description'), width=7)
                     ], justify="start", align="center"),
 
                     # Density input
                     html.H6("Density:", style={'marginTop': 20}),
-                    dbc.Input(id='density_input', type='text', placeholder="Enter the density"),
+                    dbc.Input(id='density_input', type='text', placeholder=""),
 
                     # Geometry input
                     html.H6("Geometry:", style={'marginTop': 20}),
-                    dbc.Input(id='geom_input', type='text', placeholder="Enter the geometry"),
+                    dbc.Input(id='geom_input', type='text', placeholder=""),
 
                     # Parameters input
                     html.H6("Parameters:", style={'marginTop': 20}),
-                    dbc.Input(id='param_input', type='text', placeholder="Enter the parameters"),
+                    dbc.Input(id='param_input', type='text', placeholder=""),
 
                     html.Hr(),
 

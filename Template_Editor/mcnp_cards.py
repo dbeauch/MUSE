@@ -37,6 +37,20 @@ class Cell:
         return f"{self.number}\t{self.material}\t{self.density}\t{self.geom}\t{self.param}"
 
 
+    def get_material(self):
+        if self.material == "0":
+            return "Void"
+        else:
+            return self.material
+
+
+    def get_density(self):
+        if self.density == "\t":
+            return "Void"
+        else:
+            return self.density
+
+
 class LikeCell(Cell):
     def __init__(self, number, related_cell, changes):
         self.number = number

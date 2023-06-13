@@ -18,8 +18,10 @@ ksrc_regex = r'ksrc[ \t]+((-?\d+(\.\d+)?[eE]?-?\d*[ \t]+){3})+$'
 transform_regex = r''
 
 #   Material/Temperature regex
-material_regex = r'^m\d+[ \t]+(\d+[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+)+'
+material_regex = r'^m\d+[ \t]+(\d+(\.\S+)?[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*[ \t]+)+$'
 temperature_regex = r''
+
+file_title = ""
 
 cell_line_pieces = []
 surface_line_pieces = []
@@ -42,6 +44,7 @@ def read_template(in_filename):
     :param in_filename: name of local file to read from
     :return: None
     """
+    global file_title
     f_read = open(in_filename, 'r')
     curr_list = cell_line_pieces
     for line in f_read.readlines():
@@ -52,6 +55,7 @@ def read_template(in_filename):
         curr_list.append(line)
     f_read.close()
 
+    file_title = cell_line_pieces.pop(0).strip()
     clean_pieces(cell_line_pieces)
     clean_pieces(surface_line_pieces)
     clean_pieces(data_line_pieces)
@@ -275,11 +279,16 @@ def print_file(out_filename):
         out_filename = '../mcnp_templates/test.i'
     f_write = open(out_filename, 'w')
 
-    for line in all_cells.values():
-        print(line, file=f_write)
+    print(file_title, file=f_write)
+    for cell in all_cells.values():
+        print(cell, file=f_write)
+    for cell in all_like_cells.values():
+        print(cell, file=f_write)
+
     print("\nc Begin Surface Cards:", file=f_write)
     for line in surface_lines:
         print(line.strip('\n'), file=f_write)
+
     print("\nc Begin Data Cards:", file=f_write)
     for line in data_lines:
         print(line.strip('\n'), file=f_write)
