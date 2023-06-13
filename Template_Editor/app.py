@@ -71,11 +71,14 @@ app.layout = html.Div([dcc.Location(id="url"),
     Input('print_button', 'n_clicks'),
     State('cell_selector', 'value'),
     State('material_selector', 'value'),
+    State('density_input', 'value'),
+    State('geom_input', 'value'),
+    State('param_input', 'value'),
     State('file_path', 'value'),
     State('console-output', 'children'),
     prevent_initial_call=True
 )
-def update_output(apply_clicked, print_clicked, cell, material, file_path, current_messages):
+def update_output(apply_clicked, print_clicked, cell, material, density, geom, param, file_path, current_messages):
     if not current_messages:
         current_messages = []
 
@@ -83,17 +86,50 @@ def update_output(apply_clicked, print_clicked, cell, material, file_path, curre
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
     timestamp = datetime.datetime.now().strftime("%H:%M:%S")
 
-    if button_id == 'apply_button' and cell is not None and material is not None:
-        all_cells.get(cell).material = material
-        message = f'({timestamp})\tApplied changes: Cell {cell} changed to Material {material}'
-        current_messages.insert(0, html.P(message))
+    if button_id == 'apply_button' and cell is not None:
+        try:
+            selected_cell = all_cells.get(cell)
 
-    elif button_id == 'print_button':
+            if material is not None:
+                selected_cell.material = material
+
+            if density is not None:
+                selected_cell.density = density
+
+            if geom is not None:
+                selected_cell.geom = geom
+
+            if param is not None:
+                selected_cell.param = param
+
+            message = f'({timestamp})\tApplied changes to Cell {cell}'
+            current_messages.insert(0, html.P(message))
+        except Exception as e:
+            message = f'({timestamp})\tError applying changes: {str(e)}'
+            current_messages.insert(0, html.P(message))
+
+    if button_id == 'print_button':
         printed = print_file(file_path)
         message = f'({timestamp})\tPrinted the file to: {printed}'
         current_messages.insert(0, html.P(message))
 
     return current_messages
+
+
+@app.callback(
+    Output('material_selector', 'value'),
+    Output('density_input', 'value'),
+    Output('geom_input', 'value'),
+    Output('param_input', 'value'),
+    Output('material_description', 'children'),
+    Input('cell_selector', 'value'),
+    prevent_initial_call=True
+)
+def update_cell_info(cell):
+    if cell is not None:
+        selected_cell = all_cells.get(cell)
+        return selected_cell.material, selected_cell.density, selected_cell.geom, selected_cell.param, f"Material {selected_cell.material} Description"
+    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
 
 @app.callback(
@@ -108,7 +144,7 @@ def update_cell_options(search_value):
     Output("material_selector", "options"),
     Input("material_selector", "search_value")
 )
-def update_cell_options(search_value):
+def update_material_options(search_value):
     return [o for o in all_materials]
 
 
@@ -127,19 +163,42 @@ def render_page_content(pathname):
         return [
             html.Div(style={'backgroundColor': page_background, 'height': '100vh'}, children=[
                 dbc.Container([
-                    html.H4('Cell Changes', style={'textAlign': 'left'}),
+                    # Top spacing
+                    dbc.Row([dbc.Col(html.H1(" "))]),
+
+                    # Current Cell dropdown
                     dbc.Row([
-                        dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell Number', clearable=False),
-                                width=4),
-                        dbc.Col(dcc.Dropdown(id='material_selector', placeholder='Select a Material Number',
-                                             clearable=False,
-                                             style={'color': 'black'}), width=4),
-                        dbc.Col(html.Button('Apply Changes', id='apply_button', n_clicks=0), width=4),
-                    ], style={'marginTop': 20}),
+                        dbc.Col(width=4),
+                        dbc.Col(html.H4("Current Cell:"), width=2, align="end"),
+                        dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell', clearable=True), width=2, align="center"),
+                        dbc.Col(width=4),
+                    ], justify="center"),
 
                     html.Hr(),
 
-                ])
+                    # Material dropdown
+                    dbc.Row([
+                        dbc.Col(html.H5("Material:    "), width='auto', align="end"),
+                        dbc.Col(dcc.Dropdown(id='material_selector', placeholder='Select a Material Number', clearable=False, style={'color': 'black'}), width=3),
+                        dbc.Col(html.H6(id='material_description', children='Material Description'), width=7)
+                    ], justify="start", align="center"),
+
+                    # Density input
+                    html.H6("Density:", style={'marginTop': 20}),
+                    dbc.Input(id='density_input', type='text', placeholder="Enter the density"),
+
+                    # Geometry input
+                    html.H6("Geometry:", style={'marginTop': 20}),
+                    dbc.Input(id='geom_input', type='text', placeholder="Enter the geometry"),
+
+                    # Parameters input
+                    html.H6("Parameters:", style={'marginTop': 20}),
+                    dbc.Input(id='param_input', type='text', placeholder="Enter the parameters"),
+
+                    html.Hr(),
+
+                    dbc.Col(html.Button('Apply Changes', id='apply_button', n_clicks=0), width=4),
+                ]),
             ])
         ]
 

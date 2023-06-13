@@ -63,6 +63,7 @@ def read_template(in_filename):
     make_cards(cell_lines)
     make_cards(surface_lines)
     make_cards(data_lines)
+    all_materials[0] = 0
     return
 
 

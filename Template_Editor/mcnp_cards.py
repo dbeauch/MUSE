@@ -23,18 +23,18 @@
 
 
 class Cell:
-    def __init__(self, number, material, density, geom, params=""):
+    def __init__(self, number, material, density, geom, param=""):
         self.number = number
         self.material = material
         self.density = density
         self.geom = geom
-        self.params = params
+        self.param = param
         if material == 0:
             self.density = "\t"
         self.universe = 0
 
     def __str__(self):
-        return f"{self.number}\t{self.material}\t{self.density}\t{self.geom}\t{self.params}"
+        return f"{self.number}\t{self.material}\t{self.density}\t{self.geom}\t{self.param}"
 
 
 class LikeCell(Cell):
