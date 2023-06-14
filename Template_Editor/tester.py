@@ -1,5 +1,7 @@
-import re, template_handler
+import re
+from template_handler import *
 from mcnp_cards import *
+import sys
 
 """
 create a dash app to edit MCNP input files. I have already created all the pre and post processing code that handles making the changes to the file. I want this dash app to be the front end portion of the app that lets the user enter changes to different cards, apply those changes with a button, and a button to print the file. Your methods called by the buttons need only exist and i will fill in the code to activate input file changes. The dash app you should create will just be a testing shell for me to build off of 
@@ -30,7 +32,6 @@ zaid_list = re.split(r'[ \t]+', line[number_end:].strip())
 for i in range (int(len(zaid_list) / 2)):
     zaid_fracs.append((zaid_list[2*i], zaid_list[2*i + 1]))
 
-print(zaid_fracs)
 
 # last_pair_end = number_end
 # indexer = number_end
@@ -40,5 +41,5 @@ print(zaid_fracs)
 #     zaid_fracs.append(line[indexer: curr_pair_end].strip())
 #     last_pair_end = curr_pair_end
 #     curr_pair_end = re.search(r'\d+[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+', line[indexer + last_pair_end:]).span()[1] + 1
-
-print(Material(number, zaid_fracs))
+sys.setrecursionlimit(8000)
+read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')

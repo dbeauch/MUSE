@@ -126,11 +126,11 @@ class Temperature(DataCard):
 
 
 class Mode(DataCard):
-    def __init__(self, mode):
-        self.mode = mode
+    def __init__(self, _mode):
+        self._mode = _mode
 
     def __str__(self):
-        return f"mode {self.mode}"
+        return f"mode {self._mode}"
 
 
 class Transform(DataCard):

@@ -5,8 +5,10 @@ from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 from template_handler import *
 import datetime
+import threading
 
 sys.setrecursionlimit(8000)
+#threading.stack_size(200000000)
 read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
 app = dash.Dash(__name__, suppress_callback_exceptions=True, external_stylesheets=[dbc.themes.LUX])
 
