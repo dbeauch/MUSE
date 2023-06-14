@@ -62,7 +62,7 @@ def read_template(in_filename):
 
     join_card_pieces(cell_line_pieces, cell_lines)
     join_card_pieces(surface_line_pieces, surface_lines)
-    # join_card_pieces(data_line_pieces, data_lines) # on laptop gives exit code -1073741571 (0xC00000FD)
+    join_card_pieces(data_line_pieces, data_lines) # on laptop gives exit code -1073741571 (0xC00000FD)
 
     make_cards(cell_lines)
     make_cards(surface_lines)

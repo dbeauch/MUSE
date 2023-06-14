@@ -7,18 +7,20 @@ from template_handler import *
 import datetime
 import threading
 
+# Sizes and Colors
+sidebar_width = '12vw'
+console_height = '15vh'
+console_banner_height = '0.2vh'
+page_background = '#D3D3D3'
+sidebar_color = '#993300'
+
 sys.setrecursionlimit(8000)
-#threading.stack_size(200000000)
+# threading.stack_size(200000000)
 read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
 app = dash.Dash(__name__, suppress_callback_exceptions=True, external_stylesheets=[dbc.themes.LUX])
 
-page_background = '#D3D3D3'
-sidebar_color = '#993300'
-sidebar_width = 300
-console_height = 200
-
 banner = html.Header("Py2MCNP Editor",
-                     style={'backgroundColor': sidebar_color, 'color': 'white', 'padding': '0px', 'fontSize': '30px',
+                     style={'backgroundColor': sidebar_color, 'color': 'white', 'padding': '0px', 'fontSize': '3vh',
                             'textAlign': 'center'})
 sidebar = html.Div([
     banner,
@@ -36,7 +38,6 @@ sidebar = html.Div([
     ),
 ], style={'color': 'black', 'backgroundColor': sidebar_color, 'width': sidebar_width, 'height': '100vh',
           'position': 'fixed'})
-
 console = html.Div([
     dbc.Row([
         dbc.Col("Console", width=4, align='center'),
@@ -44,7 +45,7 @@ console = html.Div([
                 width=1, align='center'),
         dbc.Col(html.Button('Print File', id='print_button', n_clicks=0), width=1, align='center'),
         dbc.Col(width=6),
-    ], style={'marginTop': 20, 'backgroundColor': 'black', 'color': 'white', 'padding': '5px',
+    ], style={'marginTop': 20, 'backgroundColor': 'black', 'color': 'white', 'padding': console_banner_height,
               'fontSize': '18px'}, className='g-0'),
 
     html.Div(id='console-output',
@@ -55,6 +56,7 @@ console = html.Div([
 ], style={'marginLeft': sidebar_width, 'position': 'fixed', 'bottom': 0, 'width': 'calc(100%)'})
 
 content = html.Div(id="page-content", style={'marginLeft': sidebar_width, 'backgroundColor': page_background})
+
 
 app.layout = html.Div([dcc.Location(id="url"),
                        dbc.Row([
@@ -136,23 +138,24 @@ def update_cell_info(cell):
         selected_cell = all_cells.get(cell)
         return selected_cell.material, selected_cell.get_density(), selected_cell.geom, selected_cell.param, f"Material {selected_cell.material} Description"
     else:
-        return "", "", "", "", "Material Description" #dash.no_update
+        return "", "", "", "", "Material Description"  # dash.no_update
 
 
 @app.callback(
     Output("cell_selector", "options"),
     Input("cell_selector", "search_value")
 )
-def update_cell_options(search_value): # TODO: Does not display like cells
+def update_cell_options(search_value):  # TODO: Does not display like cells
     return [o for o in all_cells]
 
 
 @app.callback(
     Output("material_selector", "options"),
-    Input("material_selector", "search_value")
+    Output('material_description', 'children'),
+    Input("material_selector", "search_value"),
 )
 def update_material_options(search_value):
-    return [o for o in all_materials]
+    return [o for o in all_materials], search_value
 
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
@@ -162,7 +165,8 @@ def render_page_content(pathname):
             html.Div([
                 html.H1('Welcome to Py2MCNP Editor!'),
                 html.P(
-                    "This is a project designed to produce Monte Carlo N-Particle transport code (MCNP) card decks using Python"),
+                    "This is a project designed to produce Monte Carlo N-Particle transport code (MCNP) card decks "
+                    "using Python"),
             ], style={'backgroundColor': page_background, 'height': '100vh', 'marginLeft': '20px'})
         ]
 
@@ -177,7 +181,8 @@ def render_page_content(pathname):
                     dbc.Row([
                         dbc.Col(width=2),
                         dbc.Col(html.H4("Current Cell:"), width=2, align="end"),
-                        dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell', clearable=True), width=2, align="center"),
+                        dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell', clearable=True), width=2,
+                                align="center"),
                         dbc.Col(html.H5(id='cell_description', children='Cell Description'), width=6, align="end"),
                     ], justify="center"),
 
@@ -186,7 +191,8 @@ def render_page_content(pathname):
                     # Material dropdown
                     dbc.Row([
                         dbc.Col(html.H5("Material: "), width='auto', align="end"),
-                        dbc.Col(dcc.Dropdown(id='material_selector', placeholder='', clearable=False, style={'color': 'black'}), width=3),
+                        dbc.Col(dcc.Dropdown(id='material_selector', placeholder='', clearable=False,
+                                             style={'color': 'black'}), width=3),
                         dbc.Col(html.H6(id='material_description', children='Material Description'), width=7)
                     ], justify="start", align="center"),
 
@@ -235,8 +241,6 @@ def render_page_content(pathname):
                 ]),
             ])
         ]
-
-    # If the user tries to reach a different page, return a 404 message
     return html.P("Page not found")
 
 
