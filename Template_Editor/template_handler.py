@@ -150,7 +150,6 @@ def make_cards(line_array):
     :return: None
     """
     for line in line_array:
-        made_card = None
         if re.search(regular_cell_regex, line) is not None:
             made_card = make_cell(line)
             all_cells[made_card.number] = made_card

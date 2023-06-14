@@ -89,6 +89,10 @@ def update_output(apply_clicked, print_clicked, cell, material, density, geom, p
     if button_id == 'apply_button' and cell is not None:
         try:
             selected_cell = all_cells.get(cell)
+            if selected_cell.material == material and selected_cell.density == density and selected_cell.geom == geom and selected_cell.param == param:
+                message = f'({timestamp})\tNo changes made to Cell {cell}'
+                current_messages.insert(0, html.P(message))
+                return current_messages
 
             if material is not None:
                 selected_cell.material = material
