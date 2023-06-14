@@ -8,8 +8,8 @@ import datetime
 import threading
 
 # Sizes and Colors
-sidebar_width = '12vw'
-console_height = '15vh'
+sidebar_width = '15vw'
+console_height = '20vh'
 console_banner_height = '0.2vh'
 page_background = '#D3D3D3'
 sidebar_color = '#993300'
@@ -38,25 +38,27 @@ sidebar = html.Div([
     ),
 ], style={'color': 'black', 'backgroundColor': sidebar_color, 'width': sidebar_width, 'height': '100vh',
           'position': 'fixed'})
+console_toggler = html.Button("-", id="console-toggler")
 console = html.Div([
     dbc.Row([
         dbc.Col("Console", width=4, align='center'),
         dbc.Col(dcc.Input(id='file_path', type='text', placeholder='File path', debounce=True),
                 width=1, align='center'),
         dbc.Col(html.Button('Print File', id='print_button', n_clicks=0), width=1, align='center'),
-        dbc.Col(width=6),
+        dbc.Col(width=4),
+        dbc.Col(console_toggler, width=2)
     ], style={'marginTop': 20, 'backgroundColor': 'black', 'color': 'white', 'padding': console_banner_height,
               'fontSize': '18px'}, className='g-0'),
 
-    html.Div(id='console-output',
-             style={'backgroundColor': '#333333', 'color': '#A9A9A9',
-                    'border': '1px solid black',
-                    'height': console_height, 'overflow': 'scroll'},
-             )
+    dbc.Collapse(html.Div(id='console_output',
+                        style={'backgroundColor': '#333333', 'color': '#A9A9A9',
+                        'border': '1px solid black',
+                        'height': console_height, 'overflow': 'scroll'},
+                          ), id='console_output_window', is_open=True,
+                 )
 ], style={'marginLeft': sidebar_width, 'position': 'fixed', 'bottom': 0, 'width': 'calc(100%)'})
 
 content = html.Div(id="page-content", style={'marginLeft': sidebar_width, 'backgroundColor': page_background})
-
 
 app.layout = html.Div([dcc.Location(id="url"),
                        dbc.Row([
@@ -70,7 +72,7 @@ app.layout = html.Div([dcc.Location(id="url"),
 
 
 @app.callback(
-    Output('console-output', 'children'),
+    Output('console_output', 'children'),
     Input('apply_button', 'n_clicks'),
     Input('print_button', 'n_clicks'),
     State('cell_selector', 'value'),
@@ -79,7 +81,7 @@ app.layout = html.Div([dcc.Location(id="url"),
     State('geom_input', 'value'),
     State('param_input', 'value'),
     State('file_path', 'value'),
-    State('console-output', 'children'),
+    State('console_output', 'children'),
     prevent_initial_call=True
 )
 def update_output(apply_clicked, print_clicked, cell, material, density, geom, param, file_path, current_messages):
@@ -131,14 +133,20 @@ def update_output(apply_clicked, print_clicked, cell, material, density, geom, p
     Output('param_input', 'value'),
     Output('material_description', 'children'),
     Input('cell_selector', 'value'),
+    Input('material_selector', 'value'),
     prevent_initial_call=True
 )
-def update_cell_info(cell):
-    if cell is not None:
-        selected_cell = all_cells.get(cell)
-        return selected_cell.material, selected_cell.get_density(), selected_cell.geom, selected_cell.param, f"Material {selected_cell.material} Description"
-    else:
-        return "", "", "", "", "Material Description"  # dash.no_update
+def update_cell_info(cell, material_select):
+    ctx = dash.callback_context
+    button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    if button_id == 'cell_selector':
+        if cell is not None:
+            selected_cell = all_cells.get(cell)
+            return selected_cell.material, selected_cell.get_density(), selected_cell.geom, selected_cell.param, f"Material {selected_cell.material} Description"
+        else:
+            return "", "", "", "", "Material Description"  # dash.no_update
+    elif button_id == 'material_selector':
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, f"Material {material_select} Description"
 
 
 @app.callback(
@@ -147,15 +155,25 @@ def update_cell_info(cell):
 )
 def update_cell_options(search_value):  # TODO: Does not display like cells
     return [o for o in all_cells]
- 
+
 
 @app.callback(
     Output("material_selector", "options"),
-    Output('material_description', 'children'),
     Input("material_selector", "search_value"),
 )
 def update_material_options(search_value):
-    return [o for o in all_materials], search_value
+    return [o for o in all_materials]
+
+
+@app.callback(
+    Output("console_output_window", "is_open"),
+    [Input("console-toggler", "n_clicks")],
+    [State("console_output_window", "is_open")],
+)
+def toggle_console(n, is_open):
+    if n:
+        return not is_open
+    return is_open
 
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
