@@ -147,7 +147,7 @@ def update_cell_info(cell):
 )
 def update_cell_options(search_value):  # TODO: Does not display like cells
     return [o for o in all_cells]
-
+ 
 
 @app.callback(
     Output("material_selector", "options"),
