@@ -16,7 +16,8 @@ page_background = '#D3D3D3'
 sidebar_color = '#993300'
 
 sys.setrecursionlimit(8000)
-read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
+template = TemplateHandler()
+template.read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
 
 app = dash.Dash(
     __name__,
@@ -141,7 +142,7 @@ def update_output(apply_clicked, print_clicked, cell, material, density, geom, p
 
     if button_id == 'apply_button' and cell is not None:
         try:
-            selected_cell = all_cells.get(cell)
+            selected_cell = template.all_cells.get(cell)
             if selected_cell.material == material and selected_cell.density == density and selected_cell.geom == geom and selected_cell.param == param:
                 message = f'({timestamp})\tNo changes made to Cell {cell}'
                 current_messages.insert(0, html.P(message))
@@ -166,7 +167,7 @@ def update_output(apply_clicked, print_clicked, cell, material, density, geom, p
             current_messages.insert(0, html.P(message))
 
     if button_id == 'print_button':
-        printed = print_file(file_path)
+        printed = template.print_file(file_path)
         message = f'({timestamp})\tPrinted the file to: {printed}'
         current_messages.insert(0, html.P(message))
 
@@ -188,7 +189,7 @@ def update_cell_info(cell, material_select):
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if button_id == 'cell_selector':
         if cell is not None:
-            selected_cell = all_cells.get(cell)
+            selected_cell = template.all_cells.get(cell)
             return selected_cell.material, selected_cell.get_density(), selected_cell.geom, selected_cell.param, f"Material {selected_cell.material} Description"
         else:
             return "", "", "", "", "Material Description"  # dash.no_update
@@ -201,7 +202,7 @@ def update_cell_info(cell, material_select):
     Input("cell_selector", "search_value")
 )
 def update_cell_options(search_value):  # TODO: Does not display like cells
-    return [o for o in all_cells]
+    return [o for o in template.all_cells]
 
 
 @app.callback(
@@ -209,7 +210,7 @@ def update_cell_options(search_value):  # TODO: Does not display like cells
     Input("material_selector", "search_value"),
 )
 def update_material_options(search_value):
-    return [o for o in all_materials]
+    return [o for o in template.all_materials]
 
 
 @app.callback(
