@@ -1,25 +1,25 @@
-#########################################################################################################
-#                                      Created by: Duncan Beauch                                        #
-#                                       TEMPLATE FOR MCNP CARDS                                         #
-#                                                                                                       #
-#       CellCard(number, material number, density, geom string, optional param string)                  #
-#                                           CellCard(, , , "", "")                                      #
-#                                                                                                       #
-#       SurfaceCard(number, mnemonic, array of numbers)                                                 #
-#                                           SurfaceCard(, "", [])                                       #
-#                                                                                                       #
-#       KCode(nsrck neutrons per cycle, rkk initial keff guess, ikz cycles skipped, kct cycles to run)  #
-#                                             KCode(, , , )                                             #
-#                                                                                                       #
-#       KSrc(array of arrays representing x-y-z locations)                                              #
-#                                             KSrc([[, , ]])                                            #
-#                                                                                                       #
-#       Material(number, array of tuples for each zaid-fraction pair)                                   #
-#                                            Material("", [(, )])                                       #
-#                                                                                                       #
-#       Moderator(number, params)                                                                       #
-#                                             Moderator("", "")                                         #
-#########################################################################################################
+"""
+Created by: Duncan Beauch
+TEMPLATE FOR MCNP CARDS
+
+CellCard(number, material number, density, geom string, optional param string)
+    CellCard(, , , "", "")
+
+SurfaceCard(number, mnemonic, array of numbers)
+    SurfaceCard(, "", [])
+
+KCode(nsrck neutrons per cycle, rkk initial keff guess, ikz cycles skipped, kct cycles to run)
+    KCode(, , , )
+
+KSrc(array of arrays representing x-y-z locations)
+    KSrc([[, , ]])
+
+Material(number, array of tuples for each zaid-fraction pair)
+    Material("", [(, )])
+
+Moderator(number, params)
+    Moderator("", "")
+"""
 
 
 class Cell:
@@ -36,19 +36,11 @@ class Cell:
     def __str__(self):
         return f"{self.number}\t{self.material}\t{self.density}\t{self.geom}\t{self.param}"
 
-
     def get_material(self):
-        if self.material == "0":
-            return "Void"
-        else:
-            return self.material
-
+        return "Void" if self.material == "0" else self.material
 
     def get_density(self):
-        if self.density == "\t":
-            return "Void"
-        else:
-            return self.density
+        return "Void" if self.density == "\t" else self.density
 
 
 class LikeCell(Cell):
@@ -68,10 +60,8 @@ class Surface:
         self.dimensions = dimensions
 
     def __str__(self):
-        result = f"{self.number}\t{self.mnemonic}\t"
-        for num in self.dimensions:
-            result += f"{num} "
-        return result
+        dimensions_str = ' '.join(str(num) for num in self.dimensions)
+        return f"{self.number}\t{self.mnemonic}\t{dimensions_str}"
 
 
 class DataCard:
@@ -91,29 +81,23 @@ class KCode(DataCard):
 
 
 class KSrc(DataCard):
-    # location expected as a list length 3
     def __init__(self, locations):
         self.name = "ksrc"
         self.locations = locations
 
     def __str__(self):
-        result = f"{self.name}\t"
-        for location in self.locations:
-            result += f"{location[0]} {location[1]} {location[2]}\t"
-        return result
+        locations_str = '\t'.join(' '.join(map(str, location)) for location in self.locations)
+        return f"{self.name}\t{locations_str}"
 
 
 class Material(DataCard):
-    # zaid_frac expected as a tuple: (zaid, fraction)
     def __init__(self, number, zaid_fracs):
         self.number = number
         self.zaid_fracs = zaid_fracs
 
     def __str__(self):
-        result = f"m{self.number}\t\t"
-        for zaid_frac in self.zaid_fracs:
-            result += f"{zaid_frac[0]} {zaid_frac[1]}\t"
-        return result
+        zaid_fracs_str = '\t'.join(' '.join(map(str, zaid_frac)) for zaid_frac in self.zaid_fracs)
+        return f"m{self.number}\t\t{zaid_fracs_str}"
 
 
 class Temperature(DataCard):
@@ -136,7 +120,6 @@ class Mode(DataCard):
 class Transform(DataCard):
     def __init__(self, param):
         self.param = param
-
 
     def __str__(self):
         return f"*tr {self.param}"

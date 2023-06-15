@@ -1,28 +1,30 @@
 import re
 from mcnp_cards import *
 
-#   Verified that cell regex together recognize only and all cell cards in entire template
-regular_cell_regex = r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+[ \t]+[a-zA-z]+=.*$'
-void_cell_regex = r'^\d{1,6}[ \t]+0[ \t][^a-zA-z]+[ \t]+[a-zA-z]+=.*$'
-like_but_cell_regex = r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]but[ \t]+.+$'
+CELLS_REGEX = {
+    'regular': r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+[ \t]+[a-zA-z]+=.*$',
+    'void': r'^\d{1,6}[ \t]+0[ \t][^a-zA-z]+[ \t]+[a-zA-z]+=.*$',
+    'like_but': r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]but[ \t]+.+$'
+}
 
-#   Surfaces regex
-regular_surface_regex = r'^\d+[ \t]+[^-\d\.]+[^a-zA-Z]+$'
-transform_surface_regex = r'^\d+[ \t]+\d+[^-\d\.]+[^a-zA-Z]+$'
+SURFACES_REGEX = {
+    'regular': r'^\d+[ \t]+[^-\d\.]+[^a-zA-Z]+$',
+    'transform': r'^\d+[ \t]+\d+[^-\d\.]+[^a-zA-Z]+$'
+}
 
-#   Options regex
-mode_regex = r'^mode[ \t]+\.+$'
-kcode_regex = r'^kcode[ \t]+\.+$'
-ksrc_regex = r'ksrc[ \t]+((-?\d+(\.\d+)?[eE]?-?\d*[ \t]+){3})+$'
+OPTIONS_REGEX = {
+    'mode': r'^mode[ \t]+\.+$',
+    'kcode': r'^kcode[ \t]+\.+$',
+    'ksrc': r'ksrc[ \t]+((-?\d+(\.\d+)?[eE]?-?\d*[ \t]+){3})+$',
+    'transform': r''
+}
 
-transform_regex = r''
-
-#   Material/Temperature regex
-material_regex = r'^m\d+[ \t]+(\d+(\.\S+)?[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*[ \t]+)+$'
-temperature_regex = r''
+MATERIAL_TEMPERATURE_REGEX = {
+    'material': r'^m\d+[ \t]+(\d+(\.\S+)?[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*[ \t]+)+$',
+    'temperature': r''
+}
 
 file_title = ""
-
 cell_line_pieces = []
 surface_line_pieces = []
 data_line_pieces = []
@@ -35,7 +37,7 @@ all_cells = {}
 all_like_cells = {}
 all_surfaces = {}
 all_materials = {}
-all_options = []
+all_options = {}
 
 
 def read_template(in_filename):
@@ -45,29 +47,28 @@ def read_template(in_filename):
     :return: None
     """
     global file_title
-    f_read = open(in_filename, 'r')
-    curr_list = cell_line_pieces
-    for line in f_read.readlines():
-        if re.search(r'\bBegin Surfaces\b', line):
-            curr_list = surface_line_pieces
-        elif re.search(r'\bBegin Options\b', line):
-            curr_list = data_line_pieces
-        curr_list.append(line)
-    f_read.close()
+    with open(in_filename, 'r') as f_read:
+        curr_list = cell_line_pieces
+        for line in f_read.readlines():
+            if re.search(r'\bBegin Surfaces\b', line):
+                curr_list = surface_line_pieces
+            elif re.search(r'\bBegin Options\b', line):
+                curr_list = data_line_pieces
+            curr_list.append(line)
 
-    file_title = cell_line_pieces.pop(0).strip()
-    clean_pieces(cell_line_pieces)
-    clean_pieces(surface_line_pieces)
-    clean_pieces(data_line_pieces)
+        file_title = cell_line_pieces.pop(0).strip()
+        clean_pieces(cell_line_pieces)
+        clean_pieces(surface_line_pieces)
+        clean_pieces(data_line_pieces)
 
-    join_card_pieces(cell_line_pieces, cell_lines)
-    join_card_pieces(surface_line_pieces, surface_lines)
-    join_card_pieces(data_line_pieces, data_lines) # on laptop gives exit code -1073741571 (0xC00000FD)
+        join_card_pieces(cell_line_pieces, cell_lines)
+        join_card_pieces(surface_line_pieces, surface_lines)
+        join_card_pieces(data_line_pieces, data_lines)
 
-    make_cards(cell_lines)
-    make_cards(surface_lines)
-    make_cards(data_lines)
-    all_materials[0] = 0
+        make_cards(cell_lines)
+        make_cards(surface_lines)
+        make_cards(data_lines)
+        all_materials[0] = 0
     return
 
 
@@ -87,6 +88,7 @@ def clean_pieces(array):
             i -= 1
         i += 1
     return
+
 
 
 def join_card_pieces(line_pieces, line_array):
@@ -145,47 +147,37 @@ def recurse_continue(pieces, start_index, num=0):
 
 def make_cards(line_array):
     """
-    Sorts read input card lines based on regex definition
-    :param line_array: array containing MCNP input cards
+    Creates card objects from array of lines given
+    :param line_array: Array of lines
     :return: None
     """
     for line in line_array:
-        if re.search(regular_cell_regex, line) is not None:
+        if re.search(CELLS_REGEX['regular'], line):
             made_card = make_cell(line)
             all_cells[made_card.number] = made_card
-        elif re.search(void_cell_regex, line) is not None:
+        elif re.search(CELLS_REGEX['void'], line):
             made_card = make_void_cell(line)
             all_cells[made_card.number] = made_card
-        elif re.search(like_but_cell_regex, line) is not None:
+        elif re.search(CELLS_REGEX['like_but'], line):
             made_card = make_like_but_cell(line)
-            all_like_cells[made_card.number] = made_card
-        # elif re.search(regular_surface_regex, line) is not None:
-        #     made_card = Surface()
-        #     all_surfaces[made_card.number] = made_card
-        # elif re.search(transform_surface_regex, line) is not None:
-        #     made_card = Surface()
-        #     all_surfaces[made_card.number] = made_card
-        # elif re.search(mode_regex, line) is not None:
-        #     made_card = Mode()
-        #     all_options.append(made_card)
-        # elif re.search(kcode_regex, line) is not None:
-        #     made_card = KCode()
-        #     all_options.append(made_card)
-        # elif re.search(ksrc_regex, line) is not None:
-        #     made_card = KSrc()
-        #     all_options.append(made_card)
-        # elif re.search(transform_regex, line) is not None:
-        #     made_card = Transform()
-        #     all_options.append(made_card)
-        elif re.search(material_regex, line) is not None:
+            all_cells[made_card.number] = made_card
+        # elif re.search(SURFACES_REGEX['regular'], line):
+        #     made_card = make_surface(line)
+        # all_surfaces[made_card.number] = made_card
+        # elif re.search(SURFACES_REGEX['transform'], line):
+        #     made_card = make_transform_surface(line)
+        # all_surfaces[made_card.number] = made_card
+        elif re.search(MATERIAL_TEMPERATURE_REGEX['material'], line):
             made_card = make_material(line)
             all_materials[made_card.number] = made_card
-        # elif re.search(temperature_regex, line) is not None:
-        #     made_card = Temperature()
-        #     all_materials[made_card.number] = made_card # need to change; indexes to same number as material
+        # elif re.search(MATERIAL_TEMPERATURE_REGEX['temperature'], line):
+        #     made_card = make_temperature(line)
+        #     all_temperatures[made_card.number] = made_card
         # else:
-        #     made_card = Option()
-        #     all_options.append(made_card)
+        #     for option in OPTIONS_REGEX.keys():
+        #         if re.search(OPTIONS_REGEX[option], line):
+        #             made_card = make_option(line, option)
+        #             all_options[made_card.number] = made_card
     return
 
 
@@ -274,23 +266,27 @@ def make_material(line):
 
 
 def print_file(out_filename):
+    """
+    Prints card objects created to given filename
+    :param out_filename: name of file to print to
+    :return: out_filename
+    """
     if out_filename == "" or out_filename is None:
         out_filename = '../mcnp_templates/test.i'
-    f_write = open(out_filename, 'w')
 
-    print(file_title, file=f_write)
-    for cell in all_cells.values():
-        print(cell, file=f_write)
-    for cell in all_like_cells.values():
-        print(cell, file=f_write)
-
-    print("\nc Begin Surface Cards:", file=f_write)
-    for line in surface_lines:
-        print(line.strip('\n'), file=f_write)
-
-    print("\nc Begin Data Cards:", file=f_write)
-    for line in data_lines:
-        print(line.strip('\n'), file=f_write)
-
-    f_write.close()
+    with open(out_filename, 'w') as f_write:
+        f_write.write(file_title + '\n')
+        print_card(f_write, all_cells)
+        print_card(f_write, all_like_cells)
+        print("\nc Begin Surface Cards:", file=f_write)
+        print_card(f_write, all_surfaces)
+        print("\nc Begin Data Cards:", file=f_write)
+        print_card(f_write, all_materials)
+        print_card(f_write, all_options)
     return out_filename
+
+
+def print_card(out_file, dictionary):
+    for card in dictionary.values():
+        print(card, file=out_file)
+    return
