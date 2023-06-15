@@ -1,11 +1,12 @@
 import sys
+import datetime
+
 import dash
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
+
 from template_handler import *
-import datetime
-import threading
 
 # Sizes and Colors
 sidebar_width = '15vw'
@@ -15,13 +16,25 @@ page_background = '#D3D3D3'
 sidebar_color = '#993300'
 
 sys.setrecursionlimit(8000)
-# threading.stack_size(200000000)
 read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
-app = dash.Dash(__name__, suppress_callback_exceptions=True, external_stylesheets=[dbc.themes.LUX])
 
-banner = html.Header("Py2MCNP Editor",
-                     style={'backgroundColor': sidebar_color, 'color': 'white', 'padding': '0px', 'fontSize': '3vh',
-                            'textAlign': 'center'})
+app = dash.Dash(
+    __name__,
+    suppress_callback_exceptions=True,
+    external_stylesheets=[dbc.themes.LUX]
+)
+
+banner = html.Header(
+    "Py2MCNP Editor",
+    style={
+        'backgroundColor': sidebar_color,
+        'color': 'white',
+        'padding': '0px',
+        'fontSize': '3vh',
+        'textAlign': 'center'
+    }
+)
+
 sidebar = html.Div([
     banner,
     dbc.Nav(
@@ -36,39 +49,73 @@ sidebar = html.Div([
         pills=True,
         style={'margin': '20px'},
     ),
-], style={'color': 'black', 'backgroundColor': sidebar_color, 'width': sidebar_width, 'height': '100vh',
-          'position': 'fixed'})
+], style={
+    'color': 'black',
+    'backgroundColor': sidebar_color,
+    'width': sidebar_width,
+    'height': '100vh',
+    'position': 'fixed'
+})
+
 console_toggler = html.Button("-", id="console-toggler")
+
 console = html.Div([
     dbc.Row([
         dbc.Col("Console", width=4, align='center'),
-        dbc.Col(dcc.Input(id='file_path', type='text', placeholder='File path', debounce=True),
-                width=1, align='center'),
+        dbc.Col(
+            dcc.Input(id='file_path', type='text', placeholder='File path', debounce=True),
+            width=1, align='center'
+        ),
         dbc.Col(html.Button('Print File', id='print_button', n_clicks=0), width=1, align='center'),
         dbc.Col(width=4),
         dbc.Col(console_toggler, width=2)
-    ], style={'marginTop': 20, 'backgroundColor': 'black', 'color': 'white', 'padding': console_banner_height,
-              'fontSize': '18px'}, className='g-0'),
+    ],
+        style={
+            'marginTop': 20,
+            'backgroundColor': 'black',
+            'color': 'white',
+            'padding': console_banner_height,
+            'fontSize': '18px'
+        },
+        className='g-0'),
 
-    dbc.Collapse(html.Div(id='console_output',
-                        style={'backgroundColor': '#333333', 'color': '#A9A9A9',
-                        'border': '1px solid black',
-                        'height': console_height, 'overflow': 'scroll'},
-                          ), id='console_output_window', is_open=True,
-                 )
-], style={'marginLeft': sidebar_width, 'position': 'fixed', 'bottom': 0, 'width': 'calc(100%)'})
+    dbc.Collapse(
+        html.Div(
+            id='console_output',
+            style={
+                'backgroundColor': '#333333',
+                'color': '#A9A9A9',
+                'border': '1px solid black',
+                'height': console_height,
+                'overflow': 'scroll'
+            },
+        ),
+        id='console_output_window',
+        is_open=True,
+    )
+],
+    style={
+        'marginLeft': sidebar_width,
+        'position': 'fixed',
+        'bottom': 0,
+        'width': 'calc(100%)'
+    })
 
-content = html.Div(id="page-content", style={'marginLeft': sidebar_width, 'backgroundColor': page_background})
+content = html.Div(
+    id="page-content",
+    style={'marginLeft': sidebar_width, 'backgroundColor': page_background}
+)
 
-app.layout = html.Div([dcc.Location(id="url"),
-                       dbc.Row([
-                           dbc.Col(sidebar, width='auto'),
-                           dbc.Col([
-                               content,
-                               console
-                           ])
-                       ], justify="start", className="g-0")
-                       ])
+app.layout = html.Div([
+    dcc.Location(id="url"),
+    dbc.Row([
+        dbc.Col(sidebar, width='auto'),
+        dbc.Col([
+            content,
+            console
+        ])
+    ], justify="start", className="g-0")
+])
 
 
 @app.callback(
@@ -263,4 +310,4 @@ def render_page_content(pathname):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, threaded=True)
