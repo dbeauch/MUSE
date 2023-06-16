@@ -60,7 +60,7 @@ class CardFactory:
             made_card = Surface(line)
         elif re.search(self.SURFACES_REGEX['transform'], line):
             made_card = Surface(line)
-        elif re.search(self.MATERIAL_TEMPERATURE_REGEX['material'], line + " "):
+        elif re.search(self.MATERIAL_TEMPERATURE_REGEX['material'], line):
             made_card = Material(line)
         elif re.search(self.MATERIAL_TEMPERATURE_REGEX['temperature'], line):
             made_card = Temperature(line)

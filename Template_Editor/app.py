@@ -9,11 +9,11 @@ import dash_bootstrap_components as dbc
 from template_handler import *
 
 # Sizes and Colors
-sidebar_width = '15vw'
+navbar_width = '15vw'
 console_height = '20vh'
 console_banner_height = '0.2vh'
 page_background = '#D3D3D3'
-sidebar_color = '#993300'
+navbar_color = '#993300'
 
 sys.setrecursionlimit(8000)
 template = TemplateHandler()
@@ -28,7 +28,7 @@ app = dash.Dash(
 banner = html.Header(
     "Py2MCNP Editor",
     style={
-        'backgroundColor': sidebar_color,
+        'backgroundColor': navbar_color,
         'color': 'white',
         'padding': '0px',
         'fontSize': '3vh',
@@ -36,7 +36,7 @@ banner = html.Header(
     }
 )
 
-sidebar = html.Div([
+navbar = html.Div([
     banner,
     dbc.Nav(
         [
@@ -52,8 +52,8 @@ sidebar = html.Div([
     ),
 ], style={
     'color': 'black',
-    'backgroundColor': sidebar_color,
-    'width': sidebar_width,
+    'backgroundColor': navbar_color,
+    'width': navbar_width,
     'height': '100vh',
     'position': 'fixed'
 })
@@ -96,7 +96,7 @@ console = html.Div([
     )
 ],
     style={
-        'marginLeft': sidebar_width,
+        'marginLeft': navbar_width,
         'position': 'fixed',
         'bottom': 0,
         'width': 'calc(100%)'
@@ -104,13 +104,13 @@ console = html.Div([
 
 content = html.Div(
     id="page-content",
-    style={'marginLeft': sidebar_width, 'backgroundColor': page_background}
+    style={'marginLeft': navbar_width, 'backgroundColor': page_background}
 )
 
 app.layout = html.Div([
     dcc.Location(id="url"),
     dbc.Row([
-        dbc.Col(sidebar, width='auto'),
+        dbc.Col(navbar, width='auto'),
         dbc.Col([
             content,
             console
