@@ -132,7 +132,7 @@ app.layout = html.Div([
     State('console_output', 'children'),
     prevent_initial_call=True
 )
-def update_output(apply_clicked, print_clicked, cell, material, density, geom, param, file_path, current_messages):
+def update_console(apply_clicked, print_clicked, cell, material, density, geom, param, file_path, current_messages):
     if not current_messages:
         current_messages = []
 
@@ -140,14 +140,14 @@ def update_output(apply_clicked, print_clicked, cell, material, density, geom, p
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
     timestamp = datetime.datetime.now().strftime("%H:%M:%S")
 
-    if button_id == 'apply_button' and cell is not None:
-        try:
-            selected_cell = template.all_cells.get(cell)
-            if selected_cell.material == material and selected_cell.density == density and selected_cell.geom == geom and selected_cell.param == param:
-                message = f'({timestamp})\tNo changes made to Cell {cell}'
-                current_messages.insert(0, html.P(message))
-                return current_messages
+    if button_id == 'apply_button' and cell is not None:        # must use type() to filter Cell from LikeCell(Cell)
+        selected_cell = template.all_cells.get(cell)
+        if selected_cell.material == material and selected_cell.density == density and selected_cell.geom == geom and selected_cell.param == param:
+            message = f'({timestamp})\tNo changes made to Cell {cell}'
+            current_messages.insert(0, html.P(message))
+            return current_messages
 
+        if type(selected_cell) is Cell:
             if material is not None:
                 selected_cell.material = material
 
@@ -162,8 +162,21 @@ def update_output(apply_clicked, print_clicked, cell, material, density, geom, p
 
             message = f'({timestamp})\tApplied changes to Cell {cell}'
             current_messages.insert(0, html.P(message))
-        except Exception as e:
-            message = f'({timestamp})\tError applying changes: {str(e)}'
+        elif type(selected_cell) is LikeCell:
+            print("WIP Page change")
+        elif type(selected_cell) is VoidCell:
+            if material != "Void" or density != "Void":
+                message = f'({timestamp})\tCannot make changes to material or density of a void cell'
+                current_messages.insert(0, html.P(message))
+                return current_messages
+
+            if geom is not None:
+                selected_cell.geom = geom
+
+            if param is not None:
+                selected_cell.param = param
+
+            message = f'({timestamp})\tApplied changes to Void Cell {cell}'
             current_messages.insert(0, html.P(message))
 
     if button_id == 'print_button':
@@ -201,7 +214,7 @@ def update_cell_display(cell, material_select):
     Output("cell_selector", "options"),
     Input("cell_selector", "search_value")
 )
-def update_cell_options(search_value):  # TODO: Does not display like cells
+def update_cell_options(search_value):
     return [o for o in template.all_cells]
 
 
@@ -210,15 +223,17 @@ def update_cell_options(search_value):  # TODO: Does not display like cells
     Input("material_selector", "search_value"),
 )
 def update_material_options(search_value):
-    result = [o for o in template.all_materials]
+    result = [o for o in template.all_materials.keys()]
     result.append("Void")
+    result.append("WIP")
     return result
 
 
 @app.callback(
-    Output("console_output_window", "is_open"),
-    [Input("console-toggler", "n_clicks")],
-    [State("console_output_window", "is_open")],
+    Output("console_output_window", "is_open", allow_duplicate=True),
+    Input("console-toggler", "n_clicks"),
+    State("console_output_window", "is_open"),
+    prevent_initial_call=True,
 )
 def toggle_console(n, is_open):
     if n:
@@ -226,7 +241,12 @@ def toggle_console(n, is_open):
     return is_open
 
 
-@app.callback(Output("page-content", "children"), [Input("url", "pathname")])
+@app.callback(
+    Output("page-content", "children"),
+    Output("console_output_window", "is_open", allow_duplicate=True),
+    Input("url", "pathname"),
+    prevent_initial_call=True
+)
 def render_page_content(pathname):
     if pathname == "/":
         return [
@@ -236,7 +256,7 @@ def render_page_content(pathname):
                     "This is a project designed to produce Monte Carlo N-Particle transport code (MCNP) card decks "
                     "using Python"),
             ], style={'backgroundColor': page_background, 'height': '100vh', 'marginLeft': '20px'})
-        ]
+        ], False
 
     elif pathname == "/cells":
         return [
@@ -281,7 +301,7 @@ def render_page_content(pathname):
                     dbc.Col(html.Button('Apply Changes', id='apply_button', n_clicks=0), width=4),
                 ]),
             ])
-        ]
+        ], True
 
     elif pathname == "/surfaces":
         return [
@@ -290,7 +310,7 @@ def render_page_content(pathname):
 
                 ])
             ])
-        ]
+        ], True
 
     elif pathname == "/materials":
         return [
@@ -299,7 +319,7 @@ def render_page_content(pathname):
 
                 ]),
             ])
-        ]
+        ], True
 
     elif pathname == "/options":
         return [
@@ -308,7 +328,7 @@ def render_page_content(pathname):
 
                 ]),
             ])
-        ]
+        ], True
     return html.P("Page not found")
 
 

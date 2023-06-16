@@ -21,7 +21,6 @@ class TemplateHandler(Singleton):
     data_lines = []
 
     all_cells = {}
-    all_like_cells = {}
     all_surfaces = {}
     all_materials = {}
     all_options = {}
@@ -54,7 +53,6 @@ class TemplateHandler(Singleton):
             self.make_cards(self.cell_lines)
             self.make_cards(self.surface_lines)
             self.make_cards(self.data_lines)
-            # self.all_materials[0] = 0
         return
 
 
@@ -91,10 +89,10 @@ class TemplateHandler(Singleton):
 
             start_line = line_pieces[index]
             if re.search(r'[ \t]*&', start_line):
-                num_lines_continues = self.recurse_continue(line_pieces, index)
+                num_lines_continues = self._recurse_continue(line_pieces, index)
             elif len(line_pieces) - 1 > index:
                 if re.search(r'^ {5,}\S+', line_pieces[index + 1]):
-                    num_lines_continues = self.recurse_continue(line_pieces, index)
+                    num_lines_continues = self._recurse_continue(line_pieces, index)
 
             for j in range(num_lines_continues + 1):
                 result += line_pieces[index + j] + " "
@@ -106,7 +104,7 @@ class TemplateHandler(Singleton):
         return
 
 
-    def recurse_continue(self, pieces, start_index, num=0):
+    def _recurse_continue(self, pieces, start_index, num=0):
         """
         Helper function for join_card_pieces() that recursively finds how many lines a card contains
         :param pieces: array containing cleaned line pieces
@@ -123,10 +121,10 @@ class TemplateHandler(Singleton):
             return num
         elif ampersand_index is not None:
             pieces[start_index + num] = pieces[start_index + num][0: ampersand_index.span()[0]] + " "
-            return self.recurse_continue(pieces, start_index, num + 1)
+            return self._recurse_continue(pieces, start_index, num + 1)
         elif space_index is not None:
             pieces[start_index + 1 + num] = pieces[start_index + 1 + num][space_index.span()[1] - 1:] + " "
-            return self.recurse_continue(pieces, start_index, num + 1)
+            return self._recurse_continue(pieces, start_index, num + 1)
         else:
             print("Error: recurse_continue()")
 
@@ -169,7 +167,6 @@ class TemplateHandler(Singleton):
         with open(out_filename, 'w') as f_write:
             f_write.write(self.file_title + '\n')
             self.print_card(f_write, self.all_cells)
-            self.print_card(f_write, self.all_like_cells)
             print("\nc Begin Surface Cards:", file=f_write)
             self.print_card(f_write, self.all_surfaces)
             print("\nc Begin Data Cards:", file=f_write)

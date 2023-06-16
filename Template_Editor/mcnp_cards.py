@@ -142,6 +142,10 @@ class LikeCell(Cell):
         but_end = re.search(r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]+but', line).span()[1] + 1
         self.changes = line[but_end:].strip()
 
+        self.material = "WIP"
+        self.density = "WIP"
+        self.geom = "WIP"
+        self.param = "WIP"
 
 
     def __str__(self):
