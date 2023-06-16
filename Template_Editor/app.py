@@ -184,13 +184,13 @@ def update_output(apply_clicked, print_clicked, cell, material, density, geom, p
     Input('material_selector', 'value'),
     prevent_initial_call=True
 )
-def update_cell_info(cell, material_select):
+def update_cell_display(cell, material_select):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if button_id == 'cell_selector':
         if cell is not None:
             selected_cell = template.all_cells.get(cell)
-            return selected_cell.material, selected_cell.get_density(), selected_cell.geom, selected_cell.param, f"Material {selected_cell.material} Description"
+            return selected_cell.get_material(), selected_cell.get_density(), selected_cell.geom, selected_cell.param, f"Material {selected_cell.get_material()} Description"
         else:
             return "", "", "", "", "Material Description"  # dash.no_update
     elif button_id == 'material_selector':
@@ -210,7 +210,9 @@ def update_cell_options(search_value):  # TODO: Does not display like cells
     Input("material_selector", "search_value"),
 )
 def update_material_options(search_value):
-    return [o for o in template.all_materials]
+    result = [o for o in template.all_materials]
+    result.append("Void")
+    return result
 
 
 @app.callback(

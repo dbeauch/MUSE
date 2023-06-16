@@ -1,4 +1,3 @@
-import re
 from mcnp_cards import *
 
 
@@ -12,29 +11,6 @@ class Singleton:
 
 
 class TemplateHandler(Singleton):
-    CELLS_REGEX = {
-        'regular': r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+[ \t]+[a-zA-z]+=.*$',
-        'void': r'^\d{1,6}[ \t]+0[ \t][^a-zA-z]+[ \t]+[a-zA-z]+=.*$',
-        'like_but': r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]but[ \t]+.+$'
-    }
-
-    SURFACES_REGEX = {
-        'regular': r'^\d+[ \t]+[^-\d\.]+[^a-zA-Z]+$',
-        'transform': r'^\d+[ \t]+\d+[^-\d\.]+[^a-zA-Z]+$'
-    }
-
-    OPTIONS_REGEX = {
-        'mode': r'^mode[ \t]+\.+$',
-        'kcode': r'^kcode[ \t]+\.+$',
-        'ksrc': r'ksrc[ \t]+((-?\d+(\.\d+)?[eE]?-?\d*[ \t]+){3})+$',
-        'transform': r''
-    }
-
-    MATERIAL_TEMPERATURE_REGEX = {
-        'material': r'^m\d+[ \t]+(\d+(\.\S+)?[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*[ \t]+)+$',
-        'temperature': r''
-    }
-
     file_title = ""
     cell_line_pieces = []
     surface_line_pieces = []
@@ -49,6 +25,7 @@ class TemplateHandler(Singleton):
     all_surfaces = {}
     all_materials = {}
     all_options = {}
+
 
     def read_template(self, in_filename):
         """
@@ -77,8 +54,9 @@ class TemplateHandler(Singleton):
             self.make_cards(self.cell_lines)
             self.make_cards(self.surface_lines)
             self.make_cards(self.data_lines)
-            self.all_materials[0] = 0
+            # self.all_materials[0] = 0
         return
+
 
     @staticmethod
     def clean_pieces(array):
@@ -97,6 +75,7 @@ class TemplateHandler(Singleton):
                 i -= 1
             i += 1
         return
+
 
     def join_card_pieces(self, line_pieces, line_array):
         """
@@ -126,6 +105,7 @@ class TemplateHandler(Singleton):
             index += 1
         return
 
+
     def recurse_continue(self, pieces, start_index, num=0):
         """
         Helper function for join_card_pieces() that recursively finds how many lines a card contains
@@ -150,124 +130,32 @@ class TemplateHandler(Singleton):
         else:
             print("Error: recurse_continue()")
 
+
     def make_cards(self, line_array):
         """
-        Creates card objects from array of lines given
+        Creates card objects from array of lines given by calling CardFactory
         :param line_array: Array of lines
         :return: None
         """
+        factory = CardFactory()
         for line in line_array:
-            if re.search(self.CELLS_REGEX['regular'], line):
-                made_card = self.make_cell(line)
+            made_card = factory.create_card(line)
+            if isinstance(made_card, Cell):
                 self.all_cells[made_card.number] = made_card
-            elif re.search(self.CELLS_REGEX['void'], line):
-                made_card = self.make_void_cell(line)
-                self.all_cells[made_card.number] = made_card
-            elif re.search(self.CELLS_REGEX['like_but'], line):
-                made_card = self.make_like_but_cell(line)
-                self.all_cells[made_card.number] = made_card
-            # elif re.search(self.SURFACES_REGEX['regular'], line):
-            #     made_card = self.make_surface(line)
+            # elif isinstance(made_card, Surface):
             #     self.all_surfaces[made_card.number] = made_card
-            # elif re.search(self.SURFACES_REGEX['transform'], line):
-            #     made_card = self.make_transform_surface(line)
+            # elif isinstance(made_card, TransformSurface):
             #     self.all_surfaces[made_card.number] = made_card
-            elif re.search(self.MATERIAL_TEMPERATURE_REGEX['material'], line):
-                made_card = self.make_material(line)
+            elif isinstance(made_card, Material):
                 self.all_materials[made_card.number] = made_card
-            # elif re.search(self.MATERIAL_TEMPERATURE_REGEX['temperature'], line):
-            #     made_card = self.make_temperature(line)
+            # elif isinstance(made_card, Temperature):
             #     self.all_temperatures[made_card.number] = made_card
-            # else:
-            #     for option in self.OPTIONS_REGEX.keys():
-            #         if re.search(self.OPTIONS_REGEX[option], line):
-            #             made_card = self.make_option(line, option)
-            #             self.all_options[made_card.number] = made_card
+            # elif isinstance(made_card, Option):
+            #     self.all_options[made_card.code] = made_card
+            else:
+                print(f"Card for {made_card} with line {line} not found")
         return
 
-    # _end = re.search(r'', line).span()[1] + 1
-    # = line[_end: _end].strip()
-    @staticmethod
-    def make_cell(line):
-        """
-        Helper method for make_cards(). Creates a mcnp_card object from line
-        :param line: string containing mcnp input line
-        :return: mcnp_card object
-        """
-        number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
-        number = line[0: number_end].strip()
-
-        material_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}', line).span()[1] + 1
-        material = line[number_end: material_end].strip()
-
-        density_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?[eE]?-?\d*', line).span()[1] + 1
-        density = line[material_end: density_end].strip()
-
-        geom_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+', line).span()[1]
-        geom = line[density_end: geom_end].strip()
-
-        params = line[geom_end:].strip()
-
-        return Cell(number, material, density, geom, params)
-
-    @staticmethod
-    def make_void_cell(line):
-        """
-        Helper method for make_cards(). Creates a mcnp_card object from line
-        :param line: string containing mcnp input line
-        :return: mcnp_card object
-        """
-        number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
-        number = line[0: number_end].strip()
-
-        material_end = re.search(r'^\d{1,6}[ \t]+0', line).span()[1] + 1
-        material = line[number_end: material_end].strip()
-
-        geom_end = re.search(r'^\d{1,6}[ \t]+0[ \t][^a-zA-z]+', line).span()[1]
-        geom = line[material_end: geom_end].strip()
-
-        params = line[geom_end:].strip()
-
-        return Cell(number, material, "\t", geom, params)
-
-    @staticmethod
-    def make_like_but_cell(line):
-        """
-        Helper method for make_cards(). Creates a mcnp_card object from line
-        :param line: string containing mcnp input line
-        :return: mcnp_card object
-        """
-        number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
-        number = line[0: number_end].strip()
-
-        like_end = re.search(r'^\d{1,6}[ \t]+like', line).span()[1] + 1
-
-        related_cell_end = re.search(r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}', line).span()[1] + 1
-        related_cell = line[like_end: related_cell_end].strip()
-
-        but_end = re.search(r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]+but', line).span()[1] + 1
-
-        changes = line[but_end:].strip()
-
-        return LikeCell(number, related_cell, changes)
-
-    # ^m\d+[ \t]+(\d+[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+)+
-    @staticmethod
-    def make_material(line):
-        """
-        Helper method for make_cards(). Creates a mcnp_card object from line
-        :param line: string containing mcnp input line
-        :return: mcnp_card object
-        """
-        zaid_fracs = []
-        number_end = re.search(r'^m\d+', line).span()[1] + 1
-        number = line[1: number_end].strip()
-
-        zaid_list = re.split(r'[ \t]+', line[number_end:].strip())
-        for i in range(int(len(zaid_list) / 2)):
-            zaid_fracs.append((zaid_list[2 * i], zaid_list[2 * i + 1]))
-
-        return Material(number, zaid_fracs)
 
     def print_file(self, out_filename):
         """
@@ -288,6 +176,7 @@ class TemplateHandler(Singleton):
             self.print_card(f_write, self.all_materials)
             self.print_card(f_write, self.all_options)
         return out_filename
+
 
     @staticmethod
     def print_card(out_file, dictionary):
