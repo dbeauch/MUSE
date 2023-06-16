@@ -223,10 +223,36 @@ def update_cell_options(search_value):
     Input("material_selector", "search_value"),
 )
 def update_material_options(search_value):
-    result = [o for o in template.all_materials.keys()]
+    result = [o for o in template.all_materials]
     result.append("Void")
     result.append("WIP")
     return result
+
+
+@app.callback(
+    Output("surface_selector", "options"),
+    Input("surface_selector", "search_value")
+)
+def update_surface_options(search_value):
+    return [o for o in template.all_surfaces]
+
+
+@app.callback(
+    Output('mnemonic_input', 'value'),
+    Output('transform_input', 'value'),
+    Output('dimensions_input', 'value'),
+    Input('surface_selector', 'value'),
+    prevent_initial_call=True
+)
+def update_surface_display(surface):
+    ctx = dash.callback_context
+    button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    if button_id == 'surface_selector':
+        if surface is not None:
+            selected_surface = template.all_surfaces.get(surface)
+            return selected_surface.mnemonic, selected_surface.transform, selected_surface.dimensions
+        else:
+            return "", "", ""
 
 
 @app.callback(
@@ -307,8 +333,36 @@ def render_page_content(pathname):
         return [
             html.Div(style={'backgroundColor': page_background, 'height': '100vh'}, children=[
                 dbc.Container([
+                    # Top spacing
+                    dbc.Row([dbc.Col(html.H1(" "))]),
 
-                ])
+                    # Current Cell dropdown
+                    dbc.Row([
+                        dbc.Col(width=2),
+                        dbc.Col(html.H4("Current Surface:"), width=2, align="end"),
+                        dbc.Col(dcc.Dropdown(id='surface_selector', placeholder='Select a Surface', clearable=True), width=2,
+                                align="center"),
+                        dbc.Col(html.H5(id='surface_description', children='Surface Description'), width=6, align="end"),
+                    ], justify="center"),
+
+                    html.Hr(),
+
+                    # Mnemonic
+                    html.H6("Mnemonic:", style={'marginTop': 20}),
+                    dbc.Input(id='mnemonic_input', type='text', placeholder=""),
+
+                    # Transform
+                    html.H6("Associated Transform:", style={'marginTop': 20}),
+                    dbc.Input(id='transform_input', type='text', placeholder=""),
+
+                    # Dimensions
+                    html.H6("Dimensions:", style={'marginTop': 20}),
+                    dbc.Input(id='dimensions_input', type='text', placeholder=""),
+
+                    html.Hr(),
+
+                    dbc.Col(html.Button('Apply Changes', id='apply_button', n_clicks=0), width=4),
+                ]),
             ])
         ], True
 

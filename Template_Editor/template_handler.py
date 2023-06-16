@@ -140,10 +140,8 @@ class TemplateHandler(Singleton):
             made_card = factory.create_card(line)
             if isinstance(made_card, Cell):
                 self.all_cells[made_card.number] = made_card
-            # elif isinstance(made_card, Surface):
-            #     self.all_surfaces[made_card.number] = made_card
-            # elif isinstance(made_card, TransformSurface):
-            #     self.all_surfaces[made_card.number] = made_card
+            elif isinstance(made_card, Surface):
+                self.all_surfaces[made_card.number] = made_card
             elif isinstance(made_card, Material):
                 self.all_materials[made_card.number] = made_card
             # elif isinstance(made_card, Temperature):

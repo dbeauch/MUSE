@@ -47,8 +47,7 @@ class CardFactory:
         'temperature': r''
     }
 
-    # _end = re.search(r'', line).span()[1] + 1
-    # = line[_end: _end].strip()
+
     def create_card(self, line):
         if re.search(self.CELLS_REGEX['regular'], line):
             made_card = Cell(line)
@@ -152,15 +151,32 @@ class LikeCell(Cell):
         return f"{self.number} like {self.related_cell} but {self.changes}"
 
 
+# 'regular': r'^\d+[ \t]+[^-\d\.]+[^a-zA-Z]+$',
+# 'transform': r'^\d+[ \t]+\d+[^-\d\.]+[^a-zA-Z]+$'
+    # _end = re.search(r'', line).span()[1] + 1
+    # = line[_end: _end].strip()
 class Surface(Card):
     def __init__(self, line):
-        self.number = " "
-        self.mnemonic = " "
-        self.dimensions = " "
+        number_end = re.search(r'^\d+', line).span()[1] + 1
+        self.number = line[: number_end].strip()
+
+        if re.search(r'^\d+[ \t]+\d+[^-\d\.]+[^a-zA-Z]+$', line):   # Surface with associated transform
+            transform_end = re.search(r'^\d+[ \t]+\d+', line).span()[1] + 1
+            self.transform = line[number_end: transform_end].strip()
+
+            mnemonic_end = re.search(r'^\d+[ \t]+\d+[^-\d\.]+', line).span()[1]
+            self.mnemonic = line[transform_end: mnemonic_end].strip()
+
+        else:
+            self.transform = ""
+            mnemonic_end = re.search(r'^\d+[ \t]+[^-\d\.]+', line).span()[1]
+            self.mnemonic = line[number_end: mnemonic_end].strip()
+
+        self.dimensions = line[mnemonic_end:].strip()
 
     def __str__(self):
-        dimensions_str = ' '.join(str(num) for num in self.dimensions)
-        return f"{self.number}\t{self.mnemonic}\t{dimensions_str}"
+        #dimensions_str = ' '.join(str(num) for num in self.dimensions)
+        return f"{self.number}\t{self.transform}\t{self.mnemonic}\t{self.dimensions}"
 
 
 class DataCard(Card):
