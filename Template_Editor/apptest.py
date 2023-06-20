@@ -1,0 +1,155 @@
+import sys
+
+import dash
+from dash import html, dcc
+from dash.dependencies import Input, Output, State
+import dash_bootstrap_components as dbc
+
+from pages import home, cells, surfaces
+from template_handler import *
+
+# Sizes and Colors
+navbar_width = '15vw'
+console_height = '20vh'
+console_banner_height = '0.2vh'
+page_background = '#D3D3D3'
+navbar_color = '#993300'
+
+sys.setrecursionlimit(8000)
+template = TemplateHandler()
+template.read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
+
+app = dash.Dash(
+    __name__,
+    # uses_pages=True,
+    suppress_callback_exceptions=True,
+    external_stylesheets=[dbc.themes.LUX]
+)
+
+banner = html.Header(
+    "Py2MCNP Editor",
+    style={
+        'backgroundColor': navbar_color,
+        'color': 'white',
+        'padding': '0px',
+        'fontSize': '3vh',
+        'textAlign': 'center'
+    }
+)
+
+navbar = html.Div([
+    banner,
+    dbc.Nav(
+        [
+            dbc.NavLink("Home", href="/", active="exact"),
+            dbc.NavLink("Cell Cards", href="/cells", active="exact"),
+            dbc.NavLink("Surface Cards", href="/surfaces", active="exact"),
+            dbc.NavLink("Material Cards", href="/materials", active="exact"),
+            dbc.NavLink("Option Cards", href="/options", active="exact"),
+        ],
+        vertical=True,
+        pills=True,
+        style={'margin': '20px'},
+    ),
+], style={
+    'color': 'black',
+    'backgroundColor': navbar_color,
+    'width': navbar_width,
+    'height': '100vh',
+    'position': 'fixed'
+})
+
+console_toggler = html.Button("-", id="console_toggler")
+
+console = html.Div([
+    dbc.Row([
+        dbc.Col("Console", width=4, align='center'),
+        dbc.Col(
+            dcc.Input(id='file_path', type='text', placeholder='File path', debounce=True),
+            width=1, align='center'
+        ),
+        dbc.Col(width=5),
+        dbc.Col(console_toggler, width=2)
+    ],
+        style={
+            'marginTop': 20,
+            'backgroundColor': 'black',
+            'color': 'white',
+            'padding': console_banner_height,
+            'fontSize': '18px'
+        },
+        className='g-0'),
+
+    dbc.Collapse(
+        html.Div(
+            id='console_output',
+            style={
+                'backgroundColor': '#333333',
+                'color': '#A9A9A9',
+                'border': '1px solid black',
+                'height': console_height,
+                'overflow': 'scroll'
+            },
+        ),
+        id='console_output_window',
+        is_open=True,
+    )
+],
+    style={
+        'marginLeft': navbar_width,
+        'position': 'fixed',
+        'bottom': 0,
+        'width': 'calc(100%)'
+    }
+)
+
+content = html.Div(
+    id="page_content",
+    style={'marginLeft': navbar_width, 'backgroundColor': page_background}
+)
+
+app.layout = html.Div([
+    dcc.Location(id="url"),
+    dbc.Row([
+        dbc.Col(navbar, width='auto'),
+        dbc.Col([
+            content,
+            html.Hr(),
+            html.Button('Apply Changes', id='cell_apply_button', n_clicks=0),
+            console
+        ])
+    ], justify="start", className="g-0")
+])
+
+
+@app.callback(
+    Output('page_content', 'children'),
+    Output("console_output_window", "is_open", allow_duplicate=True),
+    Input('url', 'pathname'),
+    prevent_initial_call=True,
+)
+def display_page(pathname):
+    if pathname == '/':
+        return home.layout(template, page_background), False
+    elif pathname == '/cells':
+        return cells.layout(template, page_background), True
+    elif pathname == '/surfaces':
+        return surfaces.layout(template, page_background), True
+    else:
+        return '404 Error: This page does not exist', False
+
+
+@app.callback(
+    Output("console_output_window", "is_open", allow_duplicate=True),
+    Input("console_toggler", "n_clicks"),
+    State("console_output_window", "is_open"),
+    prevent_initial_call=True,
+)
+def toggle_console(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
+
+if __name__ == '__main__':
+    app.run_server(debug=True, threaded=True)

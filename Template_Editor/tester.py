@@ -22,24 +22,27 @@ good. make the following changes: increase the size of the top banner and make t
 
 add a scrolling function to the console log so that the user can see the previous messages 
 """
+from dash import Dash, html, dcc
+import dash
 
-line = "m4644 92232 -1.80000E-09 92234 -2.34000E-03 "
+app = Dash(__name__, use_pages=True)
 
-zaid_fracs = []
-number_end = re.search(r'^m\d+', line).span()[1] + 1
-number = line[1: number_end].strip()
-zaid_list = re.split(r'[ \t]+', line[number_end:].strip())
-for i in range (int(len(zaid_list) / 2)):
-    zaid_fracs.append((zaid_list[2*i], zaid_list[2*i + 1]))
+app.layout = html.Div([
+    html.H1('Multi-page app with Dash Pages'),
 
+    html.Div(
+        [
+            html.Div(
+                dcc.Link(
+                    f"{page['name']} - {page['path']}", href=page["relative_path"]
+                )
+            )
+            for page in dash.page_registry.values()
+        ]
+    ),
 
-# last_pair_end = number_end
-# indexer = number_end
-# curr_pair_end = re.search(r'\d+[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+', line[indexer:]).span()[1] + 1
-# while curr_pair_end is not None:
-#     indexer += last_pair_end
-#     zaid_fracs.append(line[indexer: curr_pair_end].strip())
-#     last_pair_end = curr_pair_end
-#     curr_pair_end = re.search(r'\d+[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+', line[indexer + last_pair_end:]).span()[1] + 1
-sys.setrecursionlimit(8000)
-read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
+    dash.page_container
+])
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
