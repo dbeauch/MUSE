@@ -1,48 +1,140 @@
 import re
-from template_handler import *
 from mcnp_cards import *
-import sys
 
-"""
-create a dash app to edit MCNP input files. I have already created all the pre and post processing code that handles making the changes to the file. I want this dash app to be the front end portion of the app that lets the user enter changes to different cards, apply those changes with a button, and a button to print the file. Your methods called by the buttons need only exist and i will fill in the code to activate input file changes. The dash app you should create will just be a testing shell for me to build off of 
+all_cell_lines = []
 
-this is good. I now want you to make these changes. Remove the simple enter card changes input text box. Make a drop down selector that displays all known cells by their number which I will implement and the user should be able to search for the cell number they want to change. Next to that selector make a similar one that will be the material to apply to the cell as a change, it should also display a searchable list of known materials that i will implement. Place the apply changes button next to this and add a divider between the changes section and the print file section. The print file section should contain the print file button and an output that tells the user the file was printed to the file supplied via an input text box. I will implement whatever you cannot
+all_cells = {}
+all_surfaces = {}
+all_materials = {}
 
-great. now edit the code to make these changes: messages displayed to the user are displayed in a console at the bottom of the screen, the console should have a gray background with white text. The background of the whole app should be a darker gray than the console. Style the title of the webpage with a green banner on the top with the app name. Create an app name for this site based on the keywords Py, Python, MCNP, Monte, Carlo, Edit or add whatever else seems suit
 
-great. now make the following changes: extend the page down to the bottom of the screen with the same dark gray background coloring. Change the console messages so that it keeps at least the last 5 things printed to the screen in view. The console shoudl be scrollable so that the user can view previous console messages
+def correct_comments(array):
+    i = 0
+    while i < len(array):
+        dollar_index = re.search(r'\$ .*$', array[i])
+        if dollar_index is not None:
+            new_comment = "C " + array[i][dollar_index.span()[0] + 1:]
+            array[i] = array[i][: dollar_index.span()[0]]
+            array.insert(i, new_comment)
+        i += 1
+    return
 
-make the following changes: extend the background dark gray color so that there is no white space on the edges. The sit should fit on one page with no option to scroll down. The console should be justified on the bottom of the page. Change the banner on the top so that the app title is Py2MCNP Editor and make the banner color a geometric patterned light and dark blue. Have the style of the page mimic that of the webpage for NIST found at: https://www.nist.gov/ncnr if possible
 
-add a black frame below the title banner and around the console. add a small header left justified to the cell editor section that denotes it as the section for cell changes and the same for the printing section
+def join_card_pieces(line_pieces, line_array):
+    """
+        Appends lines that have continuations with '&' at end of line or leading white space
+        :param line_pieces: array containing un-joined lines
+        :param line_array: array to contain consolidated lines
+        :return: None
+        """
+    index = 0
+    while index < len(line_pieces):
+        if re.search(r'^[cC] .*$', line_pieces[index]) is None:
+            result = ""
+            num_lines_continues = 0
 
-the layout of the page is good. black frame around console and below banner is good. cell changes and printing section headers are good, but revert the app color and top banner style to the previous one while maintaining the things that are good.
+            start_line = line_pieces[index]
+            if re.search(r'[ \t]*&', start_line):
+                num_lines_continues = _recurse_continue(line_pieces, index)
+            elif len(line_pieces) - 1 > index:
+                if re.search(r'^ {5,}\S+', line_pieces[index + 1]):
+                    num_lines_continues = _recurse_continue(line_pieces, index)
 
-good. make the following changes: increase the size of the top banner and make the app title Py2MCNP Editor larger. Add a small separator between the cell changes and printing sections. Make the text displayed in the console slightly gray
+            for j in range(num_lines_continues + 1):
+                result += line_pieces[index + j] + " "
+            index += num_lines_continues
+            result = result.replace("\n", "")  # remove \n
+            result = re.sub(r'[ \t]{2,}', " ", result)  # remove extra spaces
+            line_array.append(result)
+        index += 1
+    return
 
-add a scrolling function to the console log so that the user can see the previous messages 
-"""
-from dash import Dash, html, dcc
-import dash
 
-app = Dash(__name__, use_pages=True)
+def _recurse_continue(pieces, start_index, num=0):
+    """
+        Helper function for join_card_pieces() that recursively finds how many lines a card contains
+        :param pieces: array containing cleaned line pieces
+        :param start_index: line index of start of card
+        :param num: parameter passed to next call; initial call should be 0
+        :return: final num param
+        """
+    if re.search(r'^[cC] .*$', pieces[start_index]) is None:
+        space_index = None
+        ampersand_index = re.search(r'[ \t]*&', pieces[start_index + num])
+        if len(pieces) - 1 > start_index + num:
+            space_index = re.search(r'^ {5,}\S', pieces[start_index + 1 + num])
 
-app.layout = html.Div([
-    html.H1('Multi-page app with Dash Pages'),
+        if ampersand_index is None and space_index is None:
+            return num
+        elif ampersand_index is not None:
+            pieces[start_index + num] = pieces[start_index + num][0: ampersand_index.span()[0]] + " "
+            return _recurse_continue(pieces, start_index, num + 1)
+        elif space_index is not None:
+            pieces[start_index + 1 + num] = pieces[start_index + 1 + num][space_index.span()[1] - 1:] + " "
+            return _recurse_continue(pieces, start_index, num + 1)
+        else:
+            print("Error: recurse_continue()")
+    else:
+        pieces.pop(start_index+num)
+        _recurse_continue(pieces, start_index, num)
 
-    html.Div(
-        [
-            html.Div(
-                dcc.Link(
-                    f"{page['name']} - {page['path']}", href=page["relative_path"]
-                )
-            )
-            for page in dash.page_registry.values()
-        ]
-    ),
 
-    dash.page_container
-])
+def make_cards(line_array):
+    """
+    Creates card objects from array of lines given by calling CardFactory
+    :param line_array: Array of lines
+    :return: None
+    """
+    factory = CardFactory()
+    i = 0
+    while i < len(line_array):
+        if re.search(r'^[cC] .*$', line_array[i]) is not None:
+            if re.search(r'^[cC] .*$', line_array[i + 1]) is None:
+                comment = line_array[i]
+                made_card = factory.create_card(line_array[i], comment)
+                i += 1
+            else:
+                continue
+        else:
+            made_card = factory.create_card(line_array[i])
+        if isinstance(made_card, Cell):
+            all_cells[made_card.number] = made_card
+        elif isinstance(made_card, Surface):
+            all_surfaces[made_card.number] = made_card
+        elif isinstance(made_card, Material):
+            all_materials[made_card.number] = made_card
+        # elif isinstance(made_card, Temperature):
+        #     self.all_temperatures[made_card.number] = made_card
+        # elif isinstance(made_card, Option):
+        #     self.all_options[made_card.code] = made_card
+        else:
+            print(f"Card for {made_card} with line {line_array[i]} not found")
+        i += 1
+    return
 
-if __name__ == '__main__':
-    app.run_server(debug=True)
+
+lits = [
+    'c --Begin Cells--                          ',
+    '1      0          8:9:-10  tmp=2.747-8 imp:n,p=0                               $ outside of water pool',
+    '2      4 -0.99180 -7 -9 10 (11:21:-31)                                         $ light water pool   ',
+    '                  (-1001:1006:-2001:2006:-31:898)  ',
+    'c cold sources:',
+    '                  (-4030:4031:4032:-4033:4034)',
+    '                  ( 4130:4131:4132:-4133:4134)',
+    '                  (-5030:5031:5032:-4033:4034)',
+    '                  ( 5330:5331:5332:-4133:4134)',
+    'c beam tubes:',
+    '             (-9110:9111:-9104:9107:9109) (9100:9109) (9103:9109)',
+    '             (-9210:9211:-9204:9207:9209) (9200:9209) (9203:9209)',
+    '             (-9310:9311:-9304:9307:9309) (9300:9309) (9303:9309)',
+    '             (-9410:9411:-9404:9407:9409) (9400:9409) (9403:9409)',
+    '                  tmp=2.747-8 imp:n,p=1                             ',
+    '3      5 -6.55    -11 -21 31 (1:2:-3)                                          $ heavy water outer tank container                  ',
+    '                  (1006:-1001:2006:-2001)',
+]
+correct_comments(lits)
+print(lits)
+join_card_pieces(lits, all_cell_lines)
+print(all_cell_lines)
+make_cards(all_cell_lines)
+print(all_cells)

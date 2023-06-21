@@ -20,11 +20,14 @@ class TemplateHandler(Singleton):
     surface_lines = []
     data_lines = []
 
+    cell_comments = {}
+    surface_comments = {}
+    data_comments = {"Void": "Void Cell"}
+
     all_cells = {}
     all_surfaces = {}
-    all_materials = {}
+    all_materials = {"Void": Material("m0"), "WIP": Material("m00")}
     all_options = {}
-
 
     def read_template(self, in_filename):
         """
@@ -42,9 +45,9 @@ class TemplateHandler(Singleton):
                 curr_list.append(line)
 
             self.file_title = self.cell_line_pieces.pop(0).strip()
-            self.clean_pieces(self.cell_line_pieces)
-            self.clean_pieces(self.surface_line_pieces)
-            self.clean_pieces(self.data_line_pieces)
+            self.clean_comments(self.cell_line_pieces, self.cell_comments)
+            self.clean_comments(self.surface_line_pieces, self.surface_comments)
+            self.clean_comments(self.data_line_pieces, self.data_comments)
 
             self.join_card_pieces(self.cell_line_pieces, self.cell_lines)
             self.join_card_pieces(self.surface_line_pieces, self.surface_lines)
@@ -53,25 +56,50 @@ class TemplateHandler(Singleton):
             self.make_cards(self.cell_lines)
             self.make_cards(self.surface_lines)
             self.make_cards(self.data_lines)
+
+            self.apply_comments(self.all_cells, self.cell_comments)
+            self.apply_comments(self.all_surfaces, self.surface_comments)
+            self.apply_comments(self.all_materials, self.data_comments)
         return
 
 
     @staticmethod
-    def clean_pieces(array):
+    def clean_comments(line_array, comment_array):
         """
-        Cleans each entry of array parameter; removes $ comments and C/c comments
-        :param array: array to be cleaned
+        Performs reverse order search over line_array to find comments around cell/surface/material cards
+        Assigns a comment to card number if used as a '$' comment on the same line as the card number or
+        a 'cC' comment the line before. Prioritizes '$' comments over 'cC'
+        :param line_array: Array of uncleaned MCNP lines
+        :param comment_array: Dictionary to place new comments in
         :return: None
         """
-        i = 0
-        while i < len(array):
-            comment_index = re.search(r'[ \t]*\$', array[i])  # remove $ comment along with leading white space
-            if comment_index is not None:
-                array[i] = array[i][0: comment_index.span()[0]]
-            if re.search(r'^[ \t]{0,5}[cC]\s', array[i]) is not None:  # remove 'c' comments
-                array.pop(i)
+        i = len(line_array)-1
+        while 0 <= i:
+            dollar_index = re.search(r'\$.*$', line_array[i])
+            if dollar_index is not None:    # Find any '$' comments to save/delete
+                if re.search(r'^m?\d{1,6}', line_array[i]) is not None:
+                    new_comment = line_array[i][dollar_index.span()[0] + 1:].strip()
+                    number_end = re.search(r'^m?\d{1,6}', line_array[i]).span()[1] + 1
+                    number = line_array[i][0: number_end].strip()
+                    comment_array[number] = new_comment
+                    line_array[i] = line_array[i][: dollar_index.span()[0]]
+                else:
+                    line_array[i] = line_array[i][: dollar_index.span()[0]]
+            if re.search(r'^[cC].*$', line_array[i]) is not None:   # Find any 'cC' comments to save/delete
+                if re.search(r'^[cC][ \t]+\S.*$', line_array[i]) is not None:
+                    if i < len(line_array) - 1 and re.search(r'^m?\d{1,6}', line_array[i+1]) is not None:
+                        number_end = re.search(r'^m?\d{1,6}', line_array[i+1]).span()[1] + 1
+                        number = line_array[i+1][0: number_end].strip()
+                        if number not in comment_array:
+                            comment_array[number] = line_array[i][2:].strip()
+                line_array.pop(i)
                 i -= 1
-            i += 1
+                continue
+            if re.search(r'^[ \t]*\n+', line_array[i]) is not None:  # Finds blank line between 3 MCNP sections
+                line_array.pop(i)
+                i -= 1
+                continue
+            i -= 1
         return
 
 
@@ -102,7 +130,6 @@ class TemplateHandler(Singleton):
             line_array.append(result)
             index += 1
         return
-
 
     def _recurse_continue(self, pieces, start_index, num=0):
         """
@@ -144,12 +171,28 @@ class TemplateHandler(Singleton):
                 self.all_surfaces[made_card.number] = made_card
             elif isinstance(made_card, Material):
                 self.all_materials[made_card.number] = made_card
-            # elif isinstance(made_card, Temperature):
-            #     self.all_temperatures[made_card.number] = made_card
-            # elif isinstance(made_card, Option):
-            #     self.all_options[made_card.code] = made_card
+            elif isinstance(made_card, Temperature):
+                self.all_materials[made_card.number] = made_card
+            elif isinstance(made_card, DataCard):
+                self.all_options[made_card.number] = made_card
             else:
-                print(f"Card for {made_card} with line {line} not found")
+                continue
+                #print(f"Card for {made_card} with line '{line}' not found")
+        return
+
+
+    @staticmethod
+    def apply_comments(card_dict, comment_dict):
+        """
+        Applies comments to cards
+        :param card_dict: Dictionary of MCNP card objects by number
+        :param comment_dict: Dictionary of comments by number
+        :return: None
+        """
+        for number in comment_dict:
+            # number = number[re.search(r'^m?t?', number).span()[1]:]
+            if number in card_dict:
+                card_dict[number].set_comment(comment_dict[number])
         return
 
 
@@ -172,9 +215,14 @@ class TemplateHandler(Singleton):
             self.print_card(f_write, self.all_options)
         return out_filename
 
-
     @staticmethod
     def print_card(out_file, dictionary):
+        """
+        Helper method for print_file()
+        :param out_file: Filestream to print to
+        :param dictionary: Dictionary of things to print
+        :return: None
+        """
         for card in dictionary.values():
             print(card, file=out_file)
         return

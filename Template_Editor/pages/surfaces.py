@@ -64,6 +64,7 @@ def update_surface_options(search_value):
     Output('mnemonic_input', 'value'),
     Output('transform_input', 'value'),
     Output('dimensions_input', 'value'),
+    Output('surface_description', 'children'),
     Input('surface_selector', 'value'),
     prevent_initial_call=True
 )
@@ -73,9 +74,9 @@ def update_surface_display(surface):
     if button_id == 'surface_selector':
         if surface is not None:
             selected_surface = template.all_surfaces.get(surface)
-            return selected_surface.mnemonic, selected_surface.transform, selected_surface.dimensions
+            return selected_surface.mnemonic, selected_surface.transform, selected_surface.dimensions, selected_surface.comment
         else:
-            return "", "", ""
+            return "", "", "", "Surface Description"
 
 
 @callback(

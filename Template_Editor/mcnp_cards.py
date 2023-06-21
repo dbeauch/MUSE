@@ -25,7 +25,7 @@ import re
 
 class CardFactory:
     CELLS_REGEX = {
-        'regular': r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+[ \t]+[a-zA-z]+=.*$',
+        'regular': r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+[ \t]+[a-zA-z:]+=.*$',
         'void': r'^\d{1,6}[ \t]+0[ \t][^a-zA-z]+[ \t]+[a-zA-z]+=.*$',
         'like_but': r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]but[ \t]+.+$'
     }
@@ -39,18 +39,18 @@ class CardFactory:
         'mode': r'^mode[ \t]+\.+$',
         'kcode': r'^kcode[ \t]+\.+$',
         'ksrc': r'ksrc[ \t]+((-?\d+(\.\d+)?[eE]?-?\d*[ \t]+){3})+$',
-        'transform': r''
+        'transform': r'WIP REGEX'
     }
 
     MATERIAL_TEMPERATURE_REGEX = {
         'material': r'^m\d+[ \t]+(\d+(\.\S+)?[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*[ \t]+)+$',
-        'temperature': r''
+        'temperature': r'WIP REGEX'
     }
 
 
-    def create_card(self, line):
+    def create_card(self, line, comment=""):
         if re.search(self.CELLS_REGEX['regular'], line):
-            made_card = Cell(line)
+            made_card = RegularCell(line)
         elif re.search(self.CELLS_REGEX['void'], line):
             made_card = VoidCell(line)
         elif re.search(self.CELLS_REGEX['like_but'], line):
@@ -71,17 +71,45 @@ class CardFactory:
             made_card = KCode(line)
         elif re.search(self.OPTIONS_REGEX['mode'], line):
             made_card = Mode(line)
+        elif re.search(r'^[cC] .*', line):
+            return
         else:
-            made_card = None
-            print(f"Card for {line} not found")
+            #print(f"Card for {line} not found")
+            return
+        made_card.set_comment(comment)
         return made_card
 
 
 class Card:
-    pass
+    def __init__(self, comment=""):
+        self.comment = comment
+
+
+    def set_comment(self, comment):
+        self.comment = f"{comment}"
+
+
+    def __str__(self):
+        if self.comment != "" and self.comment is not None:
+            return f"C {self.comment}\n"
+        else:
+            return ""
 
 
 class Cell(Card):
+    def __str__(self):
+        return super().__str__()
+
+
+    def get_material(self):
+        return "Void" if isinstance(self, VoidCell) else self.material
+
+
+    def get_density(self):
+        return "Void" if isinstance(self, VoidCell) else self.density
+
+
+class RegularCell(Cell):
     def __init__(self, line):
         number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
         self.number = line[0: number_end].strip()
@@ -99,13 +127,7 @@ class Cell(Card):
 
 
     def __str__(self):
-        return f"{self.number}\t{self.material}\t{self.density}\t{self.geom}\t{self.param}"
-
-    def get_material(self):
-        return "Void" if isinstance(self, VoidCell) else self.material
-
-    def get_density(self):
-        return "Void" if isinstance(self, VoidCell) else self.density
+        return f"{super().__str__()}{self.number}\t{self.material}\t{self.density}\t{self.geom}\t{self.param}"
 
 
 class VoidCell(Cell):
@@ -125,8 +147,7 @@ class VoidCell(Cell):
 
 
     def __str__(self):
-        return f"{self.number}\t{self.material}\t\t\t{self.geom}\t{self.param}"
-
+        return f"{super().__str__()}{self.number}\t{self.material}\t\t\t{self.geom}\t{self.param}"
 
 
 class LikeCell(Cell):
@@ -141,6 +162,7 @@ class LikeCell(Cell):
         but_end = re.search(r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]+but', line).span()[1] + 1
         self.changes = line[but_end:].strip()
 
+        self.comment = "WIP"
         self.material = "WIP"
         self.density = "WIP"
         self.geom = "WIP"
@@ -148,13 +170,9 @@ class LikeCell(Cell):
 
 
     def __str__(self):
-        return f"{self.number} like {self.related_cell} but {self.changes}"
+        return f"{super().__str__()}{self.number} like {self.related_cell} but {self.changes}"
 
 
-# 'regular': r'^\d+[ \t]+[^-\d\.]+[^a-zA-Z]+$',
-# 'transform': r'^\d+[ \t]+\d+[^-\d\.]+[^a-zA-Z]+$'
-    # _end = re.search(r'', line).span()[1] + 1
-    # = line[_end: _end].strip()
 class Surface(Card):
     def __init__(self, line):
         number_end = re.search(r'^\d+', line).span()[1] + 1
@@ -175,34 +193,34 @@ class Surface(Card):
         self.dimensions = line[mnemonic_end:].strip()
 
     def __str__(self):
-        #dimensions_str = ' '.join(str(num) for num in self.dimensions)
-        return f"{self.number}\t{self.transform}\t{self.mnemonic}\t{self.dimensions}"
+        return f"{super().__str__()}{self.number}\t{self.transform}\t{self.mnemonic}\t{self.dimensions}"
 
 
 class DataCard(Card):
-    pass
+    def __str__(self):
+        return super().__str__()
 
 
 class KCode(DataCard):
     def __init__(self, line):
-        self.name = "kcode"
+        self.number = "kcode"
         self.nsrck = " "
         self.rkk = " "
         self.ikz = " "
         self.kct = " "
 
     def __str__(self):
-        return f"{self.name}\t{self.nsrck}\t{self.rkk}\t{self.ikz}\t{self.kct}"
+        return f"{super().__str__()}kcode\t{self.nsrck}\t{self.rkk}\t{self.ikz}\t{self.kct}"
 
 
 class KSrc(DataCard):
     def __init__(self, line):
-        self.name = " "
+        self.number = " "
         self.locations = " "
 
     def __str__(self):
         locations_str = '\t'.join(' '.join(map(str, location)) for location in self.locations)
-        return f"{self.name}\t{locations_str}"
+        return f"{super().__str__()}ksrc\t{locations_str}"
 
 
 class Material(DataCard):
@@ -214,41 +232,45 @@ class Material(DataCard):
         zaid_list = re.split(r'[ \t]+', line[number_end:].strip())
         for i in range(int(len(zaid_list) / 2)):
             self.zaid_fracs.append((zaid_list[2 * i], zaid_list[2 * i + 1]))
+        self.comment = ""
 
     def __str__(self):
         zaid_fracs_str = '\t'.join(' '.join(map(str, zaid_frac)) for zaid_frac in self.zaid_fracs)
-        return f"m{self.number}\t\t{zaid_fracs_str}"
+        return f"{super().__str__()}{self.number}\t\t{zaid_fracs_str}"
 
 
 class Temperature(DataCard):
+    def __init__(self, line):
+        self.number = ""
+        self.param = " "
+
+    def __str__(self):
+        return f"{super().__str__()}{self.number}\t\t{self.param}"
+
+
+class Mode(DataCard):
+    def __init__(self, line):
+        self.number = " "
+        self._mode = " "
+
+    def __str__(self):
+        return f"{super().__str__()}mode {self._mode}"
+
+
+class Transform(DataCard):
     def __init__(self, line):
         self.number = " "
         self.param = " "
 
     def __str__(self):
-        return f"mt{self.number}\t\t{self.param}"
-
-
-class Mode(DataCard):
-    def __init__(self, line):
-        self._mode = " "
-
-    def __str__(self):
-        return f"mode {self._mode}"
-
-
-class Transform(DataCard):
-    def __init__(self, line):
-        self.param = " "
-
-    def __str__(self):
-        return f"*tr {self.param}"
+        return f"{super().__str__()}*tr {self.param}"
 
 
 class Option(DataCard):
     def __init__(self, line):
+        self.number = " "
         self.code = " "
         self.param = " "
 
     def __str__(self):
-        return f"{self.code}\t{self.param}"
+        return f"{super().__str__()}{self.code}\t{self.param}"

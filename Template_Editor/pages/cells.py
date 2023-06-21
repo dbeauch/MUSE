@@ -67,6 +67,7 @@ def layout(template_handler, page_background):
     Output('geom_input', 'value'),
     Output('param_input', 'value'),
     Output('material_description', 'children'),
+    Output('cell_description', 'children'),
     Input('cell_selector', 'value'),
     Input('material_selector', 'value'),
     prevent_initial_call=True
@@ -77,11 +78,13 @@ def update_cell_display(cell, material_select):
     if button_id == 'cell_selector':
         if cell is not None:
             selected_cell = template.all_cells.get(cell)
-            return selected_cell.get_material(), selected_cell.get_density(), selected_cell.geom, selected_cell.param, f"Material {selected_cell.get_material()} Description"
+            return selected_cell.get_material(), selected_cell.get_density(), selected_cell.geom, selected_cell.param, template.all_materials.get(selected_cell.get_material()).comment, selected_cell.comment
         else:
-            return "", "", "", "", "Material Description"  # dash.no_update
-    elif button_id == 'material_selector':
-        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, f"Material {material_select} Description"
+            return "", "", "", "", "Material Description", "Cell Description"
+    elif button_id == 'material_selector' and material_select is not None:
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, template.all_materials.get(material_select).comment, dash.no_update
+    else:
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
 
 @callback(
@@ -98,8 +101,6 @@ def update_cell_options(search_value):
 )
 def update_material_options(search_value):
     result = [o for o in template.all_materials]
-    result.append("Void")
-    result.append("WIP")
     return result
 
 
@@ -126,14 +127,14 @@ def update_console(apply_clicked, print_clicked, pathname, cell, material, densi
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
 
-        if button_id == 'cell_apply_button' and cell is not None:       # must use type() to filter Cell from LikeCell(Cell)
+        if button_id == 'cell_apply_button' and cell is not None:       # must use type() to filter Cell types
             selected_cell = template.all_cells.get(cell)
             if selected_cell.material == material and selected_cell.density == density and selected_cell.geom == geom and selected_cell.param == param:
                 message = f'({timestamp})\tNo changes made to Cell {cell}'
                 current_messages.insert(0, html.P(message))
                 return current_messages
 
-            if type(selected_cell) is Cell:
+            if type(selected_cell) is RegularCell:
                 if material is not None:
                     selected_cell.material = material
 

@@ -1,4 +1,5 @@
 import sys
+import os
 
 import dash
 from dash import html, dcc
@@ -17,13 +18,18 @@ console_banner_height = '0.2vh'
 page_background = '#D3D3D3'
 navbar_color = '#993300'
 
-sys.setrecursionlimit(8000)
-template = TemplateHandler()
-template.read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
+
+# Only runs preprocessing operations for the main server process not for monitor process
+if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+    sys.setrecursionlimit(8000)
+    template = TemplateHandler()
+    template.read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
+else:
+    template = TemplateHandler()
+
 
 app = dash.Dash(
     __name__,
-    # uses_pages=True,
     suppress_callback_exceptions=True,
     external_stylesheets=[dbc.themes.LUX]
 )
@@ -138,7 +144,7 @@ def display_page(pathname):
     elif pathname == '/surfaces':
         return surfaces.layout(template, page_background), True
     else:
-        return '404 Error: This page does not exist', False
+        return '404 Error: This page does not exist...YET!', False
 
 
 @app.callback(
