@@ -21,6 +21,7 @@ Moderator(number, params)
     Moderator("", "")
 """
 import re
+line_indent = "\t\t\t"
 
 
 class CardFactory:
@@ -127,7 +128,12 @@ class RegularCell(Cell):
 
 
     def __str__(self):
-        return f"{super().__str__()}{self.number}\t{self.material}\t{self.density}\t{self.geom}\t{self.param}"
+        printed_geom = re.sub(r'\)[ \t]+\(', f")\n{line_indent}(", self.geom)
+        printed_geom = re.sub(r':[ \t]+\(', f":\n{line_indent}(", printed_geom)
+        digit_par = re.search(r'\d[ \t]+\(', printed_geom)
+        if digit_par is not None:
+            printed_geom = printed_geom[:digit_par.span()[0]+1] + f"\n{line_indent}" + printed_geom[digit_par.span()[0]+2:]
+        return f"{super().__str__()}{self.number}\t{self.material}\t{self.density}\n{line_indent}{printed_geom}\n{line_indent}{self.param}"
 
 
 class VoidCell(Cell):
@@ -147,7 +153,12 @@ class VoidCell(Cell):
 
 
     def __str__(self):
-        return f"{super().__str__()}{self.number}\t{self.material}\t\t\t{self.geom}\t{self.param}"
+        printed_geom = re.sub(r'\)[ \t]+\(', f")\n{line_indent}(", self.geom)
+        printed_geom = re.sub(r':[ \t]+\(', f":\n{line_indent}(", printed_geom)
+        digit_par = re.search(r'\d[ \t]+\(', printed_geom)
+        if digit_par is not None:
+            printed_geom = printed_geom[:digit_par.span()[0] + 1] + f"\n{line_indent}" + printed_geom[digit_par.span()[0] + 2:]
+        return f"{super().__str__()}{self.number}\t{self.material}\n{line_indent}{printed_geom}\n{line_indent}{self.param}"
 
 
 class LikeCell(Cell):
@@ -235,8 +246,10 @@ class Material(DataCard):
         self.comment = ""
 
     def __str__(self):
-        zaid_fracs_str = '\t'.join(' '.join(map(str, zaid_frac)) for zaid_frac in self.zaid_fracs)
-        return f"{super().__str__()}{self.number}\t\t{zaid_fracs_str}"
+        zaid_fracs_str = ""
+        for pair in self.zaid_fracs:
+            zaid_fracs_str += f"\n{line_indent}{pair[0]}\t{pair[1]}"
+        return f"{super().__str__()}m{self.number}{zaid_fracs_str}"
 
 
 class Temperature(DataCard):
@@ -245,7 +258,7 @@ class Temperature(DataCard):
         self.param = " "
 
     def __str__(self):
-        return f"{super().__str__()}{self.number}\t\t{self.param}"
+        return f"{super().__str__()}mt{self.number}\t\t{self.param}"
 
 
 class Mode(DataCard):

@@ -23,6 +23,7 @@ navbar_color = '#993300'
 if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     sys.setrecursionlimit(8000)
     template = TemplateHandler()
+    # template.read_template('../mcnp_templates/test.i')
     template.read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
 else:
     template = TemplateHandler()

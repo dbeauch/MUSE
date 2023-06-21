@@ -90,6 +90,8 @@ class TemplateHandler(Singleton):
                     if i < len(line_array) - 1 and re.search(r'^m?\d{1,6}', line_array[i+1]) is not None:
                         number_end = re.search(r'^m?\d{1,6}', line_array[i+1]).span()[1] + 1
                         number = line_array[i+1][0: number_end].strip()
+                        if number[0] == "m":
+                            number = number[1:]
                         if number not in comment_array:
                             comment_array[number] = line_array[i][2:].strip()
                 line_array.pop(i)
@@ -224,5 +226,7 @@ class TemplateHandler(Singleton):
         :return: None
         """
         for card in dictionary.values():
+            if card.number == "0" or card.number == "00":
+                continue
             print(card, file=out_file)
         return
