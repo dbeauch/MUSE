@@ -21,7 +21,7 @@ Moderator(number, params)
     Moderator("", "")
 """
 import re
-line_indent = "\t\t\t"
+line_indent = "        "
 
 
 class CardFactory:
@@ -181,7 +181,12 @@ class LikeCell(Cell):
 
 
     def __str__(self):
-        return f"{super().__str__()}{self.number} like {self.related_cell} but {self.changes}"
+        printed_changes = ""
+        parts = self.changes.split()
+        for i in range(0, len(parts), 5):
+            printed_changes += ' '.join(parts[i:i + 5]) + "\n" + line_indent
+        printed_changes = printed_changes[:re.search(r'\s+$', printed_changes).span()[0]]
+        return f"{super().__str__()}{self.number} like {self.related_cell} but {printed_changes}"
 
 
 class Surface(Card):

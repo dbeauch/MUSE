@@ -38,9 +38,9 @@ class TemplateHandler(Singleton):
         with open(in_filename, 'r') as f_read:
             curr_list = self.cell_line_pieces
             for line in f_read.readlines():
-                if re.search(r'\bBegin Surfaces\b', line):
+                if re.search(r'\bBegin Surfaces\b', line) is not None:
                     curr_list = self.surface_line_pieces
-                elif re.search(r'\bBegin Options\b', line):
+                elif re.search(r'\bBegin Options\b', line) is not None:
                     curr_list = self.data_line_pieces
                 curr_list.append(line)
 
@@ -60,6 +60,7 @@ class TemplateHandler(Singleton):
             self.apply_comments(self.all_cells, self.cell_comments)
             self.apply_comments(self.all_surfaces, self.surface_comments)
             self.apply_comments(self.all_materials, self.data_comments)
+
         return
 
 
@@ -206,13 +207,14 @@ class TemplateHandler(Singleton):
         """
         if out_filename == "" or out_filename is None:
             out_filename = '../mcnp_templates/test.i'
+            # out_filename = '../mcnp_templates/test2.i'
 
         with open(out_filename, 'w') as f_write:
             f_write.write(self.file_title + '\n')
             self.print_card(f_write, self.all_cells)
-            print("\nc Begin Surface Cards:", file=f_write)
+            print("\nc --Begin Surfaces--", file=f_write)
             self.print_card(f_write, self.all_surfaces)
-            print("\nc Begin Data Cards:", file=f_write)
+            print("\nc --Begin Options--", file=f_write)
             self.print_card(f_write, self.all_materials)
             self.print_card(f_write, self.all_options)
         return out_filename
