@@ -21,6 +21,9 @@ Moderator(number, params)
     Moderator("", "")
 """
 import re
+from mendeleev import element
+
+
 line_indent = "        "
 
 
@@ -95,6 +98,19 @@ class Card:
             return f"C {self.comment}\n"
         else:
             return ""
+
+    @staticmethod
+    def zaid_to_isotope(zaid):
+        zaid_str = str(zaid)
+
+        if len(zaid_str) != 5:
+            return 'Invalid ZAID'
+
+        element_number = int(zaid_str[:2])
+        isotope_number = int(zaid_str[2:])
+
+        element_name = element(element_number).symbol
+        return f'{element_name}-{isotope_number}'
 
 
 class Cell(Card):
@@ -253,7 +269,7 @@ class Material(DataCard):
     def __str__(self):
         zaid_fracs_str = ""
         for pair in self.zaid_fracs:
-            zaid_fracs_str += f"\n{line_indent}{pair[0]}\t{pair[1]}"
+            zaid_fracs_str += f"\n{line_indent}{pair[0]}\t{pair[1]}"  # \t$ {zaid_to_isotope(pair[0])}"
         return f"{super().__str__()}m{self.number}{zaid_fracs_str}"
 
 

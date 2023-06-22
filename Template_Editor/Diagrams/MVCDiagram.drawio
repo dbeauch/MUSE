@@ -1,43 +1,52 @@
-<mxfile host="app.diagrams.net" modified="2023-06-16T16:45:32.735Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.43" etag="R1jezzGn7vn4IhJk4itL" version="21.4.0" type="device">
+<mxfile host="app.diagrams.net" modified="2023-06-22T16:59:39.701Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.51" etag="Q1TVAzBe9odu2jDrxr-O" version="21.4.0" type="device">
   <diagram id="R2lEEEUBdFMjLlhIrx00" name="Page-1">
     <mxGraphModel dx="1434" dy="764" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" extFonts="Permanent Marker^https://fonts.googleapis.com/css?family=Permanent+Marker">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="fxwZcj2PUqoYgcduFll7-1" value="app.py&lt;br&gt;(View)" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="345" y="200" width="160" height="120" as="geometry">
+        <mxCell id="fxwZcj2PUqoYgcduFll7-1" value="app.py&lt;br&gt;(View)" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="475" y="140" width="160" height="120" as="geometry">
             <mxRectangle x="345" y="200" width="80" height="50" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="fxwZcj2PUqoYgcduFll7-2" value="Plotly Dash App&lt;br&gt;+navbar&lt;br&gt;+console&lt;br&gt;+content" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" vertex="1" parent="fxwZcj2PUqoYgcduFll7-1">
+        <mxCell id="fxwZcj2PUqoYgcduFll7-2" value="Plotly Dash App&lt;br&gt;+navbar&lt;br&gt;+console&lt;br&gt;+content" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" parent="fxwZcj2PUqoYgcduFll7-1" vertex="1">
           <mxGeometry y="50" width="160" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="fxwZcj2PUqoYgcduFll7-3" value="template_handler.py&lt;br&gt;(Controller)" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="fxwZcj2PUqoYgcduFll7-3" value="template_handler.py&lt;br&gt;(Controller)" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="345" y="400" width="160" height="120" as="geometry" />
         </mxCell>
-        <mxCell id="fxwZcj2PUqoYgcduFll7-8" value="" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERone;endFill=1;rounded=0;exitX=0.988;exitY=0.1;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="fxwZcj2PUqoYgcduFll7-3" source="fxwZcj2PUqoYgcduFll7-4">
+        <mxCell id="fxwZcj2PUqoYgcduFll7-8" value="" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERone;endFill=1;rounded=0;exitX=0.988;exitY=0.1;exitDx=0;exitDy=0;exitPerimeter=0;" parent="fxwZcj2PUqoYgcduFll7-3" source="fxwZcj2PUqoYgcduFll7-4" edge="1">
           <mxGeometry width="100" height="100" relative="1" as="geometry">
             <mxPoint x="-95" y="60" as="sourcePoint" />
-            <mxPoint x="-5" y="270" as="targetPoint" />
+            <mxPoint x="-5" y="310" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="fxwZcj2PUqoYgcduFll7-4" value="Singleton Pattern&lt;br&gt;+read_template(file)&lt;br&gt;+print_file(file)" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" vertex="1" parent="fxwZcj2PUqoYgcduFll7-3">
+        <mxCell id="fxwZcj2PUqoYgcduFll7-4" value="Singleton Pattern&lt;br&gt;+read_template(file)&lt;br&gt;+print_file(file)" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" parent="fxwZcj2PUqoYgcduFll7-3" vertex="1">
           <mxGeometry y="50" width="160" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="fxwZcj2PUqoYgcduFll7-5" value="mcnp_cards.py&lt;br&gt;(Model)" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="345" y="600" width="160" height="120" as="geometry" />
+        <mxCell id="fxwZcj2PUqoYgcduFll7-5" value="mcnp_cards.py&lt;br&gt;(Model)" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="345" y="660" width="160" height="120" as="geometry" />
         </mxCell>
-        <mxCell id="fxwZcj2PUqoYgcduFll7-6" value="Factory Pattern&lt;br&gt;+CardFactory&lt;br&gt;+create_card(line)" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" vertex="1" parent="fxwZcj2PUqoYgcduFll7-5">
+        <mxCell id="fxwZcj2PUqoYgcduFll7-6" value="Factory Pattern&lt;br&gt;+CardFactory&lt;br&gt;+create_card(line)" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" parent="fxwZcj2PUqoYgcduFll7-5" vertex="1">
           <mxGeometry y="50" width="160" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="fxwZcj2PUqoYgcduFll7-9" value="" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERone;endFill=1;rounded=0;exitX=1;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="fxwZcj2PUqoYgcduFll7-2">
+        <mxCell id="fxwZcj2PUqoYgcduFll7-9" value="" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERone;endFill=1;rounded=0;exitX=1;exitY=0;exitDx=0;exitDy=0;" parent="1" source="fxwZcj2PUqoYgcduFll7-2" edge="1">
           <mxGeometry width="100" height="100" relative="1" as="geometry">
             <mxPoint x="300" y="330" as="sourcePoint" />
             <mxPoint x="340" y="460" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="fxwZcj2PUqoYgcduFll7-10" value="Py2MCNP&lt;br style=&quot;font-size: 28px;&quot;&gt;Model-View-Controller (MVC)" style="text;strokeColor=none;fillColor=none;html=1;fontSize=28;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
-          <mxGeometry x="375" y="70" width="100" height="40" as="geometry" />
+        <mxCell id="fxwZcj2PUqoYgcduFll7-10" value="Py2MCNP&lt;br style=&quot;font-size: 28px;&quot;&gt;Model-View-Controller (MVC)" style="text;strokeColor=none;fillColor=none;html=1;fontSize=28;fontStyle=1;verticalAlign=middle;align=center;" parent="1" vertex="1">
+          <mxGeometry x="375" y="50" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="gKgYqYxnh0k2pv6W-GKP-1" value="Pages" style="shape=folder;fontStyle=1;spacingTop=10;tabWidth=40;tabHeight=14;tabPosition=left;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="190" y="120" width="170" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="gKgYqYxnh0k2pv6W-GKP-3" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;exitX=0;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="fxwZcj2PUqoYgcduFll7-2" target="gKgYqYxnh0k2pv6W-GKP-1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="340" y="195" as="sourcePoint" />
+            <mxPoint x="244" y="200" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>
