@@ -20,8 +20,8 @@ def layout(template_handler, page_background):
 
                     # Current Cell dropdown
                     dbc.Row([
-                        dbc.Col(width=2),
-                        dbc.Col(html.H4("Current Cell:"), width=2, align="end"),
+                        dbc.Col(width=1),
+                        dbc.Col(html.H4("Current Cell:"), width=3, align="end"),
                         dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell', clearable=True), width=2,
                                 align="center"),
                         dbc.Col(html.H5(id='cell_description', children='Cell Description'), width=6, align="end"),
@@ -154,6 +154,10 @@ def update_console(apply_clicked, print_clicked, pathname, cell, material, densi
             elif type(selected_cell) is LikeCell:
                 print("WIP Page change")
             elif type(selected_cell) is VoidCell:
+                if "Void" == material and "Void" == density and selected_cell.geom == geom and selected_cell.param == param:
+                    message = f'({timestamp})\tNo changes made to Cell {cell}'
+                    current_messages.insert(0, html.P(message))
+                    return current_messages
                 if material != "Void" or density != "Void":
                     message = f'({timestamp})\tCannot make changes to material or density of a void cell'
                     current_messages.insert(0, html.P(message))

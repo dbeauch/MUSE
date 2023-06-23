@@ -11,8 +11,8 @@ class Singleton:
 
 
 class TemplateHandler(Singleton):
-    # default_out_file = '../mcnp_templates/test.i'
-    default_out_file = '../mcnp_templates/test2.i'
+    default_out_file = '../mcnp_templates/test.i'
+    # default_out_file = '../mcnp_templates/test2.i'
 
     file_title = ""
     cell_line_pieces = []
@@ -29,7 +29,7 @@ class TemplateHandler(Singleton):
 
     all_cells = {}
     all_surfaces = {}
-    all_materials = {"Void": Material("m0"), "WIP": Material("m00")}
+    all_materials = {"Void": Material("m0"), "WIP": Material("m00")}    # mt card numbers stored as 't16'
     all_options = {}
 
     def read_template(self, in_filename):
@@ -63,7 +63,6 @@ class TemplateHandler(Singleton):
             self.apply_comments(self.all_cells, self.cell_comments)
             self.apply_comments(self.all_surfaces, self.surface_comments)
             self.apply_comments(self.all_materials, self.data_comments)
-
         return
 
 
@@ -81,18 +80,20 @@ class TemplateHandler(Singleton):
         while 0 <= i:
             dollar_index = re.search(r'\$.*$', line_array[i])
             if dollar_index is not None:    # Find any '$' comments to save/delete
-                if re.search(r'^m?\d{1,6}', line_array[i]) is not None:
+                if re.search(r'^m?t?\d{1,6}', line_array[i]) is not None:
                     new_comment = line_array[i][dollar_index.span()[0] + 1:].strip()
-                    number_end = re.search(r'^m?\d{1,6}', line_array[i]).span()[1] + 1
+                    number_end = re.search(r'^m?t?\d{1,6}', line_array[i]).span()[1] + 1
                     number = line_array[i][0: number_end].strip()
+                    if number[0] == "m":
+                        number = number[1:]
                     comment_array[number] = new_comment
                     line_array[i] = line_array[i][: dollar_index.span()[0]]
                 else:
                     line_array[i] = line_array[i][: dollar_index.span()[0]]
             if re.search(r'^[cC].*$', line_array[i]) is not None:   # Find any 'cC' comments to save/delete
                 if re.search(r'^[cC][ \t]+\S.*$', line_array[i]) is not None:
-                    if i < len(line_array) - 1 and re.search(r'^m?\d{1,6}', line_array[i+1]) is not None:
-                        number_end = re.search(r'^m?\d{1,6}', line_array[i+1]).span()[1] + 1
+                    if i < len(line_array) - 1 and re.search(r'^m?t?\d{1,6}', line_array[i+1]) is not None:
+                        number_end = re.search(r'^m?t?\d{1,6}', line_array[i+1]).span()[1] + 1
                         number = line_array[i+1][0: number_end].strip()
                         if number[0] == "m":
                             number = number[1:]
@@ -182,8 +183,7 @@ class TemplateHandler(Singleton):
             elif isinstance(made_card, DataCard):
                 self.all_options[made_card.number] = made_card
             else:
-                continue
-                #print(f"Card for {made_card} with line '{line}' not found")
+                print(f"Card for {made_card} with line '{line}' not found")
         return
 
 
@@ -218,8 +218,9 @@ class TemplateHandler(Singleton):
             print("\nc --Begin Surfaces--", file=f_write)
             self.print_card(f_write, self.all_surfaces, element_comments)
             print("\nc --Begin Options--", file=f_write)
-            self.print_card(f_write, self.all_materials, element_comments)
             self.print_card(f_write, self.all_options, element_comments)
+            print("c --Begin Materials--", file=f_write)
+            self.print_card(f_write, self.all_materials, element_comments)
         return out_filename
 
 

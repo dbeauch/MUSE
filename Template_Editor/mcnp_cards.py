@@ -80,7 +80,7 @@ element_symbols = {  # Cached to decrease runtime; mendeleev element() is slow
 
 def zaid_to_isotope(zaid):
     if len(zaid) != 5:
-        return 'Invalid ZAID'
+        return 'Unrecognized ZAID'
 
     element_number = zaid[:-3]
     isotope_number = zaid[-3:]
@@ -107,15 +107,15 @@ class CardFactory:
     }
 
     OPTIONS_REGEX = {
-        'mode': r'^mode[ \t]+\.+$',
-        'kcode': r'^kcode[ \t]+\.+$',
-        'ksrc': r'ksrc[ \t]+((-?\d+(\.\d+)?[eE]?-?\d*[ \t]+){3})+$',
-        'transform': r'WIP REGEX'
+        'mode': r'^mode[ \t]+.+$',
+        'kcode': r'^kcode[ \t]+.+$',
+        'ksrc': r'^ksrc[ \t]+((-?\d+(\.\d+)?[eE]?-?\d*[ \t]+){3})+$',
+        'transform': r'^\*?tr\d{1,6}[ \t]+(-?\d+\.?\d*[ \t]*)+$'
     }
 
     MATERIAL_TEMPERATURE_REGEX = {
         'material': r'^m\d+[ \t]+(\d+(\.\S+)?[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*[ \t]+)+$',
-        'temperature': r'WIP REGEX'
+        'temperature': r'^mt\d{1,6}[ \t]+.+$'
     }
 
     def create_card(self, line, comment=""):
@@ -284,34 +284,43 @@ class DataCard(Card):
 class KCode(DataCard):
     def __init__(self, line):
         self.number = "kcode"
-        self.nsrck = " "
-        self.rkk = " "
-        self.ikz = " "
-        self.kct = " "
+        self.param = line[5:].strip()
+        # self.nsrck = " "
+        # self.rkk = " "
+        # self.ikz = " "
+        # self.kct = " "
 
     def __str__(self):
-        return f"{super().__str__()}kcode\t{self.nsrck}\t{self.rkk}\t{self.ikz}\t{self.kct}"
+        return f"{super().__str__()}kcode\t{self.param}"  # {self.nsrck}\t{self.rkk}\t{self.ikz}\t{self.kct}"
 
 
 class KSrc(DataCard):
     def __init__(self, line):
-        self.number = " "
-        self.locations = " "
+        self.number = "ksrc"
+        self.locations = []
+        ksrc_end = re.search(r'^ksrc', line).span()[1]+1
+        source_list = re.split(r'[ \t]+', line[ksrc_end:].strip())
+        for i in range(int(len(source_list)/3)):
+            self.locations.append((source_list[3*i], source_list[3*i + 1], source_list[3*i + 2]))
+        self.comment = ""
+
 
     def __str__(self):
-        locations_str = '\t'.join(' '.join(map(str, location)) for location in self.locations)
-        return f"{super().__str__()}ksrc\t{locations_str}"
+        locations_str = ""
+        for triplet in self.locations:
+            locations_str += f"\n{line_indent}{triplet[0]}  {triplet[1]}  {triplet[2]}"
+        return f"{super().__str__()}ksrc{locations_str}"
 
 
 class Material(DataCard):
     def __init__(self, line):
         self.zaid_fracs = []
-        number_end = re.search(r'^m\d+', line).span()[1] + 1
+        number_end = re.search(r'^m\d+', line).span()[1]+1
         self.number = line[1: number_end].strip()
 
         zaid_list = re.split(r'[ \t]+', line[number_end:].strip())
-        for i in range(int(len(zaid_list) / 2)):
-            self.zaid_fracs.append((zaid_list[2 * i], zaid_list[2 * i + 1]))
+        for i in range(int(len(zaid_list)/2)):
+            self.zaid_fracs.append((zaid_list[2*i], zaid_list[2*i + 1]))
         self.comment = ""
 
     def __str__(self, comments_on):
@@ -325,29 +334,33 @@ class Material(DataCard):
 
 class Temperature(DataCard):
     def __init__(self, line):
-        self.number = ""
-        self.param = " "
+        number_end = re.search(r'^mt\d{1,6}[ \t]+', line).span()[1] + 1
+        self.number = line[1: number_end].strip()
+        self.param = line[number_end:]
 
     def __str__(self):
-        return f"{super().__str__()}mt{self.number}\t\t{self.param}"
+        return f"{super().__str__()}m{self.number}\t\t{self.param}"
 
 
 class Mode(DataCard):
     def __init__(self, line):
-        self.number = " "
-        self._mode = " "
+        self.number = "mode"
+        self.param = line[4:].strip()
 
     def __str__(self):
-        return f"{super().__str__()}mode {self._mode}"
+        return f"{super().__str__()}mode\t{self.param}"
 
 
+# r'^\*?tr\d{1,6}[ \t]+(-?\d+\.?\d*[ \t]*)+$'
 class Transform(DataCard):
     def __init__(self, line):
-        self.number = " "
-        self.param = " "
+        tr_end = re.search(r'^\*?tr', line).span()[1]
+        number_end = re.search(r'^\*?tr\d{1,6}[ \t]+', line).span()[1]
+        self.number = line[tr_end: number_end].strip()
+        self.param = line[number_end:]
 
     def __str__(self):
-        return f"{super().__str__()}*tr {self.param}"
+        return f"{super().__str__()}*tr{self.number}\t{self.param}"
 
 
 class Option(DataCard):

@@ -23,8 +23,8 @@ navbar_color = '#993300'
 if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     sys.setrecursionlimit(8000)
     template = TemplateHandler()
-    template.read_template('../mcnp_templates/test.i')
-    # template.read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
+    # template.read_template('../mcnp_templates/test.i')
+    template.read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
 else:
     template = TemplateHandler()
 
@@ -73,11 +73,11 @@ console = html.Div([
         dbc.Col("Console", width=3),
         dbc.Col(
             dcc.Input(id='file_path', type='text', placeholder='File path', debounce=True),
-            width=1
+            width=2
         ),
         dbc.Col(width=1),
-        dbc.Col(dcc.Checklist(id='element_comments', options=['Print Element Comments'], value=['Print Element Comments']), width=2),
-        dbc.Col(width=3),
+        dbc.Col(dcc.Checklist(id='element_comments', options=['Element Comments'], value=['Element Comments']), width=2),
+        dbc.Col(width=2),
         dbc.Col(html.Button("-", id="console_toggler"), width=2)
     ], align='center',
         style={
