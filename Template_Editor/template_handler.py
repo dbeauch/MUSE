@@ -11,6 +11,9 @@ class Singleton:
 
 
 class TemplateHandler(Singleton):
+    # default_out_file = '../mcnp_templates/test.i'
+    default_out_file = '../mcnp_templates/test2.i'
+
     file_title = ""
     cell_line_pieces = []
     surface_line_pieces = []
@@ -199,30 +202,32 @@ class TemplateHandler(Singleton):
         return
 
 
-    def print_file(self, out_filename):
+    def print_file(self, out_filename, element_comments):
         """
         Prints card objects created to given filename
+        :param element_comments: Boolean to print element comments
         :param out_filename: name of file to print to
         :return: out_filename
         """
         if out_filename == "" or out_filename is None:
-            out_filename = '../mcnp_templates/test.i'
-            # out_filename = '../mcnp_templates/test2.i'
+            out_filename = self.default_out_file
 
         with open(out_filename, 'w') as f_write:
             f_write.write(self.file_title + '\n')
-            self.print_card(f_write, self.all_cells)
+            self.print_card(f_write, self.all_cells, element_comments)
             print("\nc --Begin Surfaces--", file=f_write)
-            self.print_card(f_write, self.all_surfaces)
+            self.print_card(f_write, self.all_surfaces, element_comments)
             print("\nc --Begin Options--", file=f_write)
-            self.print_card(f_write, self.all_materials)
-            self.print_card(f_write, self.all_options)
+            self.print_card(f_write, self.all_materials, element_comments)
+            self.print_card(f_write, self.all_options, element_comments)
         return out_filename
 
+
     @staticmethod
-    def print_card(out_file, dictionary):
+    def print_card(out_file, dictionary, element_comments):
         """
         Helper method for print_file()
+        :param element_comments: Boolean to print element comments
         :param out_file: Filestream to print to
         :param dictionary: Dictionary of things to print
         :return: None
@@ -230,5 +235,8 @@ class TemplateHandler(Singleton):
         for card in dictionary.values():
             if card.number == "0" or card.number == "00":
                 continue
-            print(card, file=out_file)
+            elif isinstance(card, Material):
+                print(card.__str__(element_comments), file=out_file)
+            else:
+                print(card, file=out_file)
         return

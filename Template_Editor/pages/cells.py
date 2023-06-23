@@ -115,10 +115,11 @@ def update_material_options(search_value):
     State('geom_input', 'value'),
     State('param_input', 'value'),
     State('file_path', 'value'),
+    State('element_comments', 'value'),
     State('console_output', 'children'),
     prevent_initial_call=True
 )
-def update_console(apply_clicked, print_clicked, pathname, cell, material, density, geom, param, file_path, current_messages):
+def update_console(apply_clicked, print_clicked, pathname, cell, material, density, geom, param, file_path, element_comments, current_messages):
     if pathname == '/cells':
         if not current_messages:
             current_messages = []
@@ -168,7 +169,8 @@ def update_console(apply_clicked, print_clicked, pathname, cell, material, densi
                 current_messages.insert(0, html.P(message))
 
         elif button_id == 'cell_print_button':
-            printed = template.print_file(file_path)
+            element_comments = element_comments != []
+            printed = template.print_file(file_path, element_comments)
             message = f'({timestamp})\tPrinted the file to: {printed}'
             current_messages.insert(0, html.P(message))
 

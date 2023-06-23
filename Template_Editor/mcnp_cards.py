@@ -23,8 +23,75 @@ Moderator(number, params)
 import re
 from mendeleev import element
 
-
 line_indent = "        "
+element_symbols = {  # Cached to decrease runtime; mendeleev element() is slow
+    '13': 'Al',
+    '12': 'Mg',
+    '14': 'Si',
+    '22': 'Ti',
+    '25': 'Mn',
+    '24': 'Cr',
+    '26': 'Fe',
+    '29': 'Cu',
+    '40': 'Zr',
+    '50': 'Sn',
+    '72': 'Hf',
+    '48': 'Cd',
+    '49': 'In',
+    '47': 'Ag',
+    '20': 'Ca',
+    '92': 'U',
+    '42': 'Mo',
+    '94': 'Pu',
+    '93': 'Np',
+    '61': 'Pm',
+    '62': 'Sm',
+    '95': 'Am',
+    '32': 'Ge',
+    '33': 'As',
+    '34': 'Se',
+    '35': 'Br',
+    '36': 'Kr',
+    '37': 'Rb',
+    '38': 'Sr',
+    '39': 'Y',
+    '41': 'Nb',
+    '43': 'Tc',
+    '44': 'Ru',
+    '45': 'Rh',
+    '46': 'Pd',
+    '51': 'Sb',
+    '52': 'Te',
+    '53': 'I',
+    '54': 'Xe',
+    '55': 'Cs',
+    '56': 'Ba',
+    '57': 'La',
+    '58': 'Ce',
+    '59': 'Pr',
+    '60': 'Nd',
+    '63': 'Eu',
+    '64': 'Gd',
+    '65': 'Tb',
+    '96': 'Cm',
+    '66': 'Dy',
+}
+
+
+def zaid_to_isotope(zaid):
+    if len(zaid) != 5:
+        return 'Invalid ZAID'
+
+    element_number = zaid[:-3]
+    isotope_number = zaid[-3:]
+
+    if element_number in element_symbols.keys():
+        return f'{element_symbols[element_number]}-{isotope_number}'
+    else:
+        element_name = element(element_number).symbol
+        element_symbols[element_number] = element_name
+        print(f"'{element_number}': '{element_name}',")
+        return f'{element_name}-{isotope_number}'
 
 
 class CardFactory:
@@ -50,7 +117,6 @@ class CardFactory:
         'material': r'^m\d+[ \t]+(\d+(\.\S+)?[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*[ \t]+)+$',
         'temperature': r'WIP REGEX'
     }
-
 
     def create_card(self, line, comment=""):
         if re.search(self.CELLS_REGEX['regular'], line):
@@ -78,7 +144,7 @@ class CardFactory:
         elif re.search(r'^[cC] .*', line):
             return
         else:
-            #print(f"Card for {line} not found")
+            # print(f"Card for {line} not found")
             return
         made_card.set_comment(comment)
         return made_card
@@ -88,10 +154,8 @@ class Card:
     def __init__(self, comment=""):
         self.comment = comment
 
-
     def set_comment(self, comment):
         self.comment = f"{comment}"
-
 
     def __str__(self):
         if self.comment != "" and self.comment is not None:
@@ -99,28 +163,13 @@ class Card:
         else:
             return ""
 
-    @staticmethod
-    def zaid_to_isotope(zaid):
-        zaid_str = str(zaid)
-
-        if len(zaid_str) != 5:
-            return 'Invalid ZAID'
-
-        element_number = int(zaid_str[:2])
-        isotope_number = int(zaid_str[2:])
-
-        element_name = element(element_number).symbol
-        return f'{element_name}-{isotope_number}'
-
 
 class Cell(Card):
     def __str__(self):
         return super().__str__()
 
-
     def get_material(self):
         return "Void" if isinstance(self, VoidCell) else self.material
-
 
     def get_density(self):
         return "Void" if isinstance(self, VoidCell) else self.density
@@ -142,13 +191,13 @@ class RegularCell(Cell):
 
         self.param = line[geom_end:].strip()
 
-
     def __str__(self):
         printed_geom = re.sub(r'\)[ \t]+\(', f")\n{line_indent}(", self.geom)
         printed_geom = re.sub(r':[ \t]+\(', f":\n{line_indent}(", printed_geom)
         digit_par = re.search(r'\d[ \t]+\(', printed_geom)
         if digit_par is not None:
-            printed_geom = printed_geom[:digit_par.span()[0]+1] + f"\n{line_indent}" + printed_geom[digit_par.span()[0]+2:]
+            printed_geom = printed_geom[:digit_par.span()[0] + 1] + f"\n{line_indent}" + printed_geom[
+                                                                                         digit_par.span()[0] + 2:]
         return f"{super().__str__()}{self.number}\t{self.material}\t{self.density}\n{line_indent}{printed_geom}\n{line_indent}{self.param}"
 
 
@@ -167,13 +216,13 @@ class VoidCell(Cell):
 
         self.param = line[geom_end:].strip()
 
-
     def __str__(self):
         printed_geom = re.sub(r'\)[ \t]+\(', f")\n{line_indent}(", self.geom)
         printed_geom = re.sub(r':[ \t]+\(', f":\n{line_indent}(", printed_geom)
         digit_par = re.search(r'\d[ \t]+\(', printed_geom)
         if digit_par is not None:
-            printed_geom = printed_geom[:digit_par.span()[0] + 1] + f"\n{line_indent}" + printed_geom[digit_par.span()[0] + 2:]
+            printed_geom = printed_geom[:digit_par.span()[0] + 1] + f"\n{line_indent}" + printed_geom[
+                                                                                         digit_par.span()[0] + 2:]
         return f"{super().__str__()}{self.number}\t{self.material}\n{line_indent}{printed_geom}\n{line_indent}{self.param}"
 
 
@@ -195,7 +244,6 @@ class LikeCell(Cell):
         self.geom = "WIP"
         self.param = "WIP"
 
-
     def __str__(self):
         printed_changes = ""
         parts = self.changes.split()
@@ -210,7 +258,7 @@ class Surface(Card):
         number_end = re.search(r'^\d+', line).span()[1] + 1
         self.number = line[: number_end].strip()
 
-        if re.search(r'^\d+[ \t]+\d+[^-\d\.]+[^a-zA-Z]+$', line):   # Surface with associated transform
+        if re.search(r'^\d+[ \t]+\d+[^-\d\.]+[^a-zA-Z]+$', line):  # Surface with associated transform
             transform_end = re.search(r'^\d+[ \t]+\d+', line).span()[1] + 1
             self.transform = line[number_end: transform_end].strip()
 
@@ -266,10 +314,12 @@ class Material(DataCard):
             self.zaid_fracs.append((zaid_list[2 * i], zaid_list[2 * i + 1]))
         self.comment = ""
 
-    def __str__(self):
+    def __str__(self, comments_on):
         zaid_fracs_str = ""
         for pair in self.zaid_fracs:
-            zaid_fracs_str += f"\n{line_indent}{pair[0]}\t{pair[1]}"  # \t$ {zaid_to_isotope(pair[0])}"
+            zaid_fracs_str += f"\n{line_indent}{pair[0]}\t{pair[1]}"
+            if comments_on:
+                zaid_fracs_str += f"    \t$ {zaid_to_isotope(pair[0])}"
         return f"{super().__str__()}m{self.number}{zaid_fracs_str}"
 
 

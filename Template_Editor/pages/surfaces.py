@@ -89,10 +89,11 @@ def update_surface_display(surface):
     State('transform_input', 'value'),
     State('dimensions_input', 'value'),
     State('file_path', 'value'),
+    State('element_comments', 'value'),
     State('console_output', 'children'),
     prevent_initial_call=True
 )
-def update_console(apply_clicked, print_clicked, pathname, surface, mnemonic, transform, dimensions, file_path, current_messages):
+def update_console(apply_clicked, print_clicked, pathname, surface, mnemonic, transform, dimensions, file_path, element_comments, current_messages):
     if pathname == '/surfaces':
         if not current_messages:
             current_messages = []
@@ -122,7 +123,8 @@ def update_console(apply_clicked, print_clicked, pathname, surface, mnemonic, tr
             return current_messages
 
         elif button_id == 'surface_print_button':
-            printed = template.print_file(file_path)
+            element_comments = element_comments == []
+            printed = template.print_file(file_path, element_comments)
             message = f'({timestamp})\tPrinted the file to: {printed}'
             current_messages.insert(0, html.P(message))
 

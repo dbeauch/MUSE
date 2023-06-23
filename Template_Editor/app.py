@@ -14,7 +14,7 @@ from template_handler import *
 # Sizes and Colors
 navbar_width = '15vw'
 console_height = '20vh'
-console_banner_height = '0.2vh'
+console_banner_height = '0.1vh'
 page_background = '#D3D3D3'
 navbar_color = '#993300'
 
@@ -23,8 +23,8 @@ navbar_color = '#993300'
 if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     sys.setrecursionlimit(8000)
     template = TemplateHandler()
-    # template.read_template('../mcnp_templates/test.i')
-    template.read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
+    template.read_template('../mcnp_templates/test.i')
+    # template.read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
 else:
     template = TemplateHandler()
 
@@ -68,24 +68,24 @@ navbar = html.Div([
     'position': 'fixed'
 })
 
-console_toggler = html.Button("-", id="console_toggler")
-
 console = html.Div([
     dbc.Row([
-        dbc.Col("Console", width=4, align='center'),
+        dbc.Col("Console", width=3),
         dbc.Col(
             dcc.Input(id='file_path', type='text', placeholder='File path', debounce=True),
-            width=1, align='center'
+            width=1
         ),
-        dbc.Col(width=5),
-        dbc.Col(console_toggler, width=2)
-    ],
+        dbc.Col(width=1),
+        dbc.Col(dcc.Checklist(id='element_comments', options=['Print Element Comments'], value=['Print Element Comments']), width=2),
+        dbc.Col(width=3),
+        dbc.Col(html.Button("-", id="console_toggler"), width=2)
+    ], align='center',
         style={
             'marginTop': 20,
             'backgroundColor': 'black',
             'color': 'white',
             'padding': console_banner_height,
-            'fontSize': '18px'
+            'fontSize': '15px'
         },
         className='g-0'),
 
@@ -149,9 +149,9 @@ def display_page(pathname):
 
 
 @app.callback(
-    Output("console_output_window", "is_open", allow_duplicate=True),
-    Input("console_toggler", "n_clicks"),
-    State("console_output_window", "is_open"),
+    Output('console_output_window', 'is_open', allow_duplicate=True),
+    Input('console_toggler', 'n_clicks'),
+    State('console_output_window', 'is_open'),
     prevent_initial_call=True,
 )
 def toggle_console(n, is_open):
