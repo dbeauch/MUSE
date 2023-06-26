@@ -18,7 +18,7 @@ page_background = '#D3D3D3'
 navbar_color = '#993300'
 
 
-# Only runs preprocessing operations for the main server process not for monitor process
+# Only runs preprocessing operation for the main server process not for monitor process
 if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     sys.setrecursionlimit(8000)
     # template.read_template('../mcnp_templates/test.i')
@@ -37,7 +37,7 @@ banner = html.Header(
         'backgroundColor': navbar_color,
         'color': 'white',
         'padding': '0px',
-        'fontSize': '3vh',
+        'fontSize': 'calc((3vh + 1vw) / 2)',
         'textAlign': 'center'
     }
 )
@@ -54,7 +54,10 @@ navbar = html.Div([
         ],
         vertical=True,
         pills=True,
-        style={'margin': '20px'},
+        style={
+            'margin': '1vh',
+            'fontSize': 'calc((2vh + 1vw) / 2)',
+        },
     ),
 ], style={
     'color': 'black',
@@ -81,7 +84,7 @@ console = html.Div([
             'backgroundColor': 'black',
             'color': 'white',
             'padding': console_banner_height,
-            'fontSize': '15px'
+            'fontSize': 'calc((2vh + 1vw) / 2)'
         },
         className='g-0'),
 
