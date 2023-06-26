@@ -11,26 +11,30 @@ class Singleton:
 
 
 class TemplateHandler(Singleton):
-    default_out_file = '../mcnp_templates/test.i'
-    # default_out_file = '../mcnp_templates/test2.i'
+    def __init__(self):
+        if not hasattr(self, 'is_initialized'):
+            self.default_out_file = '../mcnp_templates/test.i'
+            # self.default_out_file = '../mcnp_templates/test2.i'
 
-    file_title = ""
-    cell_line_pieces = []
-    surface_line_pieces = []
-    data_line_pieces = []
+            self.file_title = ""
+            self.cell_line_pieces = []
+            self.surface_line_pieces = []
+            self.data_line_pieces = []
 
-    cell_lines = []
-    surface_lines = []
-    data_lines = []
+            self.cell_lines = []
+            self.surface_lines = []
+            self.data_lines = []
 
-    cell_comments = {}
-    surface_comments = {}
-    data_comments = {"Void": "Void Cell"}
+            self.cell_comments = {}
+            self.surface_comments = {}
+            self.data_comments = {"Void": "Void Cell"}
 
-    all_cells = {}
-    all_surfaces = {}
-    all_materials = {"Void": Material("m0"), "WIP": Material("m00")}    # mt card numbers stored as 't16'
-    all_options = {}
+            self.all_cells = {}
+            self.all_surfaces = {}
+            self.all_materials = {"Void": Material("m0"), "WIP": Material("m00")}  # mt card numbers stored as 't16'
+            self.all_options = {}
+            self.is_initialized = True
+
 
     def read_template(self, in_filename):
         """
@@ -196,7 +200,6 @@ class TemplateHandler(Singleton):
         :return: None
         """
         for number in comment_dict:
-            # number = number[re.search(r'^m?t?', number).span()[1]:]
             if number in card_dict:
                 card_dict[number].set_comment(comment_dict[number])
         return

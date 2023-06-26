@@ -1,25 +1,8 @@
 """
 Created by: Duncan Beauch
 TEMPLATE FOR MCNP CARDS
-
-CellCard(number, material number, density, geom string, optional param string)
-    CellCard(, , , "", "")
-
-SurfaceCard(number, mnemonic, array of numbers)
-    SurfaceCard(, "", [])
-
-KCode(nsrck neutrons per cycle, rkk initial keff guess, ikz cycles skipped, kct cycles to run)
-    KCode(, , , )
-
-KSrc(array of arrays representing x-y-z locations)
-    KSrc([[, , ]])
-
-Material(number, array of tuples for each zaid-fraction pair)
-    Material("", [(, )])
-
-Moderator(number, params)
-    Moderator("", "")
 """
+
 import re
 from mendeleev import element
 
@@ -107,10 +90,17 @@ class CardFactory:
     }
 
     OPTIONS_REGEX = {
+        'ksrc': r'^ksrc[ \t]+((-?\d+(\.\d+)?[eE]?-?\d*[ \t]+){3})+$',
+        'transform': r'^\*?tr\d{1,6}[ \t]+(-?\d+\.?\d*[ \t]*)+$',
         'mode': r'^mode[ \t]+.+$',
         'kcode': r'^kcode[ \t]+.+$',
-        'ksrc': r'^ksrc[ \t]+((-?\d+(\.\d+)?[eE]?-?\d*[ \t]+){3})+$',
-        'transform': r'^\*?tr\d{1,6}[ \t]+(-?\d+\.?\d*[ \t]*)+$'
+        'prdmp': r'^prdmp[ \t]+',
+        'print': r'^print[ \t]+',
+        'F': r'^F\d+:n[ \t]+',
+        'SD': r'^SD\d+[ \t]+',
+        'FM': r'^FM\d+[ \t]+',
+        'E': r'^E\d+[ \t]+',
+        'FMESH': r'^FMESH\d+:n[ \t]+',
     }
 
     MATERIAL_TEMPERATURE_REGEX = {
@@ -141,11 +131,18 @@ class CardFactory:
             made_card = KCode(line)
         elif re.search(self.OPTIONS_REGEX['mode'], line):
             made_card = Mode(line)
-        elif re.search(r'^[cC] .*', line):
-            return
         else:
-            # print(f"Card for {line} not found")
-            return
+            matched = False
+            for regex in self.OPTIONS_REGEX.values():
+                search = re.search(regex, line)
+                if search is not None:
+                    start = search.span()[1]
+                    made_card = Option(line, start)
+                    matched = True
+                    break
+            if not matched:
+                return None
+
         made_card.set_comment(comment)
         return made_card
 
@@ -156,6 +153,12 @@ class Card:
 
     def set_comment(self, comment):
         self.comment = f"{comment}"
+
+    def get_inline_comment(self):
+        if self.comment != "" and self.comment is not None:
+            return f"\t\t$ {self.comment}"
+        else:
+            return ""
 
     def __str__(self):
         if self.comment != "" and self.comment is not None:
@@ -198,7 +201,7 @@ class RegularCell(Cell):
         if digit_par is not None:
             printed_geom = printed_geom[:digit_par.span()[0] + 1] + f"\n{line_indent}" + printed_geom[
                                                                                          digit_par.span()[0] + 2:]
-        return f"{super().__str__()}{self.number}\t{self.material}\t{self.density}\n{line_indent}{printed_geom}\n{line_indent}{self.param}"
+        return f"{self.number}\t{self.material}\t{self.density}{self.get_inline_comment()}\n{line_indent}{printed_geom}\n{line_indent}{self.param}"
 
 
 class VoidCell(Cell):
@@ -223,7 +226,7 @@ class VoidCell(Cell):
         if digit_par is not None:
             printed_geom = printed_geom[:digit_par.span()[0] + 1] + f"\n{line_indent}" + printed_geom[
                                                                                          digit_par.span()[0] + 2:]
-        return f"{super().__str__()}{self.number}\t{self.material}\n{line_indent}{printed_geom}\n{line_indent}{self.param}"
+        return f"{self.number}\t{self.material}{self.get_inline_comment()}\n{line_indent}{printed_geom}\n{line_indent}{self.param}"
 
 
 class LikeCell(Cell):
@@ -250,7 +253,7 @@ class LikeCell(Cell):
         for i in range(0, len(parts), 5):
             printed_changes += ' '.join(parts[i:i + 5]) + "\n" + line_indent
         printed_changes = printed_changes[:re.search(r'\s+$', printed_changes).span()[0]]
-        return f"{super().__str__()}{self.number} like {self.related_cell} but {printed_changes}"
+        return f"{self.number} like {self.related_cell} but {self.get_inline_comment()}{printed_changes}"
 
 
 class Surface(Card):
@@ -273,7 +276,7 @@ class Surface(Card):
         self.dimensions = line[mnemonic_end:].strip()
 
     def __str__(self):
-        return f"{super().__str__()}{self.number}\t{self.transform}\t{self.mnemonic}\t{self.dimensions}"
+        return f"{self.number}\t{self.transform}\t{self.mnemonic}\t{self.dimensions}{self.get_inline_comment()}"
 
 
 class DataCard(Card):
@@ -334,7 +337,7 @@ class Material(DataCard):
 
 class Temperature(DataCard):
     def __init__(self, line):
-        number_end = re.search(r'^mt\d{1,6}[ \t]+', line).span()[1] + 1
+        number_end = re.search(r'^mt\d{1,6}[ \t]+', line).span()[1]
         self.number = line[1: number_end].strip()
         self.param = line[number_end:]
 
@@ -351,7 +354,6 @@ class Mode(DataCard):
         return f"{super().__str__()}mode\t{self.param}"
 
 
-# r'^\*?tr\d{1,6}[ \t]+(-?\d+\.?\d*[ \t]*)+$'
 class Transform(DataCard):
     def __init__(self, line):
         tr_end = re.search(r'^\*?tr', line).span()[1]
@@ -364,10 +366,14 @@ class Transform(DataCard):
 
 
 class Option(DataCard):
-    def __init__(self, line):
-        self.number = " "
-        self.code = " "
-        self.param = " "
+    def __init__(self, line, start):
+        self.number = line[:start].strip()
+        self.param = line[start:].strip()
+
 
     def __str__(self):
-        return f"{super().__str__()}{self.code}\t{self.param}"
+        printed_param = ""
+        parts = self.param.split()
+        for i in range(0, len(parts), 5):
+            printed_param += "\n" + line_indent + ' '.join(parts[i:i + 5])
+        return f"{self.number}{self.get_inline_comment()}{printed_param}"

@@ -7,9 +7,8 @@ from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 
 from pages import home, cells, surfaces
-from template_handler import *
+from template_handler_instance import template_handler_instance as template
 
-# TODO: Make console_output and select dropdown into a dcc.Store to store per user to keep after refresh
 
 # Sizes and Colors
 navbar_width = '15vw'
@@ -22,11 +21,8 @@ navbar_color = '#993300'
 # Only runs preprocessing operations for the main server process not for monitor process
 if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     sys.setrecursionlimit(8000)
-    template = TemplateHandler()
     # template.read_template('../mcnp_templates/test.i')
     template.read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
-else:
-    template = TemplateHandler()
 
 
 app = dash.Dash(
@@ -139,11 +135,11 @@ app.layout = html.Div([
 )
 def display_page(pathname):
     if pathname == '/':
-        return home.layout(template, page_background), False
+        return home.layout(page_background), False
     elif pathname == '/cells':
-        return cells.layout(template, page_background), True
+        return cells.layout(page_background), True
     elif pathname == '/surfaces':
-        return surfaces.layout(template, page_background), True
+        return surfaces.layout(page_background), True
     else:
         return '404 Error: This page does not exist...YET!', False
 

@@ -4,14 +4,11 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html, Input, Output, State, callback
 
-from Template_Editor.template_handler import *
+from Template_Editor.mcnp_cards import *
+from Template_Editor.template_handler_instance import template_handler_instance as template
 
-global template  # TODO: find solution to avoid global
 
-
-def layout(template_handler, page_background):
-    global template
-    template = template_handler
+def layout(page_background):
     return [
             html.Div(style={'backgroundColor': page_background, 'height': '100vh'}, children=[
                 dbc.Container([
@@ -89,7 +86,7 @@ def update_cell_display(cell, material_select):
 
 @callback(
     Output("cell_selector", "options"),
-    Input("cell_selector", "search_value")
+    Input("cell_selector", "search_value"),
 )
 def update_cell_options(search_value):
     return [o for o in template.all_cells]

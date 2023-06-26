@@ -2,7 +2,7 @@ import dash
 from dash import html
 
 
-def layout(template_handler, page_background):
+def layout(page_background):
     return [
         html.Div([
             html.H1('Welcome to Py2MCNP Editor!'),
