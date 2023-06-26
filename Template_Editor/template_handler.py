@@ -1,4 +1,6 @@
-from mcnp_cards import *
+import re
+
+from mcnp_cards import CardFactory, Cell, Surface, DataCard, Material, Temperature
 
 
 class Singleton:
@@ -33,6 +35,7 @@ class TemplateHandler(Singleton):
             self.all_surfaces = {}
             self.all_materials = {"Void": Material("m0"), "WIP": Material("m00")}  # mt card numbers stored as 't16'
             self.all_options = {}
+            self.all_universes = {}
             self.is_initialized = True
 
 
@@ -173,7 +176,7 @@ class TemplateHandler(Singleton):
         :param line_array: Array of lines
         :return: None
         """
-        factory = CardFactory()
+        factory = CardFactory(self)
         for line in line_array:
             made_card = factory.create_card(line)
             if isinstance(made_card, Cell):

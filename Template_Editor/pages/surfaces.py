@@ -4,7 +4,6 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html, Input, Output, State, callback
 
-from Template_Editor.mcnp_cards import *
 from Template_Editor.template_handler_instance import template_handler_instance as template
 
 

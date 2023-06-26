@@ -108,17 +108,28 @@ class CardFactory:
         'temperature': r'^mt\d{1,6}[ \t]+.+$'
     }
 
+
+    def __init__(self, template):
+        self.template = template
+
+
     def create_card(self, line, comment=""):
+        universe = False
         if re.search(self.CELLS_REGEX['regular'], line):
             made_card = RegularCell(line)
+            universe = True
         elif re.search(self.CELLS_REGEX['void'], line):
             made_card = VoidCell(line)
+            universe = True
         elif re.search(self.CELLS_REGEX['like_but'], line):
             made_card = LikeCell(line)
+            universe = True
         elif re.search(self.SURFACES_REGEX['regular'], line):
             made_card = Surface(line)
+            universe = True
         elif re.search(self.SURFACES_REGEX['transform'], line):
             made_card = Surface(line)
+            universe = True
         elif re.search(self.MATERIAL_TEMPERATURE_REGEX['material'], line):
             made_card = Material(line)
         elif re.search(self.MATERIAL_TEMPERATURE_REGEX['temperature'], line):
@@ -142,6 +153,12 @@ class CardFactory:
                     break
             if not matched:
                 return None
+
+        if universe and made_card.universe is not None:
+            if made_card.universe not in self.template.all_universes:
+                self.template.all_universes[made_card.universe] = [made_card]
+            else:
+                self.template.all_universes[made_card.universe].append(made_card)
 
         made_card.set_comment(comment)
         return made_card
@@ -192,6 +209,12 @@ class RegularCell(Cell):
         geom_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+', line).span()[1]
         self.geom = line[density_end: geom_end].strip()
 
+        u_param = re.search(r'u=\d+', line)
+        if u_param is not None:
+            self.universe = str(line[u_param.span()[0]+2: u_param.span()[1]+1].strip())
+        else:
+            self.universe = None
+
         self.param = line[geom_end:].strip()
 
     def __str__(self):
@@ -218,6 +241,12 @@ class VoidCell(Cell):
         self.geom = line[material_end: geom_end].strip()
 
         self.param = line[geom_end:].strip()
+
+        u_param = re.search(r'u=\d+', line)
+        if u_param is not None:
+            self.universe = str(line[u_param.span()[0] + 2: u_param.span()[1] + 1].strip())
+        else:
+            self.universe = None
 
     def __str__(self):
         printed_geom = re.sub(r'\)[ \t]+\(', f")\n{line_indent}(", self.geom)
@@ -247,13 +276,19 @@ class LikeCell(Cell):
         self.geom = "WIP"
         self.param = "WIP"
 
+        u_param = re.search(r'u=\d+', line)
+        if u_param is not None:
+            self.universe = str(line[u_param.span()[0] + 2: u_param.span()[1] + 1].strip())
+        else:
+            self.universe = None
+
     def __str__(self):
         printed_changes = ""
         parts = self.changes.split()
         for i in range(0, len(parts), 5):
             printed_changes += ' '.join(parts[i:i + 5]) + "\n" + line_indent
         printed_changes = printed_changes[:re.search(r'\s+$', printed_changes).span()[0]]
-        return f"{self.number} like {self.related_cell} but {self.get_inline_comment()}{printed_changes}"
+        return f"{self.number} like {self.related_cell} but {printed_changes}\t{self.get_inline_comment()}"
 
 
 class Surface(Card):
@@ -274,6 +309,12 @@ class Surface(Card):
             self.mnemonic = line[number_end: mnemonic_end].strip()
 
         self.dimensions = line[mnemonic_end:].strip()
+
+        u_param = re.search(r'u=\d+', line)
+        if u_param is not None:
+            self.universe = str(line[u_param.span()[0] + 2: u_param.span()[1] + 1].strip())
+        else:
+            self.universe = None
 
     def __str__(self):
         return f"{self.number}\t{self.transform}\t{self.mnemonic}\t{self.dimensions}{self.get_inline_comment()}"

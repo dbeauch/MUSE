@@ -4,7 +4,7 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html, Input, Output, State, callback
 
-from Template_Editor.mcnp_cards import *
+from Template_Editor.mcnp_cards import RegularCell, VoidCell, LikeCell
 from Template_Editor.template_handler_instance import template_handler_instance as template
 
 
@@ -19,7 +19,7 @@ def layout(page_background):
                     dbc.Row([
                         dbc.Col(width=1),
                         dbc.Col(html.H4("Current Cell:"), width=3, align="end"),
-                        dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell', clearable=True), width=2,
+                        dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell', clearable=True, style={'width': '10vw'}), width=2,
                                 align="center"),
                         dbc.Col(html.H5(id='cell_description', children='Cell Description'), width=6, align="end"),
                     ], justify="center"),
