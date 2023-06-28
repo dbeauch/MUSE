@@ -36,6 +36,7 @@ class TemplateHandler(Singleton):
             self.all_materials = {"Void": Material("m0"), "WIP": Material("m00")}  # mt card numbers stored as 't16'
             self.all_options = {}
             self.all_universes = {}
+            self.all_fills = {}
             self.is_initialized = True
 
 

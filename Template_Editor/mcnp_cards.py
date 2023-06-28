@@ -114,22 +114,16 @@ class CardFactory:
 
 
     def create_card(self, line, comment=""):
-        universe = False
         if re.search(self.CELLS_REGEX['regular'], line):
             made_card = RegularCell(line)
-            universe = True
         elif re.search(self.CELLS_REGEX['void'], line):
             made_card = VoidCell(line)
-            universe = True
         elif re.search(self.CELLS_REGEX['like_but'], line):
             made_card = LikeCell(line)
-            universe = True
         elif re.search(self.SURFACES_REGEX['regular'], line):
             made_card = Surface(line)
-            universe = True
         elif re.search(self.SURFACES_REGEX['transform'], line):
             made_card = Surface(line)
-            universe = True
         elif re.search(self.MATERIAL_TEMPERATURE_REGEX['material'], line):
             made_card = Material(line)
         elif re.search(self.MATERIAL_TEMPERATURE_REGEX['temperature'], line):
@@ -154,11 +148,20 @@ class CardFactory:
             if not matched:
                 return None
 
-        if universe and made_card.universe is not None:
-            if made_card.universe not in self.template.all_universes:
-                self.template.all_universes[made_card.universe] = [made_card]
-            else:
-                self.template.all_universes[made_card.universe].append(made_card)
+        #   Add cell cards to relevant universe or fill dicts
+        if isinstance(made_card, Cell):
+            if made_card.universe is not None:
+                if made_card.universe not in self.template.all_universes:
+                    self.template.all_universes[made_card.universe] = [made_card]
+                else:
+                    self.template.all_universes[made_card.universe].append(made_card)
+            if made_card.fill is not None:
+                for fill in made_card.fill:
+                    if fill not in self.template.all_fills:
+                        self.template.all_fills[fill] = [made_card]
+                    else:
+                        if made_card not in self.template.all_fills.get(fill):
+                            self.template.all_fills[fill].append(made_card)
 
         made_card.set_comment(comment)
         return made_card
@@ -185,6 +188,31 @@ class Card:
 
 
 class Cell(Card):
+    def __init__(self, line):
+        #   Finds universe parameter
+        u_param = re.search(r'u=\d+', line)
+        if u_param is not None:
+            self.universe = str(line[u_param.span()[0]+2: u_param.span()[1]+1].strip())
+        else:
+            self.universe = None
+
+        # Finds fill parameters
+        basic_fill_param = re.search(r'fill=\d+\s', line)
+        complex_fill_param = re.search(r'fill=(((-?\d+:-?\d+[ \t]+){3}([ \t]*\d+r?)+))', line)
+        if basic_fill_param is not None:
+            self.fill = [line[basic_fill_param.span()[0]+5: basic_fill_param.span()[1]].strip()]
+        elif complex_fill_param is not None:
+            ranges = re.search(r'fill=(((-?\d+:-?\d+[ \t]+){3}))', line)
+            fills = line[ranges.span()[1]: complex_fill_param.span()[1]].strip().split()
+            self.fill = []
+            for f in fills:
+                if 'r' in f:
+                    continue    #   Catches repeated fill: 200 '20r'
+                self.fill.append(f)
+        else:
+            self.fill = None
+
+
     def __str__(self):
         return super().__str__()
 
@@ -197,6 +225,7 @@ class Cell(Card):
 
 class RegularCell(Cell):
     def __init__(self, line):
+        super().__init__(line)
         number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
         self.number = line[0: number_end].strip()
 
@@ -208,12 +237,6 @@ class RegularCell(Cell):
 
         geom_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+', line).span()[1]
         self.geom = line[density_end: geom_end].strip()
-
-        u_param = re.search(r'u=\d+', line)
-        if u_param is not None:
-            self.universe = str(line[u_param.span()[0]+2: u_param.span()[1]+1].strip())
-        else:
-            self.universe = None
 
         self.param = line[geom_end:].strip()
 
@@ -229,6 +252,7 @@ class RegularCell(Cell):
 
 class VoidCell(Cell):
     def __init__(self, line):
+        super().__init__(line)
         number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
         self.number = line[0: number_end].strip()
 
@@ -242,11 +266,6 @@ class VoidCell(Cell):
 
         self.param = line[geom_end:].strip()
 
-        u_param = re.search(r'u=\d+', line)
-        if u_param is not None:
-            self.universe = str(line[u_param.span()[0] + 2: u_param.span()[1] + 1].strip())
-        else:
-            self.universe = None
 
     def __str__(self):
         printed_geom = re.sub(r'\)[ \t]+\(', f")\n{line_indent}(", self.geom)
@@ -260,6 +279,7 @@ class VoidCell(Cell):
 
 class LikeCell(Cell):
     def __init__(self, line):
+        super().__init__(line)
         number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
         self.number = line[0: number_end].strip()
 
@@ -276,11 +296,6 @@ class LikeCell(Cell):
         self.geom = "WIP"
         self.param = "WIP"
 
-        u_param = re.search(r'u=\d+', line)
-        if u_param is not None:
-            self.universe = str(line[u_param.span()[0] + 2: u_param.span()[1] + 1].strip())
-        else:
-            self.universe = None
 
     def __str__(self):
         printed_changes = ""
@@ -310,11 +325,6 @@ class Surface(Card):
 
         self.dimensions = line[mnemonic_end:].strip()
 
-        u_param = re.search(r'u=\d+', line)
-        if u_param is not None:
-            self.universe = str(line[u_param.span()[0] + 2: u_param.span()[1] + 1].strip())
-        else:
-            self.universe = None
 
     def __str__(self):
         return f"{self.number}\t{self.transform}\t{self.mnemonic}\t{self.dimensions}{self.get_inline_comment()}"

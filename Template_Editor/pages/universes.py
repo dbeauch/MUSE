@@ -26,18 +26,38 @@ def layout(page_background):
 
                     html.Hr(),
 
-                    dcc.Textarea(
-                        id='universe_display',
-                        style={
-                            'backgroundColor': '#333333',
-                            'color': '#A9A9A9',
-                            'border': '5px solid black',
-                            'height': '60vh',
-                            'width': '69vw',
-                            'overflow': 'scroll',
-                            'inputMode': 'email',
-                        },
-                    ),
+                    dbc.Row([
+                        dbc.Col([
+                            html.H6("Fill Uses"),
+                            dcc.Textarea(
+                                id='fill_display',
+                                style={
+                                    'backgroundColor': '#333333',
+                                    'color': '#A9A9A9',
+                                    'border': '5px solid black',
+                                    'height': '50vh',
+                                    'width': '30vw',
+                                    'overflow': 'scrollX',
+                                    'inputMode': 'email',
+                                },
+                            )
+                        ]),
+                        dbc.Col([
+                            html.H6("Universe Contents"),
+                            dcc.Textarea(
+                                id='universe_display',
+                                style={
+                                    'backgroundColor': '#333333',
+                                    'color': '#A9A9A9',
+                                    'border': '5px solid black',
+                                    'height': '50vh',
+                                    'width': '30vw',
+                                    'overflow': 'scrollX',
+                                    'inputMode': 'email',
+                                },
+                            )
+                        ]),
+                    ]),
 
                     html.Hr(),
 
@@ -62,6 +82,7 @@ def update_universe_options(search_value):
 
 
 @callback(
+    Output('fill_display', 'value'),
     Output('universe_display', 'value'),
     Input('universe_selector', 'value'),
     prevent_initial_call=True
@@ -71,15 +92,19 @@ def update_universe_display(universe):
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if button_id == 'universe_selector':
         if universe is not None:
-            results = ""
+            fill_results = ""
+            universe_results = ""
+            if universe in template.all_fills.keys():
+                for card in template.all_fills.get(universe):
+                    message = card.__str__() + "\n"
+                    fill_results += message
             if universe in template.all_universes.keys():
                 for card in template.all_universes.get(universe):
                     message = card.__str__() + "\n"
-                    # message = card.number + card.get_inline_comment()
-                    results += message
-            return results
+                    universe_results += message
+            return fill_results, universe_results
         else:
-            return "Related Universe Cards"
+            return "Related Fill Uses", "Related Universe Cards"
 
 
 @callback(
@@ -108,9 +133,6 @@ def update_console(apply_clicked, print_clicked, pathname, universe, file_path, 
                 message = f'({timestamp})\tNo changes made to Surface {universe}'
                 current_messages.insert(0, html.P(message))
                 return current_messages
-
-            # if data is not None:
-            #     selected_universe.data = data
 
             message = f'({timestamp})\tApplied changes to Universe {universe}'
             current_messages.insert(0, html.P(message))

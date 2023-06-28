@@ -1,2 +1,3 @@
-if made_card is None:
-    print(WOW)
+test = "abcdc"
+
+print('c' in test)
