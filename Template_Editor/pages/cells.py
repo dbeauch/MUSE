@@ -4,6 +4,7 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html, Input, Output, State, callback
 
+import Template_Editor.mcnp_cards
 from Template_Editor.mcnp_cards import RegularCell, VoidCell, LikeCell
 from Template_Editor.template_handler_instance import template_handler_instance as template
 
@@ -19,7 +20,7 @@ def layout(page_background):
                     dbc.Row([
                         dbc.Col(width=1),
                         dbc.Col(html.H4("Current Cell:"), width=3, align="end"),
-                        dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell', clearable=True, style={'width': '10vw'}), width=2,
+                        dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell', clearable=True, persistence=True, persistence_type='session', style={'width': '10vw'}), width=2,
                                 align="center"),
                         dbc.Col(html.H5(id='cell_description', children='Cell Description'), width=6, align="end"),
                     ], justify="center"),
@@ -67,12 +68,11 @@ def layout(page_background):
     Output('cell_description', 'children'),
     Input('cell_selector', 'value'),
     Input('material_selector', 'value'),
-    prevent_initial_call=True
 )
 def update_cell_display(cell, material_select):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if button_id == 'cell_selector':
+    if button_id == 'cell_selector' or ctx.triggered_id is None:
         if cell is not None:
             selected_cell = template.all_cells.get(cell)
             return selected_cell.get_material(), selected_cell.get_density(), selected_cell.geom, selected_cell.param, template.all_materials.get(selected_cell.get_material()).comment, selected_cell.comment
@@ -125,7 +125,7 @@ def update_console(apply_clicked, print_clicked, pathname, cell, material, densi
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
 
-        if button_id == 'cell_apply_button' and cell is not None:       # must use type() to filter Cell types
+        if button_id == 'cell_apply_button' and cell is not None:
             selected_cell = template.all_cells.get(cell)
             if selected_cell.material == material and selected_cell.density == density and selected_cell.geom == geom and selected_cell.param == param:
                 message = f'({timestamp})\tNo changes made to Cell {cell}'

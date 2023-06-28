@@ -18,7 +18,7 @@ def layout(page_background):
                     dbc.Row([
                         dbc.Col(width=1),
                         dbc.Col(html.H4("Current Surface:"), width=3, align="end"),
-                        dbc.Col(dcc.Dropdown(id='surface_selector', placeholder='Select a Surface', clearable=True), width=2,
+                        dbc.Col(dcc.Dropdown(id='surface_selector', placeholder='Select a Surface', clearable=True, persistence=True, persistence_type='session'), width=2,
                                 align="center"),
                         dbc.Col(html.H5(id='surface_description', children='Surface Description'), width=6, align="end"),
                     ], justify="center"),
@@ -63,12 +63,11 @@ def update_surface_options(search_value):
     Output('dimensions_input', 'value'),
     Output('surface_description', 'children'),
     Input('surface_selector', 'value'),
-    prevent_initial_call=True
 )
 def update_surface_display(surface):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if button_id == 'surface_selector':
+    if button_id == 'surface_selector' or ctx.triggered_id is None:
         if surface is not None:
             selected_surface = template.all_surfaces.get(surface)
             return selected_surface.mnemonic, selected_surface.transform, selected_surface.dimensions, selected_surface.comment

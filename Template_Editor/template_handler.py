@@ -1,6 +1,6 @@
 import re
 
-from mcnp_cards import CardFactory, Cell, Surface, DataCard, Material, Temperature
+from Template_Editor.mcnp_cards import CardFactory, Cell, Surface, DataCard, Material, Temperature
 
 
 class Singleton:
@@ -35,6 +35,7 @@ class TemplateHandler(Singleton):
             self.all_surfaces = {}
             self.all_materials = {"Void": Material("m0"), "WIP": Material("m00")}  # mt card numbers stored as 't16'
             self.all_options = {}
+            self.all_universe_names = {}
             self.all_universes = {}
             self.all_fills = {}
             self.is_initialized = True
@@ -74,8 +75,7 @@ class TemplateHandler(Singleton):
         return
 
 
-    @staticmethod
-    def clean_comments(line_array, comment_array):
+    def clean_comments(self, line_array, comment_array):
         """
         Performs reverse order search over line_array to find comments around cell/surface/material cards
         Assigns a comment to card number if used as a '$' comment on the same line as the card number or
@@ -99,7 +99,21 @@ class TemplateHandler(Singleton):
                 else:
                     line_array[i] = line_array[i][: dollar_index.span()[0]]
             if re.search(r'^[cC].*$', line_array[i]) is not None:   # Find any 'cC' comments to save/delete
-                if re.search(r'^[cC][ \t]+\S.*$', line_array[i]) is not None:
+
+                #   Find comments describing a universe. c  *** u=200 ...***
+                if re.search(r'^[cC][ \t]+\*+.*u=\d+[^\*]*\*+', line_array[i]) is not None:
+                    number_start = re.search(r'^[cC][ \t]+\*+.*u=', line_array[i]).span()[1]
+                    number_end = re.search(r'^[cC][ \t]+\*+.*u=\d+', line_array[i]).span()[1] + 1
+                    message_end = re.search(r'^[cC][ \t]+\*+.*u=\d+[^*]*\*', line_array[i]).span()[1] - 1
+                    number = str(line_array[i][number_start: number_end]).strip()
+                    message = line_array[i][number_end: message_end].strip()
+                    if number not in self.all_universe_names:
+                        self.all_universe_names[number] = [message]
+                    else:
+                        self.all_universe_names[number].append(message)
+                elif re.search(r'^[cC][ \t]+\S.*$', line_array[i]) is not None:   # Find meaningful 'cC' comments
+
+                    #   Find comments line before a cell/surface/material/temperature card
                     if i < len(line_array) - 1 and re.search(r'^m?t?\d{1,6}', line_array[i+1]) is not None:
                         number_end = re.search(r'^m?t?\d{1,6}', line_array[i+1]).span()[1] + 1
                         number = line_array[i+1][0: number_end].strip()
@@ -110,7 +124,9 @@ class TemplateHandler(Singleton):
                 line_array.pop(i)
                 i -= 1
                 continue
-            if re.search(r'^[ \t]*\n+', line_array[i]) is not None:  # Finds blank line between 3 MCNP sections
+
+            #   Filters blank line between 3 MCNP sections
+            if re.search(r'^[ \t]*\n+', line_array[i]) is not None:
                 line_array.pop(i)
                 i -= 1
                 continue
@@ -212,8 +228,8 @@ class TemplateHandler(Singleton):
     def print_file(self, out_filename, element_comments):
         """
         Prints card objects created to given filename
-        :param element_comments: Boolean to print element comments
         :param out_filename: name of file to print to
+        :param element_comments: Boolean to print element comments
         :return: out_filename
         """
         if out_filename == "" or out_filename is None:
@@ -221,18 +237,28 @@ class TemplateHandler(Singleton):
 
         with open(out_filename, 'w') as f_write:
             f_write.write(self.file_title + '\n')
-            self.print_card(f_write, self.all_cells, element_comments)
+            print("c --Universe Names--", file=f_write)
+            self.print_dict_list(f_write, self.all_universe_names)
+            self.print_cards(f_write, self.all_cells, element_comments)
             print("\nc --Begin Surfaces--", file=f_write)
-            self.print_card(f_write, self.all_surfaces, element_comments)
+            self.print_cards(f_write, self.all_surfaces, element_comments)
             print("\nc --Begin Options--", file=f_write)
-            self.print_card(f_write, self.all_options, element_comments)
+            self.print_cards(f_write, self.all_options, element_comments)
             print("c --Begin Materials--", file=f_write)
-            self.print_card(f_write, self.all_materials, element_comments)
+            self.print_cards(f_write, self.all_materials, element_comments)
         return out_filename
 
 
     @staticmethod
-    def print_card(out_file, dictionary, element_comments):
+    def print_dict_list(out_file, dictionary):
+        for universe in dictionary:
+            for comment in dictionary[universe]:
+                print(f'c  ******* u={universe} {comment} *******', file=out_file)
+        return
+
+
+    @staticmethod
+    def print_cards(out_file, dictionary, element_comments):
         """
         Helper method for print_file()
         :param element_comments: Boolean to print element comments

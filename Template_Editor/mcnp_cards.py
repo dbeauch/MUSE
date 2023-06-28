@@ -182,7 +182,7 @@ class Card:
 
     def __str__(self):
         if self.comment != "" and self.comment is not None:
-            return f"C {self.comment}\n"
+            return f"c {self.comment}\n"
         else:
             return ""
 

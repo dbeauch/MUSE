@@ -19,7 +19,7 @@ def layout(page_background):
                     dbc.Row([
                         dbc.Col(width=1),
                         dbc.Col(html.H4("Current Universe:"), width=3, align="end"),
-                        dbc.Col(dcc.Dropdown(id='universe_selector', placeholder='Select a Universe', clearable=True), width=2,
+                        dbc.Col(dcc.Dropdown(id='universe_selector', placeholder='Select a Universe', clearable=True, persistence=True, persistence_type='session'), width=2,
                                 align="center"),
                         dbc.Col(html.H5(id='universe_description', children='Universe Description'), width=6, align="end"),
                     ], justify="center"),
@@ -84,27 +84,28 @@ def update_universe_options(search_value):
 @callback(
     Output('fill_display', 'value'),
     Output('universe_display', 'value'),
+    Output('universe_description', 'children'),
     Input('universe_selector', 'value'),
-    prevent_initial_call=True
 )
 def update_universe_display(universe):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if button_id == 'universe_selector':
+    if button_id == 'universe_selector' or ctx.triggered_id is None:
         if universe is not None:
             fill_results = ""
             universe_results = ""
+            description_results = ""
             if universe in template.all_fills.keys():
                 for card in template.all_fills.get(universe):
-                    message = card.__str__() + "\n"
-                    fill_results += message
+                    fill_results += card.__str__() + "\n"
             if universe in template.all_universes.keys():
                 for card in template.all_universes.get(universe):
-                    message = card.__str__() + "\n"
-                    universe_results += message
-            return fill_results, universe_results
-        else:
-            return "Related Fill Uses", "Related Universe Cards"
+                    universe_results += card.__str__() + "\n"
+            if universe in template.all_universe_names.keys():
+                for descr in template.all_universe_names.get(universe):
+                    description_results += descr + " "
+            return fill_results, universe_results, description_results
+    return "Related Fill Uses", "Related Universe Cards", "Universe Description"
 
 
 @callback(
@@ -127,18 +128,18 @@ def update_console(apply_clicked, print_clicked, pathname, universe, file_path, 
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
 
-        if button_id == 'surface_apply_button' and universe is not None:
-            selected_universe = template.all_universes.get(universe)
-            if selected_universe.number == universe:
-                message = f'({timestamp})\tNo changes made to Surface {universe}'
-                current_messages.insert(0, html.P(message))
-                return current_messages
+        # if button_id == 'universe_apply_button' and universe is not None:
+        #     selected_universe = template.all_universes.get(universe)
+        #     if selected_universe == universe:
+        #         message = f'({timestamp})\tNo changes made to Surface {universe}'
+        #         current_messages.insert(0, html.P(message))
+        #         return current_messages
+        #
+        #     message = f'({timestamp})\tApplied changes to Universe {universe}'
+        #     current_messages.insert(0, html.P(message))
+        #     return current_messages
 
-            message = f'({timestamp})\tApplied changes to Universe {universe}'
-            current_messages.insert(0, html.P(message))
-            return current_messages
-
-        elif button_id == 'universe_print_button':
+        if button_id == 'universe_print_button':
             element_comments = element_comments == []
             printed = template.print_file(file_path, element_comments)
             message = f'({timestamp})\tPrinted the file to: {printed}'
