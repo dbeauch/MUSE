@@ -52,7 +52,6 @@ def layout(page_background):
                     dbc.Row([
                         dbc.Col(html.Button('Apply Changes', id='cell_apply_button', n_clicks=0), width=4),
                         dbc.Col(width=7),
-                        dbc.Col(html.Button('Print File', id='cell_print_button', n_clicks=0), width=1),
                     ], className='g-0')
                 ]),
             ])
@@ -104,19 +103,16 @@ def update_material_options(search_value):
 @callback(
     Output('console_output', 'children', allow_duplicate=True),
     Input('cell_apply_button', 'n_clicks'),
-    Input('cell_print_button', 'n_clicks'),
     State('url', 'pathname'),
     State('cell_selector', 'value'),
     State('material_selector', 'value'),
     State('density_input', 'value'),
     State('geom_input', 'value'),
     State('param_input', 'value'),
-    State('file_path', 'value'),
-    State('element_comments', 'value'),
     State('console_output', 'children'),
     prevent_initial_call=True
 )
-def update_console(apply_clicked, print_clicked, pathname, cell, material, density, geom, param, file_path, element_comments, current_messages):
+def update_console(apply_clicked, pathname, cell, material, density, geom, param, current_messages):
     if pathname == '/cells':
         if not current_messages:
             current_messages = []
@@ -168,12 +164,6 @@ def update_console(apply_clicked, print_clicked, pathname, cell, material, densi
 
                 message = f'({timestamp})\tApplied changes to Void Cell {cell}'
                 current_messages.insert(0, html.P(message))
-
-        elif button_id == 'cell_print_button':
-            element_comments = element_comments != []
-            printed = template.print_file(file_path, element_comments)
-            message = f'({timestamp})\tPrinted the file to: {printed}'
-            current_messages.insert(0, html.P(message))
 
         return current_messages
     else:

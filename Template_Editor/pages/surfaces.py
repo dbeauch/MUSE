@@ -42,7 +42,6 @@ def layout(page_background):
                     dbc.Row([
                         dbc.Col(html.Button('Apply Changes', id='surface_apply_button', n_clicks=0), width=4),
                         dbc.Col(width=7),
-                        dbc.Col(html.Button('Print File', id='surface_print_button', n_clicks=0), width=1),
                     ], className='g-0', justify='start')
                 ]),
             ])
@@ -78,18 +77,15 @@ def update_surface_display(surface):
 @callback(
     Output('console_output', 'children', allow_duplicate=True),
     Input('surface_apply_button', 'n_clicks'),
-    Input('surface_print_button', 'n_clicks'),
     State('url', 'pathname'),
     State('surface_selector', 'value'),
     State('mnemonic_input', 'value'),
     State('transform_input', 'value'),
     State('dimensions_input', 'value'),
-    State('file_path', 'value'),
-    State('element_comments', 'value'),
     State('console_output', 'children'),
     prevent_initial_call=True
 )
-def update_console(apply_clicked, print_clicked, pathname, surface, mnemonic, transform, dimensions, file_path, element_comments, current_messages):
+def update_console(apply_clicked, pathname, surface, mnemonic, transform, dimensions, current_messages):
     if pathname == '/surfaces':
         if not current_messages:
             current_messages = []
@@ -117,12 +113,6 @@ def update_console(apply_clicked, print_clicked, pathname, surface, mnemonic, tr
             message = f'({timestamp})\tApplied changes to Surface {surface}'
             current_messages.insert(0, html.P(message))
             return current_messages
-
-        elif button_id == 'surface_print_button':
-            element_comments = element_comments == []
-            printed = template.print_file(file_path, element_comments)
-            message = f'({timestamp})\tPrinted the file to: {printed}'
-            current_messages.insert(0, html.P(message))
 
         return current_messages
     else:

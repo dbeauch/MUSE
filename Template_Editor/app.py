@@ -1,5 +1,6 @@
 import sys
 import os
+import datetime
 
 import dash
 from dash import html, dcc
@@ -71,16 +72,12 @@ navbar = html.Div([
 
 console = html.Div([
     dbc.Row([
-        dbc.Col("Console", width=3),
-        dbc.Col(
-            dcc.Input(id='file_path', type='text', placeholder='File path', debounce=True),
-            width=2
-        ),
-        dbc.Col(width=1),
-        dbc.Col(dcc.Checklist(id='element_comments', options=['Element Comments'], value=['Element Comments']), width=2),
-        dbc.Col(width=2),
-        dbc.Col(html.Button("-", id="console_toggler"), width=2)
-    ], align='center',
+        dbc.Col(html.Div("Console"), width=4),
+        dbc.Col(dcc.Input(id='file_path', type='text', placeholder='File path', debounce=True), width=2),
+        dbc.Col(dbc.Col(html.Button('Print File', id='print_button', n_clicks=0)), width=1),
+        dbc.Col(dcc.Checklist(id='element_comments', options=['Element Comments'], value=['Element Comments']), width=3),
+        dbc.Col(html.Button("-", id="console_toggler"), width=1)
+    ], align='start',
         style={
             'marginTop': 20,
             'backgroundColor': 'black',
@@ -88,7 +85,7 @@ console = html.Div([
             'padding': console_banner_height,
             'fontSize': 'calc((2vh + 1vw) / 2)'
         },
-        className='g-0'),
+        className='gx-0'),
 
     dbc.Collapse(
         html.Div(
@@ -160,6 +157,32 @@ def toggle_console(n, is_open):
     if n:
         return not is_open
     return is_open
+
+
+@app.callback(
+    Output('console_output', 'children', allow_duplicate=True),
+    Input('print_button', 'n_clicks'),
+    State('file_path', 'value'),
+    State('element_comments', 'value'),
+    State('console_output', 'children'),
+    prevent_initial_call=True
+)
+def print_button(print_clicked, file_path, element_comments, current_messages):
+    if not current_messages:
+        current_messages = []
+
+    ctx = dash.callback_context
+    button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+
+    if button_id == 'print_button':
+        print(element_comments)
+        element_comments = element_comments != []
+        print(element_comments)
+        printed = template.print_file(file_path, element_comments)
+        message = f'({timestamp})\tPrinted the file to: {printed}'
+        current_messages.insert(0, html.P(message))
+    return current_messages
 
 
 if __name__ == '__main__':

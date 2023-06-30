@@ -64,7 +64,6 @@ def layout(page_background):
                     dbc.Row([
                         dbc.Col(html.Button('Apply Changes', id='universe_apply_button', n_clicks=0), width=4),
                         dbc.Col(width=7),
-                        dbc.Col(html.Button('Print File', id='universe_print_button', n_clicks=0), width=1),
                     ], className='g-0', justify='start')
                 ]),
             ])
@@ -111,15 +110,12 @@ def update_universe_display(universe):
 @callback(
     Output('console_output', 'children', allow_duplicate=True),
     Input('universe_apply_button', 'n_clicks'),
-    Input('universe_print_button', 'n_clicks'),
     State('url', 'pathname'),
     State('universe_selector', 'value'),
-    State('file_path', 'value'),
-    State('element_comments', 'value'),
     State('console_output', 'children'),
     prevent_initial_call=True
 )
-def update_console(apply_clicked, print_clicked, pathname, universe, file_path, element_comments, current_messages):
+def update_console(apply_clicked, pathname, universe, current_messages):
     if pathname == '/universes':
         if not current_messages:
             current_messages = []
@@ -138,12 +134,6 @@ def update_console(apply_clicked, print_clicked, pathname, universe, file_path, 
         #     message = f'({timestamp})\tApplied changes to Universe {universe}'
         #     current_messages.insert(0, html.P(message))
         #     return current_messages
-
-        if button_id == 'universe_print_button':
-            element_comments = element_comments == []
-            printed = template.print_file(file_path, element_comments)
-            message = f'({timestamp})\tPrinted the file to: {printed}'
-            current_messages.insert(0, html.P(message))
 
         return current_messages
     else:
