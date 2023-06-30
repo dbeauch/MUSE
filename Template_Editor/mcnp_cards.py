@@ -7,29 +7,38 @@ import re
 from mendeleev import element
 
 line_indent = "        "
-element_symbols = {  # Cached to decrease runtime; mendeleev element() is slow
-    '13': 'Al',
+element_symbols = {  # Cached to decrease runtime; mendeleev.element() is slow
+    '1': 'H',
+    '2': 'He',
+    '3': 'Li',
+    '4': 'Be',
+    '5': 'B',
+    '6': 'C',
+    '7': 'N',
+    '8': 'O',
+    '9': 'F',
+    '10': 'Ne',
+    '11': 'Na',
     '12': 'Mg',
+    '13': 'Al',
     '14': 'Si',
-    '22': 'Ti',
-    '25': 'Mn',
-    '24': 'Cr',
-    '26': 'Fe',
-    '29': 'Cu',
-    '40': 'Zr',
-    '50': 'Sn',
-    '72': 'Hf',
-    '48': 'Cd',
-    '49': 'In',
-    '47': 'Ag',
+    '15': 'P',
+    '16': 'S',
+    '17': 'Cl',
+    '18': 'Ar',
+    '19': 'K',
     '20': 'Ca',
-    '92': 'U',
-    '42': 'Mo',
-    '94': 'Pu',
-    '93': 'Np',
-    '61': 'Pm',
-    '62': 'Sm',
-    '95': 'Am',
+    '21': 'Sc',
+    '22': 'Ti',
+    '23': 'V',
+    '24': 'Cr',
+    '25': 'Mn',
+    '26': 'Fe',
+    '27': 'Co',
+    '28': 'Ni',
+    '29': 'Cu',
+    '30': 'Zn',
+    '31': 'Ga',
     '32': 'Ge',
     '33': 'As',
     '34': 'Se',
@@ -38,11 +47,17 @@ element_symbols = {  # Cached to decrease runtime; mendeleev element() is slow
     '37': 'Rb',
     '38': 'Sr',
     '39': 'Y',
+    '40': 'Zr',
     '41': 'Nb',
+    '42': 'Mo',
     '43': 'Tc',
     '44': 'Ru',
     '45': 'Rh',
     '46': 'Pd',
+    '47': 'Ag',
+    '48': 'Cd',
+    '49': 'In',
+    '50': 'Sn',
     '51': 'Sb',
     '52': 'Te',
     '53': 'I',
@@ -53,16 +68,69 @@ element_symbols = {  # Cached to decrease runtime; mendeleev element() is slow
     '58': 'Ce',
     '59': 'Pr',
     '60': 'Nd',
+    '61': 'Pm',
+    '62': 'Sm',
     '63': 'Eu',
     '64': 'Gd',
     '65': 'Tb',
-    '96': 'Cm',
     '66': 'Dy',
+    '67': 'Ho',
+    '68': 'Er',
+    '69': 'Tm',
+    '70': 'Yb',
+    '71': 'Lu',
+    '72': 'Hf',
+    '73': 'Ta',
+    '74': 'W',
+    '75': 'Re',
+    '76': 'Os',
+    '77': 'Ir',
+    '78': 'Pt',
+    '79': 'Au',
+    '80': 'Hg',
+    '81': 'Tl',
+    '82': 'Pb',
+    '83': 'Bi',
+    '84': 'Po',
+    '85': 'At',
+    '86': 'Rn',
+    '87': 'Fr',
+    '88': 'Ra',
+    '89': 'Ac',
+    '90': 'Th',
+    '91': 'Pa',
+    '92': 'U',
+    '93': 'Np',
+    '94': 'Pu',
+    '95': 'Am',
+    '96': 'Cm',
+    '97': 'Bk',
+    '98': 'Cf',
+    '99': 'Es',
+    '100': 'Fm',
+    '101': 'Md',
+    '102': 'No',
+    '103': 'Lr',
+    '104': 'Rf',
+    '105': 'Db',
+    '106': 'Sg',
+    '107': 'Bh',
+    '108': 'Hs',
+    '109': 'Mt',
+    '110': 'Ds',
+    '111': 'Rg',
+    '112': 'Cn',
+    '113': 'Nh',
+    '114': 'Fl',
+    '115': 'Mc',
+    '116': 'Lv',
+    '117': 'Ts',
+    '118': 'Og',
 }
 
 
 def zaid_to_isotope(zaid):
-    if len(zaid) != 5:
+    if len(zaid) < 4 or 'c' in zaid or '.' in zaid:
         return 'Unrecognized ZAID'
 
     element_number = zaid[:-3]
@@ -71,78 +139,85 @@ def zaid_to_isotope(zaid):
     if element_number in element_symbols.keys():
         return f'{element_symbols[element_number]}-{isotope_number}'
     else:
-        element_name = element(element_number).symbol
-        element_symbols[element_number] = element_name
-        print(f"'{element_number}': '{element_name}',")
-        return f'{element_name}-{isotope_number}'
+        try:
+            element_name = element(element_number).symbol
+            element_symbols[element_number] = element_name
+            print(f"'{element_number}': '{element_name}',")
+            return f'{element_name}-{isotope_number}'
+        except Exception as e:
+            print(f"Could not retrieve element with Zaid '{zaid}'. Error: {str(e)}")
+            return f"Could not retrieve element with Zaid {zaid}"
 
 
 class CardFactory:
     CELLS_REGEX = {
-        'regular': r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+[ \t]+[a-zA-z:]+=.*$',
-        'void': r'^\d{1,6}[ \t]+0[ \t][^a-zA-z]+[ \t]+[a-zA-z]+=.*$',
-        'like_but': r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]but[ \t]+.+$'
+        'regular': r' {0,6}^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+[ \t]+[a-zA-z:,]+=.*$',
+        'void': r'^ {0,6}\d{1,6}[ \t]+0[ \t][^a-zA-z]+[ \t]+[a-zA-z:,]+=.*$',
+        'like_but': r'^ {0,6}\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]but[ \t]+.+$'
     }
 
     SURFACES_REGEX = {
-        'regular': r'^\d+[ \t]+[^-\d\.]+[^a-zA-Z]+$',
-        'transform': r'^\d+[ \t]+\d+[^-\d\.]+[^a-zA-Z]+$'
+        'regular': r'^ {0,6}\d+[ \t]+[^-\d\.]+[-\d\. \tr]+$',
+        'transform': r'^ {0,6}\d+[ \t]+\d+[^-\d\.]+[-\d\. \tr]+$'
     }
 
     OPTIONS_REGEX = {
-        'ksrc': r'^ksrc[ \t]+((-?\d+(\.\d+)?[eE]?-?\d*[ \t]+){3})+$',
-        'transform': r'^\*?tr\d{1,6}[ \t]+(-?\d+\.?\d*[ \t]*)+$',
-        'mode': r'^mode[ \t]+.+$',
-        'kcode': r'^kcode[ \t]+.+$',
-        'prdmp': r'^prdmp[ \t]+',
-        'print': r'^print[ \t]+',
-        'F': r'^F\d+:n[ \t]+',
-        'SD': r'^SD\d+[ \t]+',
-        'FM': r'^FM\d+[ \t]+',
-        'E': r'^E\d+[ \t]+',
-        'FMESH': r'^FMESH\d+:n[ \t]+',
+        'ksrc': r'^ {0,6}ksrc[ \t]+((-?\d+(\.\d+)?[eE]?-?\d*[ \t]+){3})+$',
+        'transform': r'^ {0,6}\*?(tr|TR)\d{1,6}[ \t]+(-?\d+\.?\d*[ \t]*)+$',
+        'mode': r'^ {0,6}mode[ \t]+.+$',
+        'kcode': r'^ {0,6}kcode[ \t]+.+$',
+        'prdmp': r'^ {0,6}prdmp[ \t]+',
+        'print': r'^ {0,6}print[ \t]+',
+        'F': r'^ {0,6}[fF]\d+:[np][ \t]+',
+        'fq': r'^ {0,6}fq\d+[ \t]+',
+        'fc': r'^ {0,6}fc\d+[ \t]+',
+        'SD': r'^ {0,6}SD\d+[ \t]+',
+        'FM': r'^ {0,6}FM\d+[ \t]+',
+        'E': r'^ {0,6}E\d+[ \t]+',
+        'FMESH': r'^ {0,6}FMESH\d+:n[ \t]+',
+        'read': r'^ {0,6}read file=.*',
+        'tmp': r'^ {0,6}tmp[ \t]+',
+        'lost': r'^ {0,6}lost[ \t]+',
     }
 
     MATERIAL_TEMPERATURE_REGEX = {
-        'material': r'^m\d+[ \t]+(\d+(\.\S+)?[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*[ \t]+)+$',
-        'temperature': r'^mt\d{1,6}[ \t]+.+$'
+        'material': r'^ {0,6}m\d+[ \t]+(\d+(\.\d*)?[ \t]+-?\.?\d+(\.\d*)?([eE]-?\d+)?[ \t]+)+',
+        'temperature': r'^ {0,6}mt\d{1,6}[ \t]+.+$'
     }
-
 
     def __init__(self, template):
         self.template = template
 
-
     def create_card(self, line, comment=""):
         if re.search(self.CELLS_REGEX['regular'], line):
-            made_card = RegularCell(line)
+            made_card = RegularCell(line.strip())
         elif re.search(self.CELLS_REGEX['void'], line):
-            made_card = VoidCell(line)
+            made_card = VoidCell(line.strip())
         elif re.search(self.CELLS_REGEX['like_but'], line):
-            made_card = LikeCell(line)
+            made_card = LikeCell(line.strip())
         elif re.search(self.SURFACES_REGEX['regular'], line):
-            made_card = Surface(line)
+            made_card = Surface(line.strip())
         elif re.search(self.SURFACES_REGEX['transform'], line):
-            made_card = Surface(line)
+            made_card = Surface(line.strip())
         elif re.search(self.MATERIAL_TEMPERATURE_REGEX['material'], line):
-            made_card = Material(line)
+            made_card = Material(line.strip())
         elif re.search(self.MATERIAL_TEMPERATURE_REGEX['temperature'], line):
-            made_card = Temperature(line)
+            made_card = Temperature(line.strip())
         elif re.search(self.OPTIONS_REGEX['transform'], line):
-            made_card = Transform(line)
+            made_card = Transform(line.strip())
         elif re.search(self.OPTIONS_REGEX['ksrc'], line):
-            made_card = KSrc(line)
+            made_card = KSrc(line.strip())
         elif re.search(self.OPTIONS_REGEX['kcode'], line):
-            made_card = KCode(line)
+            made_card = KCode(line.strip())
         elif re.search(self.OPTIONS_REGEX['mode'], line):
-            made_card = Mode(line)
+            made_card = Mode(line.strip())
         else:
             matched = False
             for regex in self.OPTIONS_REGEX.values():
                 search = re.search(regex, line)
                 if search is not None:
                     start = search.span()[1]
-                    made_card = Option(line, start)
+                    made_card = Option(line.strip(), start)
                     matched = True
                     break
             if not matched:
@@ -192,7 +267,7 @@ class Cell(Card):
         #   Finds universe parameter
         u_param = re.search(r'u=\d+', line)
         if u_param is not None:
-            self.universe = str(line[u_param.span()[0]+2: u_param.span()[1]+1].strip())
+            self.universe = str(line[u_param.span()[0] + 2: u_param.span()[1] + 1].strip())
         else:
             self.universe = None
 
@@ -200,18 +275,17 @@ class Cell(Card):
         basic_fill_param = re.search(r'fill=\d+\s', line)
         complex_fill_param = re.search(r'fill=(((-?\d+:-?\d+[ \t]+){3}([ \t]*\d+r?)+))', line)
         if basic_fill_param is not None:
-            self.fill = [line[basic_fill_param.span()[0]+5: basic_fill_param.span()[1]].strip()]
+            self.fill = [line[basic_fill_param.span()[0] + 5: basic_fill_param.span()[1]].strip()]
         elif complex_fill_param is not None:
             ranges = re.search(r'fill=(((-?\d+:-?\d+[ \t]+){3}))', line)
             fills = line[ranges.span()[1]: complex_fill_param.span()[1]].strip().split()
             self.fill = []
             for f in fills:
                 if 'r' in f:
-                    continue    #   Catches repeated fill: 200 '20r'
+                    continue  # Catches repeated fill: 200 '20r'
                 self.fill.append(f)
         else:
             self.fill = None
-
 
     def __str__(self):
         return super().__str__()
@@ -232,10 +306,11 @@ class RegularCell(Cell):
         material_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}', line).span()[1] + 1
         self.material = line[number_end: material_end].strip()
 
-        density_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?[eE]?-?\d*', line).span()[1] + 1
+        density_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*', line).span()[1] + 1
         self.density = line[material_end: density_end].strip()
 
-        geom_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+', line).span()[1]
+        geom_end = \
+        re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+', line).span()[1]
         self.geom = line[density_end: geom_end].strip()
 
         self.param = line[geom_end:].strip()
@@ -243,11 +318,17 @@ class RegularCell(Cell):
     def __str__(self):
         printed_geom = re.sub(r'\)[ \t]+\(', f")\n{line_indent}(", self.geom)
         printed_geom = re.sub(r':[ \t]+\(', f":\n{line_indent}(", printed_geom)
-        digit_par = re.search(r'\d[ \t]+\(', printed_geom)
-        if digit_par is not None:
-            printed_geom = printed_geom[:digit_par.span()[0] + 1] + f"\n{line_indent}" + printed_geom[
-                                                                                         digit_par.span()[0] + 2:]
-        return f"{self.number}\t{self.material}\t{self.density}{self.get_inline_comment()}\n{line_indent}{printed_geom}\n{line_indent}{self.param}"
+        digit_parenth = re.search(r'\d[ \t]+\(', printed_geom)
+        if digit_parenth is not None:
+            printed_geom = printed_geom[:digit_parenth.span()[0] + 1] + f"\n{line_indent}" + printed_geom[
+                                                                                             digit_parenth.span()[
+                                                                                                 0] + 2:]
+        printed_param = ""
+        parts = self.param.split()
+        for i in range(0, len(parts), 5):
+            printed_param += ' '.join(parts[i:i + 5]) + "\n" + line_indent
+        printed_param = printed_param[:re.search(r'\s+$', printed_param).span()[0]]
+        return f"{self.number}\t{self.material}\t{self.density}{self.get_inline_comment()}\n{line_indent}{printed_geom}\n{line_indent}{printed_param}"
 
 
 class VoidCell(Cell):
@@ -265,7 +346,6 @@ class VoidCell(Cell):
         self.geom = line[material_end: geom_end].strip()
 
         self.param = line[geom_end:].strip()
-
 
     def __str__(self):
         printed_geom = re.sub(r'\)[ \t]+\(', f")\n{line_indent}(", self.geom)
@@ -296,7 +376,6 @@ class LikeCell(Cell):
         self.geom = "WIP"
         self.param = "WIP"
 
-
     def __str__(self):
         printed_changes = ""
         parts = self.changes.split()
@@ -311,7 +390,7 @@ class Surface(Card):
         number_end = re.search(r'^\d+', line).span()[1] + 1
         self.number = line[: number_end].strip()
 
-        if re.search(r'^\d+[ \t]+\d+[^-\d\.]+[^a-zA-Z]+$', line):  # Surface with associated transform
+        if re.search(r'^\d+[ \t]+\d+[^-\d\.]+[-\d\. \tr]+$', line):  # Surface with associated transform
             transform_end = re.search(r'^\d+[ \t]+\d+', line).span()[1] + 1
             self.transform = line[number_end: transform_end].strip()
 
@@ -324,7 +403,6 @@ class Surface(Card):
             self.mnemonic = line[number_end: mnemonic_end].strip()
 
         self.dimensions = line[mnemonic_end:].strip()
-
 
     def __str__(self):
         return f"{self.number}\t{self.transform}\t{self.mnemonic}\t{self.dimensions}{self.get_inline_comment()}"
@@ -352,12 +430,11 @@ class KSrc(DataCard):
     def __init__(self, line):
         self.number = "ksrc"
         self.locations = []
-        ksrc_end = re.search(r'^ksrc', line).span()[1]+1
+        ksrc_end = re.search(r'^ksrc', line).span()[1] + 1
         source_list = re.split(r'[ \t]+', line[ksrc_end:].strip())
-        for i in range(int(len(source_list)/3)):
-            self.locations.append((source_list[3*i], source_list[3*i + 1], source_list[3*i + 2]))
+        for i in range(int(len(source_list) / 3)):
+            self.locations.append((source_list[3 * i], source_list[3 * i + 1], source_list[3 * i + 2]))
         self.comment = ""
-
 
     def __str__(self):
         locations_str = ""
@@ -369,12 +446,12 @@ class KSrc(DataCard):
 class Material(DataCard):
     def __init__(self, line):
         self.zaid_fracs = []
-        number_end = re.search(r'^m\d+', line).span()[1]+1
+        number_end = re.search(r'^m\d+', line).span()[1] + 1
         self.number = line[1: number_end].strip()
 
         zaid_list = re.split(r'[ \t]+', line[number_end:].strip())
-        for i in range(int(len(zaid_list)/2)):
-            self.zaid_fracs.append((zaid_list[2*i], zaid_list[2*i + 1]))
+        for i in range(int(len(zaid_list) / 2)):
+            self.zaid_fracs.append((zaid_list[2 * i], zaid_list[2 * i + 1]))
         self.comment = ""
 
     def __str__(self, comments_on):
@@ -407,8 +484,8 @@ class Mode(DataCard):
 
 class Transform(DataCard):
     def __init__(self, line):
-        tr_end = re.search(r'^\*?tr', line).span()[1]
-        number_end = re.search(r'^\*?tr\d{1,6}[ \t]+', line).span()[1]
+        tr_end = re.search(r'^\*?(tr|TR)', line).span()[1]
+        number_end = re.search(r'^\*?(tr|TR)\d{1,6}[ \t]+', line).span()[1]
         self.number = line[tr_end: number_end].strip()
         self.param = line[number_end:]
 
@@ -420,7 +497,6 @@ class Option(DataCard):
     def __init__(self, line, start):
         self.number = line[:start].strip()
         self.param = line[start:].strip()
-
 
     def __str__(self):
         printed_param = ""

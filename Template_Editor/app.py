@@ -21,8 +21,9 @@ navbar_color = '#993300'
 # Only runs preprocessing operation for the main server process not for monitor process
 if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     sys.setrecursionlimit(8000)
-    # template.read_template('../mcnp_templates/test.i')
-    template.read_template('../mcnp_templates/burn_Box9_v02_SU_cycle8.i')
+    template.read_template('../mcnp_templates/NBSR_HEU_720[236]/NBSR_HEU_720.i')
+    # template.read_template('../mcnp_templates/NNR/test.i')
+    # template.read_template('../mcnp_templates/NNR/burn_Box9_v02_SU_cycle8.i')
 
 
 app = dash.Dash(

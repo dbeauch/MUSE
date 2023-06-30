@@ -1,8 +1,11 @@
-from mcnp_cards import *
+from mendeleev import element
+from mendeleev.fetch import fetch_table
+# element_number = "11"
+# element_name = element(element_number).symbol
+#
+# print(f"'{element_number}': '{element_name}',")
 
-cell1 = RegularCell("1 1 1 1")
-cell2 = VoidCell("2 0  1")
-cell3 = LikeCell("3 like 2 but mat=3")
+zaid = "100000."
 
-print(type(cell1))
-print(type(cell1) is RegularCell)
+if len(zaid) < 4 or 'c' in zaid or '.' in zaid:
+    print('Unrecognized ZAID')

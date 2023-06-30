@@ -1,3 +1,4 @@
+import os.path
 import re
 
 from Template_Editor.mcnp_cards import CardFactory, Cell, Surface, DataCard, Material, Temperature
@@ -16,7 +17,7 @@ class TemplateHandler(Singleton):
     def __init__(self):
         if not hasattr(self, 'is_initialized'):
             self.default_out_file = '../mcnp_templates/test.i'
-            # self.default_out_file = '../mcnp_templates/test2.i'
+            # self.default_out_file = '../mcnp_templates/NNR/test2.i'
 
             self.file_title = ""
             self.cell_line_pieces = []
@@ -35,6 +36,7 @@ class TemplateHandler(Singleton):
             self.all_surfaces = {}
             self.all_materials = {"Void": Material("m0"), "WIP": Material("m00")}  # mt card numbers stored as 't16'
             self.all_options = {}
+
             self.all_universe_names = {}
             self.all_universes = {}
             self.all_fills = {}
@@ -50,6 +52,12 @@ class TemplateHandler(Singleton):
         with open(in_filename, 'r') as f_read:
             curr_list = self.cell_line_pieces
             for line in f_read.readlines():
+                if re.search(r'^ {0,6}read file=', line) is not None:   # Read from external file
+                    ext_filename = os.path.dirname(in_filename) + "/"    # Prepend directory path
+                    ext_filename += line[re.search(r'^ {0,6}read file=', line).span()[1]:].strip()  # Append filename
+                    for ext_line in open(ext_filename, 'r').readlines():
+                        curr_list.append(ext_line)
+                    continue
                 if re.search(r'\bBegin Surfaces\b', line) is not None:
                     curr_list = self.surface_line_pieces
                 elif re.search(r'\bBegin Options\b', line) is not None:
