@@ -122,7 +122,11 @@ def update_console(apply_clicked, pathname, cell, material, density, geom, param
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
 
         if button_id == 'cell_apply_button' and cell is not None:
+            if material is None:
+                return current_messages
             selected_cell = template.all_cells.get(cell)
+            print(selected_cell.material)
+            print(material)
             if selected_cell.material == material and selected_cell.density == density and selected_cell.geom == geom and selected_cell.param == param:
                 message = f'({timestamp})\tNo changes made to Cell {cell}'
                 current_messages.insert(0, html.P(message))

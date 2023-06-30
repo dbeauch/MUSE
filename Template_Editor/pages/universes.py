@@ -125,6 +125,8 @@ def update_console(apply_clicked, pathname, universe, current_messages):
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
 
         # if button_id == 'universe_apply_button' and universe is not None:
+        #     if something is None:
+        #         return current_messages
         #     selected_universe = template.all_universes.get(universe)
         #     if selected_universe == universe:
         #         message = f'({timestamp})\tNo changes made to Surface {universe}'

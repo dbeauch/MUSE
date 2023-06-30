@@ -95,6 +95,8 @@ def update_console(apply_clicked, pathname, surface, mnemonic, transform, dimens
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
 
         if button_id == 'surface_apply_button' and surface is not None:
+            if mnemonic is None:
+                return current_messages
             selected_surface = template.all_surfaces.get(surface)
             if selected_surface.number == surface and selected_surface.mnemonic == mnemonic and selected_surface.transform == transform and selected_surface.dimensions == dimensions:
                 message = f'({timestamp})\tNo changes made to Surface {surface}'
