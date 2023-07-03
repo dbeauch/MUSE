@@ -129,7 +129,7 @@ def update_console(apply_clicked, pathname, universe, current_messages):
         #         return current_messages
         #     selected_universe = template.all_universes.get(universe)
         #     if selected_universe == universe:
-        #         message = f'({timestamp})\tNo changes made to Surface {universe}'
+        #         message = f'({timestamp})\tNo changes made to Universe {universe}'
         #         current_messages.insert(0, html.P(message))
         #         return current_messages
         #

@@ -7,7 +7,7 @@ from dash import html, dcc
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 
-from pages import home, cells, surfaces, universes
+from pages import home, cells, surfaces, materials, universes
 from template_handler_instance import template_handler_instance as template
 
 
@@ -22,9 +22,13 @@ navbar_color = '#993300'
 # Only runs preprocessing operation for the main server process not for monitor process
 if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     sys.setrecursionlimit(8000)
+    # file_to_read = input(f"Template to read ('' to run default template):")
+    # if file_to_read == '':
+    #     file_to_read = '../mcnp_templates/NBSR_HEU_720[236]/NBSR_HEU_720.i'
+        # file_to_read = '../mcnp_templates/NNR/test.i'
+        # file_to_read = '../mcnp_templates/NNR/burn_Box9_v02_SU_cycle8.i'
+    # template.read_template(file_to_read)
     template.read_template('../mcnp_templates/NBSR_HEU_720[236]/NBSR_HEU_720.i')
-    # template.read_template('../mcnp_templates/NNR/test.i')
-    # template.read_template('../mcnp_templates/NNR/burn_Box9_v02_SU_cycle8.i')
 
 
 app = dash.Dash(
@@ -141,6 +145,8 @@ def display_page(pathname):
         return cells.layout(page_background), True
     elif pathname == '/surfaces':
         return surfaces.layout(page_background), True
+    elif pathname == '/materials':
+        return materials.layout(page_background), True
     elif pathname == '/universes':
         return universes.layout(page_background), True
     else:

@@ -30,9 +30,9 @@ def layout(page_background):
                     # Material dropdown
                     dbc.Row([
                         dbc.Col(html.H5("Material: "), width='auto', align="end"),
-                        dbc.Col(dcc.Dropdown(id='material_selector', placeholder='', clearable=False,
+                        dbc.Col(dcc.Dropdown(id='cell_material_selector', placeholder='', clearable=False,
                                              style={'color': 'black'}), width=3),
-                        dbc.Col(html.H6(id='material_description', children='Material Description'), width=7)
+                        dbc.Col(html.H6(id='cell_material_description', children='Material Description'), width=7)
                     ], justify="start", align="center"),
 
                     # Density input
@@ -59,16 +59,16 @@ def layout(page_background):
 
 
 @callback(
-    Output('material_selector', 'value'),
+    Output('cell_material_selector', 'value'),
     Output('density_input', 'value'),
     Output('geom_input', 'value'),
     Output('param_input', 'value'),
-    Output('material_description', 'children'),
+    Output('cell_material_description', 'children'),
     Output('cell_description', 'children'),
     Input('cell_selector', 'value'),
-    Input('material_selector', 'value'),
+    Input('cell_material_selector', 'value'),
 )
-def update_cell_display(cell, material_select):
+def update_cell_display(cell, cell_material_select):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if button_id == 'cell_selector' or ctx.triggered_id is None:
@@ -77,8 +77,8 @@ def update_cell_display(cell, material_select):
             return selected_cell.get_material(), selected_cell.get_density(), selected_cell.geom, selected_cell.param, template.all_materials.get(selected_cell.get_material()).comment, selected_cell.comment
         else:
             return "", "", "", "", "Material Description", "Cell Description"
-    elif button_id == 'material_selector' and material_select is not None:
-        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, template.all_materials.get(material_select).comment, dash.no_update
+    elif button_id == 'material_selector' and cell_material_select is not None:
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, template.all_materials.get(cell_material_select).comment, dash.no_update
     else:
         return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
@@ -92,8 +92,8 @@ def update_cell_options(search_value):
 
 
 @callback(
-    Output("material_selector", "options"),
-    Input("material_selector", "search_value"),
+    Output("cell_material_selector", "options"),
+    Input("cell_material_selector", "search_value"),
 )
 def update_material_options(search_value):
     result = [o for o in template.all_materials]
@@ -105,7 +105,7 @@ def update_material_options(search_value):
     Input('cell_apply_button', 'n_clicks'),
     State('url', 'pathname'),
     State('cell_selector', 'value'),
-    State('material_selector', 'value'),
+    State('cell_material_selector', 'value'),
     State('density_input', 'value'),
     State('geom_input', 'value'),
     State('param_input', 'value'),
@@ -125,8 +125,6 @@ def update_console(apply_clicked, pathname, cell, material, density, geom, param
             if material is None:
                 return current_messages
             selected_cell = template.all_cells.get(cell)
-            print(selected_cell.material)
-            print(material)
             if selected_cell.material == material and selected_cell.density == density and selected_cell.geom == geom and selected_cell.param == param:
                 message = f'({timestamp})\tNo changes made to Cell {cell}'
                 current_messages.insert(0, html.P(message))
