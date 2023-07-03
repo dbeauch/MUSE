@@ -223,13 +223,14 @@ class CardFactory:
             if not matched:
                 return None
 
-        #   Add cell cards to relevant universe or fill dicts
         if isinstance(made_card, Cell):
+            #   Add cell cards to universe
             if made_card.universe is not None:
                 if made_card.universe not in self.template.all_universes:
                     self.template.all_universes[made_card.universe] = [made_card]
                 else:
                     self.template.all_universes[made_card.universe].append(made_card)
+            #   Add cell cards to fill dicts
             if made_card.fill is not None:
                 for fill in made_card.fill:
                     if fill not in self.template.all_fills:
@@ -489,7 +490,7 @@ class Transform(DataCard):
         self.param = line[number_end:]
 
     def __str__(self):
-        return f"{super().__str__()}*tr{self.number}\t{self.param}"
+        return f"{super().__str__()}{self.number}\t{self.param}"
 
 
 class Option(DataCard):

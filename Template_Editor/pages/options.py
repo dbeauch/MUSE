@@ -34,7 +34,7 @@ def layout(page_background):
                                 style={
                                     'backgroundColor': '#333333',
                                     'color': '#A9A9A9',
-                                    'border': '5px solid black',
+                                    'border': '3px solid black',
                                     'height': '50vh',
                                     'width': '69vw',
                                     'overflow': 'scrollX',
@@ -42,7 +42,7 @@ def layout(page_background):
                                 },
                             )
                         ]),
-                    ]),
+                    ], className='g-0'),
 
                     html.Hr(),
 
