@@ -484,9 +484,8 @@ class Mode(DataCard):
 
 class Transform(DataCard):
     def __init__(self, line):
-        tr_end = re.search(r'^\*?(tr|TR)', line).span()[1]
         number_end = re.search(r'^\*?(tr|TR)\d{1,6}[ \t]+', line).span()[1]
-        self.number = line[tr_end: number_end].strip()
+        self.number = line[: number_end].strip()
         self.param = line[number_end:]
 
     def __str__(self):

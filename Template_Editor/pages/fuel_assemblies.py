@@ -15,13 +15,13 @@ def layout(page_background):
                     # Top spacing
                     dbc.Row([dbc.Col(html.H1(" "))]),
 
-                    # Current Material dropdown
+                    # Current Assembly dropdown
                     dbc.Row([
                         dbc.Col(width=1),
-                        dbc.Col(html.H4("Current Material:"), width=3, align="end"),
-                        dbc.Col(dcc.Dropdown(id='material_selector', placeholder='Select a Material', clearable=True, persistence=True, persistence_type='session'), width=2,
+                        dbc.Col(html.H4("Current Assembly:"), width=3, align="end"),
+                        dbc.Col(dcc.Dropdown(id='assembly_selector', placeholder='Select an Assembly', clearable=True, persistence=True, persistence_type='session'), width=2,
                                 align="center"),
-                        dbc.Col(html.H5(id='material_description', children='Material Description'), width=6, align="end"),
+                        dbc.Col(html.H5(id='assembly_description', children='Assembly Description'), width=6, align="end"),
                     ], justify="center"),
 
                     html.Hr(),
@@ -29,9 +29,9 @@ def layout(page_background):
                     dbc.Row([
                         dbc.Col([]),
                         dbc.Col([
-                            html.H6("Material Contents"),
+                            html.H6("Assembly Contents"),
                             dcc.Textarea(
-                                id='material_display',
+                                id='assembly_display',
                                 style={
                                     'backgroundColor': '#333333',
                                     'color': '#A9A9A9',
@@ -48,7 +48,7 @@ def layout(page_background):
                     html.Hr(),
 
                     dbc.Row([
-                        dbc.Col(html.Button('Apply Changes', id='material_apply_button', n_clicks=0), width=4),
+                        dbc.Col(html.Button('Apply Changes', id='assembly_apply_button', n_clicks=0), width=4),
                         dbc.Col(width=7),
                     ], className='g-0', justify='start')
                 ]),
@@ -57,45 +57,40 @@ def layout(page_background):
 
 
 @callback(
-    Output("material_selector", "options"),
-    Input("material_selector", "search_value"),
+    Output("assembly_selector", "options"),
+    Input("assembly_selector", "search_value"),
 )
-def update_material_options(search_value):
-    result = [o for o in template.all_materials.keys()]
+def update_assembly_options(search_value):
+    result = [o for o in template.all_assembly.keys()]
     result.sort()
     return result
 
 
 @callback(
-    Output('material_display', 'value'),
-    Output('material_description', 'children'),
-    Input('material_selector', 'value'),
+    Output('assembly_description', 'children'),
+    Input('assembly_selector', 'value'),
 )
-def update_material_display(material):
+def update_assembly_display(assembly):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if button_id == 'material_selector' or ctx.triggered_id is None:
-        if material is not None:
-            material_results = ""
-            description_results = ""
-            if material in template.all_materials.keys():
-                material_results = template.all_materials[material].__str__(True)
-            if material in template.data_comments.keys():
-                description_results = template.data_comments.get(material)
-            return material_results, description_results
-    return "Material Representation", "Material Description"
+    if button_id == 'assembly_selector' or ctx.triggered_id is None:
+        if assembly is not None:
+            if assembly in template.data_comments.keys():
+                description_results = template.data_comments.get(assembly)
+                return description_results
+    return "Assembly Description"
 
 
 @callback(
     Output('console_output', 'children', allow_duplicate=True),
-    Input('material_apply_button', 'n_clicks'),
+    Input('assembly_apply_button', 'n_clicks'),
     State('url', 'pathname'),
-    State('material_selector', 'value'),
+    State('assembly_selector', 'value'),
     State('console_output', 'children'),
     prevent_initial_call=True
 )
-def update_console(apply_clicked, pathname, material, current_messages):
-    if pathname == '/material':
+def update_console(apply_clicked, pathname, assembly, current_messages):
+    if pathname == '/assembly':
         if not current_messages:
             current_messages = []
 
@@ -103,16 +98,16 @@ def update_console(apply_clicked, pathname, material, current_messages):
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
 
-        # if button_id == 'material_apply_button' and material is not None:
+        # if button_id == 'assembly_apply_button' and assembly is not None:
         #     if something is None:
         #         return current_messages
-        #     selected_material = template.all_materials.get(material)
-        #     if selected_material == material:
-        #         message = f'({timestamp})\tNo changes made to Material {material}'
+        #     selected_assembly = template.all_assembly.get(assembly)
+        #     if selected_assembly == assembly:
+        #         message = f'({timestamp})\tNo changes made to Assembly {assembly}'
         #         current_messages.insert(0, html.P(message))
         #         return current_messages
         #
-        #     message = f'({timestamp})\tApplied changes to Material {material}'
+        #     message = f'({timestamp})\tApplied changes to Assembly {assembly}'
         #     current_messages.insert(0, html.P(message))
         #     return current_messages
 

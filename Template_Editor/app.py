@@ -7,7 +7,7 @@ from dash import html, dcc
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 
-from pages import home, cells, surfaces, materials, universes
+from pages import home, cells, surfaces, materials, universes, fuel_assemblies, options
 from template_handler_instance import template_handler_instance as template
 
 
@@ -57,6 +57,7 @@ navbar = html.Div([
             dbc.NavLink("Surface Cards", href="/surfaces", active="exact"),
             dbc.NavLink("Material Cards", href="/materials", active="exact"),
             dbc.NavLink("Universes", href="/universes", active="exact"),
+            dbc.NavLink("Fuel Assembly", href="/assembly", active="exact"),
             dbc.NavLink("Option Cards", href="/options", active="exact"),
         ],
         vertical=True,
@@ -149,6 +150,10 @@ def display_page(pathname):
         return materials.layout(page_background), True
     elif pathname == '/universes':
         return universes.layout(page_background), True
+    elif pathname == '/assembly':
+        return fuel_assemblies.layout(page_background), True
+    elif pathname == '/options':
+        return options.layout(page_background), True
     else:
         return '404 Error: This page does not exist...YET!', False
 
