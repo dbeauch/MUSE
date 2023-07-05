@@ -34,18 +34,11 @@ def layout(page_background):
                     dbc.Col([dbc.Container([
                         # Material dropdown
                         dbc.Row([
-                            dbc.Col(width=3),
                             dbc.Col(html.H5('Material: '), width='auto', align='end'),
                             dbc.Col(dcc.Dropdown(id='cell_material_selector', placeholder='', clearable=False,
                                                  style={'color': 'black'}), width=3),
-                            dbc.Col(width=3),
+                            dbc.Col(html.H6(id='cell_material_description', children='Material Description'), width=6),
                         ], justify='start', align='center'),
-
-                        dbc.Row([
-                            html.H6(" "),
-                            dbc.Col(html.H6(id='cell_material_description', children='Material Description'),
-                                    width='auto')
-                        ], justify='center', align='center'),
 
                         # Density input
                         dbc.Row([
