@@ -27,36 +27,35 @@ def layout(page_background):
                     html.Hr(),
 
                     dbc.Row([
-                        dbc.Col([
-                            html.H6("Fill Uses"),
+                        dbc.Col([dbc.Container([
                             dcc.Textarea(
                                 id='fill_display',
                                 style={
                                     'backgroundColor': '#333333',
                                     'color': '#A9A9A9',
                                     'border': '3px solid black',
-                                    'height': '50vh',
+                                    'height': '60vh',
                                     'width': '30vw',
                                     'overflow': 'scrollX',
                                     'inputMode': 'email',
                                 },
                             )
-                        ]),
-                        dbc.Col([
-                            html.H6("Universe Contents"),
+                        ])], width=6),
+
+                        dbc.Col([dbc.Container([
                             dcc.Textarea(
                                 id='universe_display',
                                 style={
                                     'backgroundColor': '#333333',
                                     'color': '#A9A9A9',
                                     'border': '3px solid black',
-                                    'height': '50vh',
+                                    'height': '60vh',
                                     'width': '30vw',
                                     'overflow': 'scrollX',
                                     'inputMode': 'email',
                                 },
                             )
-                        ]),
+                        ])], width=6),
                     ]),
 
                     html.Hr(),

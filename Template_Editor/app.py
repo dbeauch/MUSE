@@ -117,7 +117,12 @@ console = html.Div([
 
 content = html.Div(
     id="page_content",
-    style={'marginLeft': navbar_width, 'backgroundColor': page_background}
+    style={'marginLeft': navbar_width,
+           'backgroundColor': page_background,
+           'overflow': 'auto',
+           'width': f'calc(100vw - {navbar_width})',
+           'height': f'calc(100vh)',
+           }
 )
 
 app.layout = html.Div([
@@ -130,7 +135,11 @@ app.layout = html.Div([
             console
         ])
     ], justify="start", className="g-0")
-])
+], style={'overflow': 'hidden',  # prevent scrolling
+          'height': '100vh',
+          'width': '100vw',
+          }
+)
 
 
 @app.callback(

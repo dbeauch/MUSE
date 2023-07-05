@@ -27,29 +27,32 @@ def layout(page_background):
                     html.Hr(),
 
                     dbc.Row([
+                        dbc.Col([dbc.Container([
+
+
+                            html.Hr(),
+
+                            dbc.Row([
+                                dbc.Col(html.Button('Apply Changes', id='option_apply_button', n_clicks=0), width=4),
+                                dbc.Col(width=7),
+                            ], className='g-0', justify='start')
+                        ])], width=6),
+
                         dbc.Col([
-                            html.H6("Option Contents"),
                             dcc.Textarea(
                                 id='option_display',
                                 style={
                                     'backgroundColor': '#333333',
                                     'color': '#A9A9A9',
                                     'border': '3px solid black',
-                                    'height': '50vh',
-                                    'width': '69vw',
+                                    'height': '60vh',
+                                    'width': '40vw',
                                     'overflow': 'scrollX',
                                     'inputMode': 'email',
                                 },
                             )
-                        ]),
-                    ], className='g-0'),
-
-                    html.Hr(),
-
-                    dbc.Row([
-                        dbc.Col(html.Button('Apply Changes', id='option_apply_button', n_clicks=0), width=4),
-                        dbc.Col(width=7),
-                    ], className='g-0', justify='start')
+                        ], width=6),
+                    ]),
                 ]),
             ])
         ]

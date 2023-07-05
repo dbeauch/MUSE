@@ -27,30 +27,32 @@ def layout(page_background):
                     html.Hr(),
 
                     dbc.Row([
-                        dbc.Col([]),
+                        dbc.Col([dbc.Container([
+
+
+                            html.Hr(),
+
+                            dbc.Row([
+                                dbc.Col(html.Button('Apply Changes', id='material_apply_button', n_clicks=0), width=4),
+                                dbc.Col(width=7),
+                            ], className='g-0', justify='start')
+                        ])], width=6),
+
                         dbc.Col([
-                            html.H6("Material Contents"),
                             dcc.Textarea(
                                 id='material_display',
                                 style={
                                     'backgroundColor': '#333333',
                                     'color': '#A9A9A9',
                                     'border': '3px solid black',
-                                    'height': '50vh',
-                                    'width': '30vw',
+                                    'height': '60vh',
+                                    'width': '40vw',
                                     'overflow': 'scrollX',
                                     'inputMode': 'email',
                                 },
                             )
-                        ]),
+                        ], width=6),
                     ]),
-
-                    html.Hr(),
-
-                    dbc.Row([
-                        dbc.Col(html.Button('Apply Changes', id='material_apply_button', n_clicks=0), width=4),
-                        dbc.Col(width=7),
-                    ], className='g-0', justify='start')
                 ]),
             ])
         ]

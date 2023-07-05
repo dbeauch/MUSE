@@ -20,42 +20,49 @@ def layout(page_background):
                 # Current Cell dropdown
                 dbc.Row([
                     dbc.Col(width=1),
-                    dbc.Col(html.H4("Current Cell:"), width=3, align="end"),
+                    dbc.Col(html.H4('Current Cell:'), width=3, align='end'),
                     dbc.Col(
                         dcc.Dropdown(id='cell_selector', placeholder='Select a Cell', clearable=True,
                                      persistence=True,
                                      persistence_type='session', style={'width': '10vw'}), width=2,
-                        align="center"),
+                        align='center'),
                     dbc.Col(html.H5(id='cell_description', children='Cell Description'), width=6, align="end"),
-                ], justify="center"),
+                ], justify='center'),
                 html.Hr(),
 
                 dbc.Row([
                     dbc.Col([dbc.Container([
                         # Material dropdown
                         dbc.Row([
-                            dbc.Col(html.H5("Material: "), width=3, align="end"),
+                            dbc.Col(width=3),
+                            dbc.Col(html.H5('Material: '), width='auto', align='end'),
                             dbc.Col(dcc.Dropdown(id='cell_material_selector', placeholder='', clearable=False,
                                                  style={'color': 'black'}), width=3),
-                            dbc.Col(html.H6(id='cell_material_description', children='Material Description'), width='auto')
-                        ], justify="start", align="center"),
+                            dbc.Col(width=3),
+                        ], justify='start', align='center'),
+
+                        dbc.Row([
+                            html.H6(" "),
+                            dbc.Col(html.H6(id='cell_material_description', children='Material Description'),
+                                    width='auto')
+                        ], justify='center', align='center'),
 
                         # Density input
                         dbc.Row([
-                            html.H6("Density:", style={'marginTop': 20}),
-                            dbc.Input(id='density_input', type='text', placeholder="")
+                            html.H6('Density:', style={'marginTop': 20}),
+                            dbc.Input(id='density_input', type='text', placeholder='')
                         ]),
 
                         # Geometry input
                         dbc.Row([
                             html.H6("Geometry:", style={'marginTop': 20}),
-                            dbc.Input(id='geom_input', type='text', placeholder="")
+                            dbc.Input(id='geom_input', type='text', placeholder='')
                         ]),
 
                         # Parameters input
                         dbc.Row([
-                            html.H6("Parameters:", style={'marginTop': 20}),
-                            dbc.Input(id='param_input', type='text', placeholder="")
+                            html.H6('Parameters:', style={'marginTop': 20}),
+                            dbc.Input(id='param_input', type='text', placeholder='')
                         ]),
 
                         html.Hr(),
@@ -64,12 +71,26 @@ def layout(page_background):
                             dbc.Col(html.Button('Apply Changes', id='cell_apply_button', n_clicks=0), width=4),
                             dbc.Col(width=7),
                         ], className='g-0')
-                    ])]),
+                    ])], width=6),
 
 
-                    dbc.Col([dbc.Container([
-
-                    ])])
+                    dbc.Col([
+                        dbc.Col([]),
+                        dbc.Col([
+                            dcc.Textarea(
+                                id='cell_contents',
+                                style={
+                                    'backgroundColor': '#333333',
+                                    'color': '#A9A9A9',
+                                    'border': '3px solid black',
+                                    'height': '60vh',
+                                    'width': '40vw',
+                                    'overflow': 'scrollX',
+                                    'inputMode': 'email',
+                                },
+                            )
+                        ]),
+                    ], width=6)
                 ]),
             ])])
     ]
@@ -82,6 +103,7 @@ def layout(page_background):
     Output('param_input', 'value'),
     Output('cell_material_description', 'children'),
     Output('cell_description', 'children'),
+    Output('cell_contents', 'value'),
     Input('cell_selector', 'value'),
     Input('cell_material_selector', 'value'),
 )
@@ -92,14 +114,14 @@ def update_cell_display(cell, cell_material_select):
         if cell is not None:
             selected_cell = template.all_cells.get(cell)
             return selected_cell.get_material(), selected_cell.get_density(), selected_cell.geom, selected_cell.param, template.all_materials.get(
-                selected_cell.get_material()).comment, selected_cell.comment
+                selected_cell.get_material()).comment, selected_cell.comment, str(selected_cell)
         else:
-            return "", "", "", "", "Material Description", "Cell Description"
+            return "", "", "", "", "Material Description", "Cell Description", ""
     elif button_id == 'material_selector' and cell_material_select is not None:
         return dash.no_update, dash.no_update, dash.no_update, dash.no_update, template.all_materials.get(
             cell_material_select).comment, dash.no_update
     else:
-        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
 
 @callback(
