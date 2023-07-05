@@ -10,14 +10,12 @@ import dash_bootstrap_components as dbc
 from pages import home, cells, surfaces, materials, universes, fuel_assemblies, options
 from template_handler_instance import template_handler_instance as template
 
-
 # Sizes and Colors
 navbar_width = '15vw'
 console_height = '20vh'
 console_banner_height = '0.1vh'
 page_background = '#D3D3D3'
-navbar_color = '#993300'
-
+navbar_color = '#004a80'
 
 # Only runs preprocessing operation for the main server process not for monitor process
 if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
@@ -25,11 +23,10 @@ if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     # file_to_read = input(f"Template to read ('' to run default template):")
     # if file_to_read == '':
     #     file_to_read = '../mcnp_templates/NBSR_HEU_720[236]/NBSR_HEU_720.i'
-        # file_to_read = '../mcnp_templates/NNR/test.i'
-        # file_to_read = '../mcnp_templates/NNR/burn_Box9_v02_SU_cycle8.i'
+    # file_to_read = '../mcnp_templates/NNR/test.i'
+    # file_to_read = '../mcnp_templates/NNR/burn_Box9_v02_SU_cycle8.i'
     # template.read_template(file_to_read)
     template.read_template('../mcnp_templates/NBSR_HEU_720[236]/NBSR_HEU_720.i')
-
 
 app = dash.Dash(
     __name__,
@@ -50,6 +47,7 @@ banner = html.Header(
 
 navbar = html.Div([
     banner,
+
     dbc.Nav(
         [
             dbc.NavLink("Home", href="/", active="exact"),
@@ -67,8 +65,19 @@ navbar = html.Div([
             'fontSize': 'calc((2vh + 1vw) / 2)',
         },
     ),
+
+    html.A(
+        html.Img(src='/assets/NCNR_nonlogo.png',
+                 style={
+                     'height': '15vh',
+                     'width': navbar_width,
+                     'position': 'fixed',
+                     'bottom': 0,
+                 }),
+        href='https://www.nist.gov/ncnr',
+        target='_blank',
+    ),
 ], style={
-    'color': 'black',
     'backgroundColor': navbar_color,
     'width': navbar_width,
     'height': '100vh',
@@ -80,7 +89,8 @@ console = html.Div([
         dbc.Col(html.Div("Console"), width=4),
         dbc.Col(dcc.Input(id='file_path', type='text', placeholder='File path', debounce=True), width=2),
         dbc.Col(dbc.Col(html.Button('Print File', id='print_button', n_clicks=0)), width=1),
-        dbc.Col(dcc.Checklist(id='element_comments', options=['Element Comments'], value=['Element Comments']), width=3),
+        dbc.Col(dcc.Checklist(id='element_comments', options=['Element Comments'], value=['Element Comments']),
+                width=3),
         dbc.Col(html.Button("-", id="console_toggler"), width=1)
     ], align='start',
         style={
@@ -196,9 +206,7 @@ def print_button(print_clicked, file_path, element_comments, current_messages):
     timestamp = datetime.datetime.now().strftime("%H:%M:%S")
 
     if button_id == 'print_button':
-        print(element_comments)
         element_comments = element_comments != []
-        print(element_comments)
         printed = template.print_file(file_path, element_comments)
         message = f'({timestamp})\tPrinted the file to: {printed}'
         current_messages.insert(0, html.P(message))
