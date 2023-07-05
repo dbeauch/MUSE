@@ -19,8 +19,9 @@ def layout(page_background):
                     dbc.Row([
                         dbc.Col(width=1),
                         dbc.Col(html.H4("Current Material:"), width=3, align="end"),
-                        dbc.Col(dcc.Dropdown(id='material_selector', placeholder='Select a Material', clearable=True, persistence=True, persistence_type='session'), width=2,
+                        dbc.Col(dcc.Dropdown(id='material_selector', placeholder='Select a Material', clearable=True, persistence=True, persistence_type='session'), width=1,
                                 align="center"),
+                        dbc.Col(width=1),
                         dbc.Col(html.H5(id='material_description', children='Material Description'), width=6, align="end"),
                     ], justify="center"),
 
@@ -53,7 +54,7 @@ def layout(page_background):
                             )
                         ], width=6),
                     ]),
-                ]),
+                ], fluid=True),
             ])
         ]
 

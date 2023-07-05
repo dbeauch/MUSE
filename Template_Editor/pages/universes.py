@@ -19,8 +19,9 @@ def layout(page_background):
                     dbc.Row([
                         dbc.Col(width=1),
                         dbc.Col(html.H4("Current Universe:"), width=3, align="end"),
-                        dbc.Col(dcc.Dropdown(id='universe_selector', placeholder='Select a Universe', clearable=True, persistence=True, persistence_type='session'), width=2,
+                        dbc.Col(dcc.Dropdown(id='universe_selector', placeholder='Select a Universe', clearable=True, persistence=True, persistence_type='session'), width=1,
                                 align="center"),
+                        dbc.Col(width=1),
                         dbc.Col(html.H5(id='universe_description', children='Universe Description'), width=6, align="end"),
                     ], justify="center"),
 
@@ -28,18 +29,14 @@ def layout(page_background):
 
                     dbc.Row([
                         dbc.Col([dbc.Container([
-                            dcc.Textarea(
-                                id='fill_display',
-                                style={
-                                    'backgroundColor': '#333333',
-                                    'color': '#A9A9A9',
-                                    'border': '3px solid black',
-                                    'height': '60vh',
-                                    'width': '30vw',
-                                    'overflow': 'scrollX',
-                                    'inputMode': 'email',
-                                },
-                            )
+
+
+                            html.Hr(),
+
+                            dbc.Row([
+                                dbc.Col(html.Button('Apply Changes', id='universe_apply_button', n_clicks=0), width=4),
+                                dbc.Col(width=7),
+                            ], className='g-0', justify='start')
                         ])], width=6),
 
                         dbc.Col([dbc.Container([
@@ -49,22 +46,28 @@ def layout(page_background):
                                     'backgroundColor': '#333333',
                                     'color': '#A9A9A9',
                                     'border': '3px solid black',
-                                    'height': '60vh',
-                                    'width': '30vw',
+                                    'height': '32vh',
+                                    'width': '40vw',
+                                    'overflow': 'scrollX',
+                                    'inputMode': 'email',
+                                },
+                            ),
+
+                            dcc.Textarea(
+                                id='fill_display',
+                                style={
+                                    'backgroundColor': '#333333',
+                                    'color': '#A9A9A9',
+                                    'border': '3px solid black',
+                                    'height': '32vh',
+                                    'width': '40vw',
                                     'overflow': 'scrollX',
                                     'inputMode': 'email',
                                 },
                             )
                         ])], width=6),
                     ]),
-
-                    html.Hr(),
-
-                    dbc.Row([
-                        dbc.Col(html.Button('Apply Changes', id='universe_apply_button', n_clicks=0), width=4),
-                        dbc.Col(width=7),
-                    ], className='g-0', justify='start')
-                ]),
+                ], fluid=True),
             ])
         ]
 

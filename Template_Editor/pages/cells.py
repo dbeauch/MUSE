@@ -24,8 +24,9 @@ def layout(page_background):
                     dbc.Col(
                         dcc.Dropdown(id='cell_selector', placeholder='Select a Cell', clearable=True,
                                      persistence=True,
-                                     persistence_type='session', style={'width': '10vw'}), width=2,
+                                     persistence_type='session', style={'width': '10vw'}), width=1,
                         align='center'),
+                    dbc.Col(width=1),
                     dbc.Col(html.H5(id='cell_description', children='Cell Description'), width=6, align="end"),
                 ], justify='center'),
                 html.Hr(),
@@ -85,7 +86,7 @@ def layout(page_background):
                         ]),
                     ], width=6)
                 ]),
-            ])])
+            ], fluid=True)])
     ]
 
 
