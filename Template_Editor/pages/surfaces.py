@@ -16,55 +16,64 @@ def layout(page_background):
 
                 # Current Surface dropdown
                 dbc.Row([
-                    dbc.Col(width=1),
-                    dbc.Col(html.H4("Current Surface:"), width=3, align="end"),
+                    dbc.Col(html.H4("Current Surface:"), width=3, align="end", style={'textAlign': 'right'}),
                     dbc.Col(dcc.Dropdown(id='surface_selector', placeholder='Select a Surface', clearable=True,
-                                         persistence=True, persistence_type='session'), width=1,
-                            align="center"),
-                    dbc.Col(width=1),
-                    dbc.Col(html.H5(id='surface_description', children='Surface Description'), width=6, align="end"),
-                ], justify="center"),
-
+                                         persistence=True, persistence_type='session',
+                                         style={'width': '10vw', 'textAlign': 'left'}),
+                            width=3, align="center"),
+                    dbc.Col(html.H5(id='surface_description', children='Surface Description'),
+                            width=6, align="end"),
+                ]),
                 html.Hr(),
 
                 dbc.Row([
-                    dbc.Col([dbc.Container([
+                    dbc.Col([
                         # Mnemonic
-                        html.H6("Mnemonic:", style={'marginTop': 20}),
-                        dbc.Input(id='mnemonic_input', type='text', placeholder=""),
+                        dbc.Row([
+                            dbc.Col(html.H6('Mnemonic:', style={'textAlign': 'right'}), width=2),
+                            dbc.Col(
+                                dbc.Input(id='mnemonic_input', type='text', placeholder='', style={'textAlign': 'left'}))
+                        ], align='center', style={'marginTop': 20}),
 
                         # Transform
-                        html.H6("Associated Transform:", style={'marginTop': 20}),
-                        dbc.Input(id='transform_input', type='text', placeholder=""),
+                        dbc.Row([
+                            dbc.Col(html.H6('Transform:', style={'textAlign': 'right'}), width=2),
+                            dbc.Col(
+                                dbc.Input(id='transform_input', type='text', placeholder='',
+                                          style={'textAlign': 'left'}))
+                        ], align='center', style={'marginTop': 20}),
 
                         # Dimensions
-                        html.H6("Dimensions:", style={'marginTop': 20}),
-                        dbc.Input(id='dimensions_input', type='text', placeholder=""),
+                        dbc.Row([
+                            dbc.Col(html.H6('Dimensions:', style={'textAlign': 'right'}), width=2),
+                            dbc.Col(
+                                dbc.Input(id='dimensions_input', type='text', placeholder='',
+                                          style={'textAlign': 'left'}))
+                        ], align='center', style={'marginTop': 20}),
 
                         html.Hr(),
 
-                        dbc.Row([
-                            dbc.Col(html.Button('Apply Changes', id='surface_apply_button', n_clicks=0), width=4),
-                            dbc.Col(width=7),
-                        ], className='g-0', justify='start')
-                    ])]),
+                        html.Button('Apply Changes', id='surface_apply_button', n_clicks=0),
+                    ], width=6),
 
                     dbc.Col([
-                        dbc.Col([]),
-                        dbc.Col([
-                            dcc.Textarea(
-                                id='surface_contents',
-                                style={
-                                    'backgroundColor': '#333333',
-                                    'color': '#A9A9A9',
-                                    'border': '3px solid black',
-                                    'height': '60vh',
-                                    'width': '40vw',
-                                    'overflow': 'scrollX',
-                                    'inputMode': 'email',
-                                },
-                            )
-                        ]),
+                        dcc.Tabs([
+                            dcc.Tab(label='Print Preview',
+                                    className='tab-1',
+                                    children=dcc.Textarea(
+                                        id='surface_preview',
+                                        style={
+                                            'backgroundColor': '#333333',
+                                            'color': '#A9A9A9',
+                                            'border': '3px solid black',
+                                            'height': '60vh',
+                                            'width': '40vw',
+                                            'overflow': 'scrollX',
+                                            'inputMode': 'email',
+                                        },
+                                    )
+                                    )
+                        ], className='tab-container-1')
                     ], width=6)
                 ])
             ], fluid=True),
@@ -85,7 +94,7 @@ def update_surface_options(search_value):
     Output('transform_input', 'value'),
     Output('dimensions_input', 'value'),
     Output('surface_description', 'children'),
-    Output('surface_contents', 'value'),
+    Output('surface_preview', 'value'),
     Input('surface_selector', 'value'),
 )
 def update_surface_display(surface):

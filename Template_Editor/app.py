@@ -24,9 +24,9 @@ if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     # if file_to_read == '':
     #     file_to_read = '../mcnp_templates/NBSR_HEU_720[236]/NBSR_HEU_720.i'
     # file_to_read = '../mcnp_templates/NNR/test.i'
-    # file_to_read = '../mcnp_templates/NNR/burn_Box9_v02_SU_cycle8.i'
-    # template.read_template(file_to_read)
-    template.read_template('../mcnp_templates/NBSR_HEU_720[236]/NBSR_HEU_720.i')
+    file_to_read = '../mcnp_templates/NNR/burn_Box9_v02_SU_cycle8.i'
+    # file_to_read = '../mcnp_templates/NBSR_HEU_720[236]/NBSR_HEU_720.i'
+    template.read_template(file_to_read)
 
 app = dash.Dash(
     __name__,
@@ -41,6 +41,7 @@ banner = html.Header(
         'color': 'white',
         'padding': '0px',
         'fontSize': 'calc((3vh + 1vw) / 2)',
+        'font-weight': 'bold',
         'textAlign': 'center'
     }
 )
@@ -73,6 +74,7 @@ navbar = html.Div([
                      'width': navbar_width,
                      'position': 'fixed',
                      'bottom': 0,
+                     'padding': '1vw',
                  }),
         href='https://www.nist.gov/ncnr',
         target='_blank',
@@ -110,18 +112,19 @@ console = html.Div([
                 'color': '#A9A9A9',
                 'border': '1px solid black',
                 'height': console_height,
-                'overflow': 'scroll'
+                'overflow': 'scroll',
+                'overflow-x': 'hidden',
             },
         ),
         id='console_output_window',
-        is_open=True,
+        is_open=True
     )
 ],
     style={
         'marginLeft': navbar_width,
         'position': 'fixed',
         'bottom': 0,
-        'width': 'calc(100%)'
+        'width': 'calc(100%)',
     }
 )
 

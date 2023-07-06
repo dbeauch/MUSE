@@ -4,7 +4,6 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html, Input, Output, State, callback
 
-
 import Template_Editor.mcnp_cards
 from Template_Editor.mcnp_cards import RegularCell, VoidCell, LikeCell
 from Template_Editor.template_handler_instance import template_handler_instance as template
@@ -19,71 +18,70 @@ def layout(page_background):
 
                 # Current Cell dropdown
                 dbc.Row([
-                    dbc.Col(width=1),
-                    dbc.Col(html.H4('Current Cell:'), width=3, align='end'),
-                    dbc.Col(
-                        dcc.Dropdown(id='cell_selector', placeholder='Select a Cell', clearable=True,
-                                     persistence=True,
-                                     persistence_type='session', style={'width': '10vw'}), width=1,
-                        align='center'),
-                    dbc.Col(width=1),
-                    dbc.Col(html.H5(id='cell_description', children='Cell Description'), width=6, align="end"),
-                ], justify='center'),
+                    dbc.Col(html.H4('Current Cell:'), width=3, align='end', style={'textAlign': 'right'}),
+                    dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell', clearable=True,
+                                         persistence=True, persistence_type='session',
+                                         style={'width': '10vw', 'textAlign': 'left'}),
+                            width=3, align='center'),
+                    dbc.Col(html.H5(id='cell_description', children='Cell Description'),
+                            width=6, align="end"),
+                ]),
                 html.Hr(),
 
                 dbc.Row([
-                    dbc.Col([dbc.Container([
+                    dbc.Col([
                         # Material dropdown
                         dbc.Row([
-                            dbc.Col(html.H5('Material: '), width='auto', align='end'),
+                            dbc.Col(html.H6('Material:', style={'textAlign': 'right'}), width=2),
                             dbc.Col(dcc.Dropdown(id='cell_material_selector', placeholder='', clearable=False,
                                                  style={'color': 'black'}), width=3),
-                            dbc.Col(html.H6(id='cell_material_description', children='Material Description'), width=6),
-                        ], justify='start', align='center'),
+                            dbc.Col(html.H6(id='cell_material_description', children='Material Description'), width=7),
+                        ], align='center'),
 
                         # Density input
                         dbc.Row([
-                            html.H6('Density:', style={'marginTop': 20}),
-                            dbc.Input(id='density_input', type='text', placeholder='')
-                        ]),
+                            dbc.Col(html.H6('Density:', style={'textAlign': 'right'}), width=2),
+                            dbc.Col(
+                                dbc.Input(id='density_input', type='text', placeholder='', style={'textAlign': 'left'}))
+                        ], align='center', style={'marginTop': 20}),
 
                         # Geometry input
                         dbc.Row([
-                            html.H6("Geometry:", style={'marginTop': 20}),
-                            dbc.Input(id='geom_input', type='text', placeholder='')
-                        ]),
+                            dbc.Col(html.H6('Geometry:', style={'textAlign': 'right'}), width=2),
+                            dbc.Col(
+                                dbc.Input(id='geom_input', type='text', placeholder='', style={'textAlign': 'left'}))
+                        ], align='center', style={'marginTop': 20}),
 
                         # Parameters input
                         dbc.Row([
-                            html.H6('Parameters:', style={'marginTop': 20}),
-                            dbc.Input(id='param_input', type='text', placeholder='')
-                        ]),
+                            dbc.Col(html.H6('Parameters:', style={'textAlign': 'right'}), width=2),
+                            dbc.Col(
+                                dbc.Input(id='param_input', type='text', placeholder='', style={'textAlign': 'left'}))
+                        ], align='center', style={'marginTop': 20}),
 
                         html.Hr(),
 
-                        dbc.Row([
-                            dbc.Col(html.Button('Apply Changes', id='cell_apply_button', n_clicks=0), width=4),
-                            dbc.Col(width=7),
-                        ], className='g-0')
-                    ])], width=6),
-
+                        html.Button('Apply Changes', id='cell_apply_button', n_clicks=0)
+                    ], width=6),
 
                     dbc.Col([
-                        dbc.Col([]),
-                        dbc.Col([
-                            dcc.Textarea(
-                                id='cell_contents',
-                                style={
-                                    'backgroundColor': '#333333',
-                                    'color': '#A9A9A9',
-                                    'border': '3px solid black',
-                                    'height': '60vh',
-                                    'width': '40vw',
-                                    'overflow': 'scrollX',
-                                    'inputMode': 'email',
-                                },
-                            )
-                        ]),
+                        dcc.Tabs([
+                            dcc.Tab(label='Print Preview',
+                                    className='tab-1',
+                                    children=dcc.Textarea(
+                                            id='cell_preview',
+                                            style={
+                                                'backgroundColor': '#333333',
+                                                'color': '#A9A9A9',
+                                                'border': '3px solid black',
+                                                'height': '60vh',
+                                                'width': '40vw',
+                                                'overflow': 'scrollX',
+                                                'inputMode': 'email',
+                                            },
+                                        )
+                                    )
+                        ], className='tab-container-1')
                     ], width=6)
                 ]),
             ], fluid=True)])
@@ -97,7 +95,7 @@ def layout(page_background):
     Output('param_input', 'value'),
     Output('cell_material_description', 'children'),
     Output('cell_description', 'children'),
-    Output('cell_contents', 'value'),
+    Output('cell_preview', 'value'),
     Input('cell_selector', 'value'),
     Input('cell_material_selector', 'value'),
 )

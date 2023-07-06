@@ -17,18 +17,18 @@ def layout(page_background):
 
                     # Current Universe dropdown
                     dbc.Row([
-                        dbc.Col(width=1),
-                        dbc.Col(html.H4("Current Universe:"), width=3, align="end"),
-                        dbc.Col(dcc.Dropdown(id='universe_selector', placeholder='Select a Universe', clearable=True, persistence=True, persistence_type='session'), width=1,
-                                align="center"),
-                        dbc.Col(width=1),
-                        dbc.Col(html.H5(id='universe_description', children='Universe Description'), width=6, align="end"),
-                    ], justify="center"),
-
+                        dbc.Col(html.H4("Current Universe:"), width=3, align="end", style={'textAlign': 'right'}),
+                        dbc.Col(dcc.Dropdown(id='universe_selector', placeholder='Select a Universe', clearable=True,
+                                             persistence=True, persistence_type='session',
+                                             style={'width': '10vw', 'textAlign': 'left'}),
+                                width=3, align="center"),
+                        dbc.Col(html.H5(id='universe_description', children='Universe Description'),
+                                width=6, align="end"),
+                    ]),
                     html.Hr(),
 
                     dbc.Row([
-                        dbc.Col([dbc.Container([
+                        dbc.Col([
 
 
                             html.Hr(),
@@ -37,35 +37,42 @@ def layout(page_background):
                                 dbc.Col(html.Button('Apply Changes', id='universe_apply_button', n_clicks=0), width=4),
                                 dbc.Col(width=7),
                             ], className='g-0', justify='start')
-                        ])], width=6),
+                        ], width=6),
 
-                        dbc.Col([dbc.Container([
-                            dcc.Textarea(
-                                id='universe_display',
-                                style={
-                                    'backgroundColor': '#333333',
-                                    'color': '#A9A9A9',
-                                    'border': '3px solid black',
-                                    'height': '32vh',
-                                    'width': '40vw',
-                                    'overflow': 'scrollX',
-                                    'inputMode': 'email',
-                                },
-                            ),
-
-                            dcc.Textarea(
-                                id='fill_display',
-                                style={
-                                    'backgroundColor': '#333333',
-                                    'color': '#A9A9A9',
-                                    'border': '3px solid black',
-                                    'height': '32vh',
-                                    'width': '40vw',
-                                    'overflow': 'scrollX',
-                                    'inputMode': 'email',
-                                },
-                            )
-                        ])], width=6),
+                        dbc.Col([
+                            dcc.Tabs([
+                                dcc.Tab(label='Universe Contents',
+                                        className='tab-1',
+                                        children=dcc.Textarea(
+                                            id='universe_contents',
+                                            style={
+                                                'backgroundColor': '#333333',
+                                                'color': '#A9A9A9',
+                                                'border': '3px solid black',
+                                                'height': '60vh',
+                                                'width': '40vw',
+                                                'overflow': 'scrollX',
+                                                'inputMode': 'email',
+                                            },
+                                        )
+                                        ),
+                                dcc.Tab(label='Filled Cells',
+                                        className='tab-1',
+                                        children=dcc.Textarea(
+                                            id='fill_uses',
+                                            style={
+                                                'backgroundColor': '#333333',
+                                                'color': '#A9A9A9',
+                                                'border': '3px solid black',
+                                                'height': '60vh',
+                                                'width': '40vw',
+                                                'overflow': 'scrollX',
+                                                'inputMode': 'email',
+                                            },
+                                        )
+                                        )
+                            ], className='tab-container-1')
+                        ], width=6),
                     ]),
                 ], fluid=True),
             ])
@@ -83,8 +90,8 @@ def update_universe_options(search_value):
 
 
 @callback(
-    Output('fill_display', 'value'),
-    Output('universe_display', 'value'),
+    Output('universe_contents', 'value'),
+    Output('fill_uses', 'value'),
     Output('universe_description', 'children'),
     Input('universe_selector', 'value'),
 )
@@ -105,8 +112,8 @@ def update_universe_display(universe):
             if universe in template.all_universe_names.keys():
                 for descr in template.all_universe_names.get(universe):
                     description_results += descr + " "
-            return fill_results, universe_results, description_results
-    return "Related Fill Uses", "Related Universe Cards", "Universe Description"
+            return universe_results, fill_results, description_results
+    return "", "", "Universe Description"
 
 
 @callback(

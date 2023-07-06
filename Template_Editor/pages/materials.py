@@ -17,18 +17,19 @@ def layout(page_background):
 
                     # Current Material dropdown
                     dbc.Row([
-                        dbc.Col(width=1),
-                        dbc.Col(html.H4("Current Material:"), width=3, align="end"),
-                        dbc.Col(dcc.Dropdown(id='material_selector', placeholder='Select a Material', clearable=True, persistence=True, persistence_type='session'), width=1,
-                                align="center"),
-                        dbc.Col(width=1),
-                        dbc.Col(html.H5(id='material_description', children='Material Description'), width=6, align="end"),
+                        dbc.Col(html.H4("Current Material:"), width=3, align="end", style={'textAlign': 'right'}),
+                        dbc.Col(dcc.Dropdown(id='material_selector', placeholder='Select a Material', clearable=True,
+                                             persistence=True, persistence_type='session',
+                                             style={'width': '10vw', 'textAlign': 'left'}),
+                                width=3, align="center"),
+                        dbc.Col(html.H5(id='material_description', children='Material Description'),
+                                width=6, align="end"),
                     ], justify="center"),
 
                     html.Hr(),
 
                     dbc.Row([
-                        dbc.Col([dbc.Container([
+                        dbc.Col([
 
 
                             html.Hr(),
@@ -37,22 +38,27 @@ def layout(page_background):
                                 dbc.Col(html.Button('Apply Changes', id='material_apply_button', n_clicks=0), width=4),
                                 dbc.Col(width=7),
                             ], className='g-0', justify='start')
-                        ])], width=6),
+                        ], width=6),
 
                         dbc.Col([
-                            dcc.Textarea(
-                                id='material_display',
-                                style={
-                                    'backgroundColor': '#333333',
-                                    'color': '#A9A9A9',
-                                    'border': '3px solid black',
-                                    'height': '60vh',
-                                    'width': '40vw',
-                                    'overflow': 'scrollX',
-                                    'inputMode': 'email',
-                                },
-                            )
-                        ], width=6),
+                            dcc.Tabs([
+                                dcc.Tab(label='Print Preview',
+                                        className='tab-1',
+                                        children=dcc.Textarea(
+                                            id='material_preview',
+                                            style={
+                                                'backgroundColor': '#333333',
+                                                'color': '#A9A9A9',
+                                                'border': '3px solid black',
+                                                'height': '60vh',
+                                                'width': '40vw',
+                                                'overflow': 'scrollX',
+                                                'inputMode': 'email',
+                                            },
+                                        )
+                                        )
+                            ], className='tab-container-1')
+                        ], width=6)
                     ]),
                 ], fluid=True),
             ])
@@ -70,7 +76,7 @@ def update_material_options(search_value):
 
 
 @callback(
-    Output('material_display', 'value'),
+    Output('material_preview', 'value'),
     Output('material_description', 'children'),
     Input('material_selector', 'value'),
 )
@@ -86,7 +92,7 @@ def update_material_display(material):
             if material in template.data_comments.keys():
                 description_results = template.data_comments.get(material)
             return material_results, description_results
-    return "Material Representation", "Material Description"
+    return "", "Material Description"
 
 
 @callback(

@@ -17,18 +17,19 @@ def layout(page_background):
 
                     # Current Assembly dropdown
                     dbc.Row([
-                        dbc.Col(width=1),
-                        dbc.Col(html.H4("Current Assembly:"), width=3, align="end"),
-                        dbc.Col(dcc.Dropdown(id='assembly_selector', placeholder='Select an Assembly', clearable=True, persistence=True, persistence_type='session'), width=1,
-                                align="center"),
-                        dbc.Col(width=1),
-                        dbc.Col(html.H5(id='assembly_description', children='Assembly Description'), width=6, align="end"),
-                    ], justify="center"),
+                        dbc.Col(html.H4("Current Assembly:"), width=3, align="end", style={'textAlign': 'right'}),
+                        dbc.Col(dcc.Dropdown(id='assembly_selector', placeholder='Select an Assembly', clearable=True,
+                                             persistence=True, persistence_type='session',
+                                             style={'width': '10vw', 'textAlign': 'left'}),
+                                width=3, align="center"),
+                        dbc.Col(html.H5(id='assembly_description', children='Assembly Description'),
+                                width=6, align="end"),
+                    ]),
 
                     html.Hr(),
 
                     dbc.Row([
-                        dbc.Col([dbc.Container([
+                        dbc.Col([
 
 
                             html.Hr(),
@@ -37,22 +38,27 @@ def layout(page_background):
                                 dbc.Col(html.Button('Apply Changes', id='assembly_apply_button', n_clicks=0), width=4),
                                 dbc.Col(width=7),
                             ], className='g-0', justify='start')
-                        ])], width=6),
+                        ], width=6),
 
                         dbc.Col([
-                            dcc.Textarea(
-                                id='assembly_display',
-                                style={
-                                    'backgroundColor': '#333333',
-                                    'color': '#A9A9A9',
-                                    'border': '3px solid black',
-                                    'height': '60vh',
-                                    'width': '40vw',
-                                    'overflow': 'scrollX',
-                                    'inputMode': 'email',
-                                },
-                            )
-                        ], width=6),
+                            dcc.Tabs([
+                                dcc.Tab(label='Assembly Preview',
+                                        className='tab-1',
+                                        children=dcc.Textarea(
+                                            id='assembly_preview',
+                                            style={
+                                                'backgroundColor': '#333333',
+                                                'color': '#A9A9A9',
+                                                'border': '3px solid black',
+                                                'height': '60vh',
+                                                'width': '40vw',
+                                                'overflow': 'scrollX',
+                                                'inputMode': 'email',
+                                            },
+                                        )
+                                        )
+                            ], className='tab-container-1')
+                        ], width=6)
                     ]),
                 ], fluid=True),
             ])
@@ -70,6 +76,7 @@ def update_assembly_options(search_value):
 
 
 @callback(
+    Output('assembly_preview', 'value'),
     Output('assembly_description', 'children'),
     Input('assembly_selector', 'value'),
 )
@@ -80,8 +87,8 @@ def update_assembly_display(assembly):
         if assembly is not None:
             if assembly in template.data_comments.keys():
                 description_results = template.data_comments.get(assembly)
-                return description_results
-    return "Assembly Description"
+                return "", description_results
+    return "", "Assembly Description"
 
 
 @callback(

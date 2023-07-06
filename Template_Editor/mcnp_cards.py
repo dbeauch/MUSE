@@ -181,7 +181,7 @@ class CardFactory:
     }
 
     MATERIAL_TEMPERATURE_REGEX = {
-        'material': r'^ {0,6}m\d+[ \t]+(\d+(\.\d*)?[ \t]+-?\.?\d+(\.\d*)?([eE]-?\d+)?[ \t]+)+',
+        'material': r'^ {0,6}m\d+[ \t]+(\d+(\.\d*)?c?[ \t]+-?\.?\d+(\.\d*)?([eE]-?\d+)?[ \t]+)+',
         'temperature': r'^ {0,6}mt\d{1,6}[ \t]+.+$'
     }
 

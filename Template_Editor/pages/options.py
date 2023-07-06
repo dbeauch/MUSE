@@ -17,18 +17,19 @@ def layout(page_background):
 
                     # Current Option dropdown
                     dbc.Row([
-                        dbc.Col(width=1),
-                        dbc.Col(html.H4("Current Option:"), width=3, align="end"),
-                        dbc.Col(dcc.Dropdown(id='option_selector', placeholder='Select an Option', clearable=True, persistence=True, persistence_type='session'), width=1,
-                                align="center"),
-                        dbc.Col(width=1),
-                        dbc.Col(html.H5(id='option_description', children='Option Description'), width=6, align="end"),
-                    ], justify="center"),
+                        dbc.Col(html.H4("Current Option:"), width=3, align="end", style={'textAlign': 'right'}),
+                        dbc.Col(dcc.Dropdown(id='option_selector', placeholder='Select an Option', clearable=True,
+                                             persistence=True, persistence_type='session',
+                                             style={'width': '10vw', 'textAlign': 'left'}),
+                                width=3, align="center"),
+                        dbc.Col(html.H5(id='option_description', children='Option Description'),
+                                width=6, align="end"),
+                    ]),
 
                     html.Hr(),
 
                     dbc.Row([
-                        dbc.Col([dbc.Container([
+                        dbc.Col([
 
 
                             html.Hr(),
@@ -37,22 +38,27 @@ def layout(page_background):
                                 dbc.Col(html.Button('Apply Changes', id='option_apply_button', n_clicks=0), width=4),
                                 dbc.Col(width=7),
                             ], className='g-0', justify='start')
-                        ])], width=6),
+                        ], width=6),
 
                         dbc.Col([
-                            dcc.Textarea(
-                                id='option_display',
-                                style={
-                                    'backgroundColor': '#333333',
-                                    'color': '#A9A9A9',
-                                    'border': '3px solid black',
-                                    'height': '60vh',
-                                    'width': '40vw',
-                                    'overflow': 'scrollX',
-                                    'inputMode': 'email',
-                                },
-                            )
-                        ], width=6),
+                            dcc.Tabs([
+                                dcc.Tab(label='Print Preview',
+                                        className='tab-1',
+                                        children=dcc.Textarea(
+                                            id='option_preview',
+                                            style={
+                                                'backgroundColor': '#333333',
+                                                'color': '#A9A9A9',
+                                                'border': '3px solid black',
+                                                'height': '60vh',
+                                                'width': '40vw',
+                                                'overflow': 'scrollX',
+                                                'inputMode': 'email',
+                                            },
+                                        )
+                                        )
+                            ], className='tab-container-1')
+                        ], width=6)
                     ]),
                 ], fluid=True),
             ])
@@ -70,7 +76,7 @@ def update_assembly_options(search_value):
 
 
 @callback(
-    Output('option_display', 'value'),
+    Output('option_preview', 'value'),
     Output('option_description', 'children'),
     Input('option_selector', 'value'),
 )
@@ -86,7 +92,7 @@ def update_assembly_display(option):
             if option in template.data_comments.keys():
                 description_results = template.data_comments[option]
             return option_results, description_results
-    return "Option Contents", "Option Description"
+    return "", "Option Description"
 
 
 @callback(
