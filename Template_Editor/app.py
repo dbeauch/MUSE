@@ -111,6 +111,7 @@ console = html.Div([
                 'backgroundColor': '#333333',
                 'color': '#A9A9A9',
                 'border': '1px solid black',
+                'borderBottom': 'none',
                 'height': console_height,
                 'overflow': 'scroll',
                 'overflow-x': 'hidden',
