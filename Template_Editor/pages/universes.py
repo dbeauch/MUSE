@@ -17,32 +17,32 @@ def layout(page_background):
 
                     # Current Universe dropdown
                     dbc.Row([
-                        dbc.Col(html.H4("Current Universe:"), width=3, align="end", style={'textAlign': 'right'}),
+                        dbc.Col("Current Universe:", width=3, align="end", className='current-card'),
                         dbc.Col(dcc.Dropdown(id='universe_selector', placeholder='Select a Universe', clearable=True,
                                              persistence=True, persistence_type='session',
                                              style={'width': '10vw', 'textAlign': 'left'}),
-                                width=3, align="center"),
-                        dbc.Col(html.H5(id='universe_description', children='Universe Description'),
-                                width=6, align="end"),
+                                width=3, align="center")
                     ]),
                     html.Hr(),
 
                     dbc.Row([
                         dbc.Col([
-
+                            # Description
+                            dbc.Row([
+                                dbc.Col('Description:', className='input-label', width=2),
+                                dbc.Col(
+                                    dbc.Input(id='universe_description', type='text', className='input-box'))
+                            ], align='center', style={'marginTop': 20}),
 
                             html.Hr(),
 
-                            dbc.Row([
-                                dbc.Col(html.Button('Apply Changes', id='universe_apply_button', n_clicks=0), width=4),
-                                dbc.Col(width=7),
-                            ], className='g-0', justify='start')
+                            html.Button('Apply Changes', id='universe_apply_button', n_clicks=0)
                         ], width=6),
 
                         dbc.Col([
                             dcc.Tabs([
                                 dcc.Tab(label='Universe Contents',
-                                        className='tab-1',
+                                        className='tab',
                                         children=dcc.Textarea(
                                             id='universe_contents',
                                             style={
@@ -53,14 +53,15 @@ def layout(page_background):
                                                 'width': '40vw',
                                                 'overflow': 'scrollX',
                                                 'inputMode': 'email',
-                                            },
+                                            }, className='scrollbar-hidden'
                                         )
                                         ),
                                 dcc.Tab(label='Filled Cells',
-                                        className='tab-1',
+                                        className='tab',
                                         children=dcc.Textarea(
                                             id='fill_uses',
                                             style={
+                                                'fontSize': 'calc(5px + 0.5vw)',
                                                 'backgroundColor': '#333333',
                                                 'color': '#A9A9A9',
                                                 'border': '3px solid black',
@@ -68,10 +69,10 @@ def layout(page_background):
                                                 'width': '40vw',
                                                 'overflow': 'scrollX',
                                                 'inputMode': 'email',
-                                            },
+                                            }, className='scrollbar-hidden'
                                         )
                                         )
-                            ], className='tab-container-1')
+                            ], className='tab-container')
                         ], width=6),
                     ]),
                 ], fluid=True),
@@ -92,7 +93,7 @@ def update_universe_options(search_value):
 @callback(
     Output('universe_contents', 'value'),
     Output('fill_uses', 'value'),
-    Output('universe_description', 'children'),
+    Output('universe_description', 'value'),
     Input('universe_selector', 'value'),
 )
 def update_universe_display(universe):
@@ -110,10 +111,8 @@ def update_universe_display(universe):
                 for card in template.all_universes.get(universe):
                     universe_results += card.__str__() + "\n"
             if universe in template.all_universe_names.keys():
-                for descr in template.all_universe_names.get(universe):
-                    description_results += descr + " "
+                description_results = template.all_universe_names.get(universe)
             return universe_results, fill_results, description_results
-    return "", "", "Universe Description"
 
 
 @callback(
@@ -121,10 +120,11 @@ def update_universe_display(universe):
     Input('universe_apply_button', 'n_clicks'),
     State('url', 'pathname'),
     State('universe_selector', 'value'),
+    State('universe_description', 'value'),
     State('console_output', 'children'),
     prevent_initial_call=True
 )
-def update_console(apply_clicked, pathname, universe, current_messages):
+def update_console(apply_clicked, pathname, universe, description, current_messages):
     if pathname == '/universes':
         if not current_messages:
             current_messages = []
@@ -133,19 +133,21 @@ def update_console(apply_clicked, pathname, universe, current_messages):
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
 
-        # if button_id == 'universe_apply_button' and universe is not None:
-        #     if something is None:
-        #         return current_messages
-        #     selected_universe = template.all_universes.get(universe)
-        #     if selected_universe == universe:
-        #         message = f'({timestamp})\tNo changes made to Universe {universe}'
-        #         current_messages.insert(0, html.P(message))
-        #         return current_messages
-        #
-        #     message = f'({timestamp})\tApplied changes to Universe {universe}'
-        #     current_messages.insert(0, html.P(message))
-        #     return current_messages
+        if button_id == 'universe_apply_button' and universe is not None:
+            if description is None or description == "":
+                return current_messages
+            selected_universe = template.all_universes.get(universe)
+            if selected_universe == universe and template.all_universe_names.get(universe) == description:
+                message = f'({timestamp})\tNo changes made to Universe {universe}'
+                current_messages.insert(0, html.P(message))
+                return current_messages
+
+            if description is not None or description != "":
+                print(template.all_universe_names)
+                template.all_universe_names[universe] = description
+
+            message = f'({timestamp})\tApplied changes to Universe {universe}'
+            current_messages.insert(0, html.P(message))
+            return current_messages
 
         return current_messages
-    else:
-        return

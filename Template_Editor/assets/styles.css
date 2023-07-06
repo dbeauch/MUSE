@@ -1,10 +1,10 @@
 /* styles.css */
 
-.tab-container-1 {
+.tab-container {
     height: 30px !important;
 }
 
-.tab-1 {
+.tab {
     width: 10vw !important;
     font-weight: bold !important;
     font-size: 15px !important;
@@ -36,4 +36,30 @@
 
 .scrollbar-hidden::-webkit-scrollbar {
     display: none;  /* Chrome, Safari and Opera */
+}
+
+.input-label {
+    text-align: right !important;
+    font-size: calc(7px + 0.5vw) !important;
+    text-decoration-thickness: 2px !important;
+    color: black !important;
+}
+
+.input-box {
+    text-align: left !important;
+    font-size: calc(5px + 0.5vw) !important;
+    height: 4vh !important;
+}
+
+.current-card {
+    text-align: right !important;
+    font-size: calc(10px + 0.75vw) !important;
+    text-decoration-thickness: 6px !important;
+    color: black !important;
+}
+
+.apply-button {
+    width: calc(20px + 6vw) !important;
+    height: calc(10px + 2vh) !important;
+    font-size: calc(5px + 0.5vw) !important;
 }

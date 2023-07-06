@@ -10,59 +10,67 @@ from Template_Editor.template_handler_instance import template_handler_instance 
 
 def layout(page_background):
     return [
-            html.Div(style={'backgroundColor': page_background, 'height': '100vh'}, children=[
-                dbc.Container([
-                    # Top spacing
-                    dbc.Row([dbc.Col(html.H1(" "))]),
+        html.Div(style={'backgroundColor': page_background, 'height': '100vh'}, children=[
+            dbc.Container([
+                # Top spacing
+                dbc.Row([dbc.Col(html.H1(" "))]),
 
-                    # Current Material dropdown
-                    dbc.Row([
-                        dbc.Col(html.H4("Current Material:"), width=3, align="end", style={'textAlign': 'right'}),
-                        dbc.Col(dcc.Dropdown(id='material_selector', placeholder='Select a Material', clearable=True,
-                                             persistence=True, persistence_type='session',
-                                             style={'width': '10vw', 'textAlign': 'left'}),
-                                width=3, align="center"),
-                        dbc.Col(html.H5(id='material_description', children='Material Description'),
-                                width=6, align="end"),
-                    ], justify="center"),
+                # Current Material dropdown
+                dbc.Row([
+                    dbc.Col("Current Material:", width=3, align="end", className='current-card'),
+                    dbc.Col(dcc.Dropdown(id='material_selector', placeholder='Select a Material', clearable=True,
+                                         persistence=True, persistence_type='session',
+                                         style={'width': '10vw', 'textAlign': 'left'}),
+                            width=3, align="center")
+                ]),
 
-                    html.Hr(),
+                html.Hr(),
 
-                    dbc.Row([
-                        dbc.Col([
+                dbc.Row([
+                    dbc.Col([
+                        # Description
+                        dbc.Row([
+                            dbc.Col('Description:', className='input-label', width=2),
+                            dbc.Col(
+                                dbc.Input(id='material_description', type='text', className='input-box'))
+                        ], align='center', style={'marginTop': 20}),
 
+                        # Zaid
+                        dbc.Row([
+                            dbc.Col('Zaid:', className='input-label', width=2),
+                            dbc.Col(dcc.Dropdown(id='zaid_selector', placeholder='', clearable=True,
+                                                 style={'color': 'black'}), width=3),
+                        ], align='center', style={'marginTop': 20}),
 
-                            html.Hr(),
+                        html.Hr(),
 
-                            dbc.Row([
-                                dbc.Col(html.Button('Apply Changes', id='material_apply_button', n_clicks=0), width=4),
-                                dbc.Col(width=7),
-                            ], className='g-0', justify='start')
-                        ], width=6),
+                        dbc.Col(html.Button('Apply Changes', id='material_apply_button', n_clicks=0))
+                    ], width=6),
 
-                        dbc.Col([
-                            dcc.Tabs([
-                                dcc.Tab(label='Print Preview',
-                                        className='tab-1',
-                                        children=dcc.Textarea(
-                                            id='material_preview',
-                                            style={
-                                                'backgroundColor': '#333333',
-                                                'color': '#A9A9A9',
-                                                'border': '3px solid black',
-                                                'height': '60vh',
-                                                'width': '40vw',
-                                                'overflow': 'scrollX',
-                                                'inputMode': 'email',
-                                            },
-                                        )
-                                        )
-                            ], className='tab-container-1')
-                        ], width=6)
-                    ]),
-                ], fluid=True),
-            ])
-        ]
+                    dbc.Col([
+                        dcc.Tabs([
+                            dcc.Tab(label='Print Preview',
+                                    className='tab',
+                                    children=dcc.Textarea(
+                                        id='material_preview',
+                                        style={
+                                            'fontSize': 'calc(5px + 0.5vw)',
+                                            'backgroundColor': '#333333',
+                                            'color': '#A9A9A9',
+                                            'border': '3px solid black',
+                                            'height': '60vh',
+                                            'width': '40vw',
+                                            'overflow': 'scrollX',
+                                            'inputMode': 'email',
+                                        }, className='scrollbar-hidden'
+                                    )
+                                    )
+                        ], className='tab-container')
+                    ], width=6)
+                ]),
+            ], fluid=True),
+        ])
+    ]
 
 
 @callback(
@@ -77,7 +85,8 @@ def update_material_options(search_value):
 
 @callback(
     Output('material_preview', 'value'),
-    Output('material_description', 'children'),
+    Output('material_description', 'value'),
+    Output('zaid_selector', 'options'),
     Input('material_selector', 'value'),
 )
 def update_material_display(material):
@@ -87,12 +96,16 @@ def update_material_display(material):
         if material is not None:
             material_results = ""
             description_results = ""
+            zaid_list = []
             if material in template.all_materials.keys():
-                material_results = template.all_materials[material].__str__(True)
+                selected_material = template.all_materials[material]
+                material_results = selected_material.__str__(True)
+                for zf in selected_material.zaid_fracs:
+                    zaid_list.append(zf[0])
             if material in template.data_comments.keys():
                 description_results = template.data_comments.get(material)
-            return material_results, description_results
-    return "", "Material Description"
+            return material_results, description_results, zaid_list
+    return "", "", []
 
 
 @callback(
@@ -100,11 +113,12 @@ def update_material_display(material):
     Input('material_apply_button', 'n_clicks'),
     State('url', 'pathname'),
     State('material_selector', 'value'),
+    State('material_description', 'value'),
     State('console_output', 'children'),
     prevent_initial_call=True
 )
-def update_console(apply_clicked, pathname, material, current_messages):
-    if pathname == '/material':
+def update_console(apply_clicked, pathname, material, description, current_messages):
+    if pathname == '/materials':
         if not current_messages:
             current_messages = []
 
@@ -112,19 +126,20 @@ def update_console(apply_clicked, pathname, material, current_messages):
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
 
-        # if button_id == 'material_apply_button' and material is not None:
-        #     if something is None:
-        #         return current_messages
-        #     selected_material = template.all_materials.get(material)
-        #     if selected_material == material:
-        #         message = f'({timestamp})\tNo changes made to Material {material}'
-        #         current_messages.insert(0, html.P(message))
-        #         return current_messages
-        #
-        #     message = f'({timestamp})\tApplied changes to Material {material}'
-        #     current_messages.insert(0, html.P(message))
-        #     return current_messages
+        if button_id == 'material_apply_button' and material is not None:
+            if description is None:
+                return current_messages
+            selected_material = template.all_materials.get(material)
+            if selected_material.comment == description:
+                message = f'({timestamp})\tNo changes made to Material {material}'
+                current_messages.insert(0, html.P(message))
+                return current_messages
+
+            if description is not None:
+                selected_material.comment = description
+
+            message = f'({timestamp})\tApplied changes to Material {material}'
+            current_messages.insert(0, html.P(message))
+            return current_messages
 
         return current_messages
-    else:
-        return

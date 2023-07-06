@@ -94,7 +94,7 @@ console = html.Div([
         dbc.Col(html.Button('Print File', id='print_button', n_clicks=0), width='auto', style={'marginRight': '6vw'}),
         dbc.Col(dcc.Checklist(id='element_comments', options=['Element Comments'], value=['Element Comments']), width='auto',
                         style={'textAlign': 'left'}),
-        dbc.Col(html.Div(html.Button(" ", id="console_toggler",
+        dbc.Col(html.Div(html.Button("", id="console_toggler",
                         className='minimize-button')), width='auto', style={'marginLeft': 'auto'})
     ], align='center',
         style={

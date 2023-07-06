@@ -16,39 +16,42 @@ def layout(page_background):
 
                 # Current Surface dropdown
                 dbc.Row([
-                    dbc.Col(html.H4("Current Surface:"), width=3, align="end", style={'textAlign': 'right'}),
+                    dbc.Col("Current Surface:", width=3, align="end", className='current-card'),
                     dbc.Col(dcc.Dropdown(id='surface_selector', placeholder='Select a Surface', clearable=True,
                                          persistence=True, persistence_type='session',
                                          style={'width': '10vw', 'textAlign': 'left'}),
-                            width=3, align="center"),
-                    dbc.Col(html.H5(id='surface_description', children='Surface Description'),
-                            width=6, align="end"),
+                            width=3, align="center")
                 ]),
                 html.Hr(),
 
                 dbc.Row([
                     dbc.Col([
+                        # Description
+                        dbc.Row([
+                            dbc.Col('Description:', className='input-label', width=2),
+                            dbc.Col(
+                                dbc.Input(id='surface_description', type='text', className='input-box'))
+                        ], align='center', style={'marginTop': 20}),
+
                         # Mnemonic
                         dbc.Row([
-                            dbc.Col(html.H6('Mnemonic:', style={'textAlign': 'right'}), width=2),
+                            dbc.Col('Mnemonic:', className='input-label', width=2),
                             dbc.Col(
-                                dbc.Input(id='mnemonic_input', type='text', placeholder='', style={'textAlign': 'left'}))
+                                dbc.Input(id='mnemonic_input', type='text', className='input-box'))
                         ], align='center', style={'marginTop': 20}),
 
                         # Transform
                         dbc.Row([
-                            dbc.Col(html.H6('Transform:', style={'textAlign': 'right'}), width=2),
+                            dbc.Col('Transform:', className='input-label', width=2),
                             dbc.Col(
-                                dbc.Input(id='transform_input', type='text', placeholder='',
-                                          style={'textAlign': 'left'}))
+                                dbc.Input(id='transform_input', type='text', className='input-box'))
                         ], align='center', style={'marginTop': 20}),
 
                         # Dimensions
                         dbc.Row([
-                            dbc.Col(html.H6('Dimensions:', style={'textAlign': 'right'}), width=2),
+                            dbc.Col('Dimensions:', className='input-label', width=2),
                             dbc.Col(
-                                dbc.Input(id='dimensions_input', type='text', placeholder='',
-                                          style={'textAlign': 'left'}))
+                                dbc.Input(id='dimensions_input', type='text', className='input-box'))
                         ], align='center', style={'marginTop': 20}),
 
                         html.Hr(),
@@ -59,10 +62,11 @@ def layout(page_background):
                     dbc.Col([
                         dcc.Tabs([
                             dcc.Tab(label='Print Preview',
-                                    className='tab-1',
+                                    className='tab',
                                     children=dcc.Textarea(
                                         id='surface_preview',
                                         style={
+                                            'fontSize': 'calc(5px + 0.5vw)',
                                             'backgroundColor': '#333333',
                                             'color': '#A9A9A9',
                                             'border': '3px solid black',
@@ -70,10 +74,10 @@ def layout(page_background):
                                             'width': '40vw',
                                             'overflow': 'scrollX',
                                             'inputMode': 'email',
-                                        },
+                                        }, className='scrollbar-hidden'
                                     )
                                     )
-                        ], className='tab-container-1')
+                        ], className='tab-container')
                     ], width=6)
                 ])
             ], fluid=True),
@@ -93,7 +97,7 @@ def update_surface_options(search_value):
     Output('mnemonic_input', 'value'),
     Output('transform_input', 'value'),
     Output('dimensions_input', 'value'),
-    Output('surface_description', 'children'),
+    Output('surface_description', 'value'),
     Output('surface_preview', 'value'),
     Input('surface_selector', 'value'),
 )
@@ -103,9 +107,10 @@ def update_surface_display(surface):
     if button_id == 'surface_selector' or ctx.triggered_id is None:
         if surface is not None:
             selected_surface = template.all_surfaces.get(surface)
-            return selected_surface.mnemonic, selected_surface.transform, selected_surface.dimensions, selected_surface.comment, str(selected_surface)
+            return selected_surface.mnemonic, selected_surface.transform, selected_surface.dimensions, selected_surface.comment, str(
+                selected_surface)
         else:
-            return "", "", "", "Surface Description", ""
+            return "", "", "", "", ""
 
 
 @callback(
@@ -113,13 +118,14 @@ def update_surface_display(surface):
     Input('surface_apply_button', 'n_clicks'),
     State('url', 'pathname'),
     State('surface_selector', 'value'),
+    State('surface_description', 'value'),
     State('mnemonic_input', 'value'),
     State('transform_input', 'value'),
     State('dimensions_input', 'value'),
     State('console_output', 'children'),
     prevent_initial_call=True
 )
-def update_console(apply_clicked, pathname, surface, mnemonic, transform, dimensions, current_messages):
+def update_console(apply_clicked, pathname, surface, description, mnemonic, transform, dimensions, current_messages):
     if pathname == '/surfaces':
         if not current_messages:
             current_messages = []
@@ -132,10 +138,13 @@ def update_console(apply_clicked, pathname, surface, mnemonic, transform, dimens
             if mnemonic is None:
                 return current_messages
             selected_surface = template.all_surfaces.get(surface)
-            if selected_surface.number == surface and selected_surface.mnemonic == mnemonic and selected_surface.transform == transform and selected_surface.dimensions == dimensions:
+            if selected_surface.comment == description and selected_surface.mnemonic == mnemonic and selected_surface.transform == transform and selected_surface.dimensions == dimensions:
                 message = f'({timestamp})\tNo changes made to Surface {surface}'
                 current_messages.insert(0, html.P(message))
                 return current_messages
+
+            if description is not None:
+                selected_surface.comment = description
 
             if mnemonic is not None:
                 selected_surface.mnemonic = mnemonic
@@ -146,11 +155,8 @@ def update_console(apply_clicked, pathname, surface, mnemonic, transform, dimens
             if dimensions is not None:
                 selected_surface.dimensions = dimensions
 
-
             message = f'({timestamp})\tApplied changes to Surface {surface}'
             current_messages.insert(0, html.P(message))
             return current_messages
 
         return current_messages
-    else:
-        return

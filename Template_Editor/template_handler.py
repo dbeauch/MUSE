@@ -81,7 +81,6 @@ class TemplateHandler(Singleton):
             self.apply_comments(self.all_cells, self.cell_comments)
             self.apply_comments(self.all_surfaces, self.surface_comments)
             self.apply_comments(self.all_materials, self.data_comments)
-        return
 
 
     def clean_comments(self, line_array, comment_array):
@@ -116,12 +115,9 @@ class TemplateHandler(Singleton):
                     message_end = re.search(r'^[cC][ \t]+\*+.*u=\d+[^*]*\*', line_array[i]).span()[1] - 1
                     number = str(line_array[i][number_start: number_end]).strip()
                     message = line_array[i][number_end: message_end].strip()
-                    if number not in self.all_universe_names:
-                        self.all_universe_names[number] = [message]
-                    else:
-                        self.all_universe_names[number].append(message)
-                elif re.search(r'^[cC][ \t]+\S.*$', line_array[i]) is not None:   # Find meaningful 'cC' comments
+                    self.all_universe_names[number] = message
 
+                elif re.search(r'^[cC][ \t]+\S.*$', line_array[i]) is not None:   # Find meaningful 'cC' comments
                     #   Find comments line before a cell/surface/material/temperature card
                     if i < len(line_array) - 1 and re.search(r'^m?t?\d{1,6}', line_array[i+1]) is not None:
                         number_end = re.search(r'^m?t?\d{1,6}', line_array[i+1]).span()[1] + 1
@@ -140,7 +136,6 @@ class TemplateHandler(Singleton):
                 i -= 1
                 continue
             i -= 1
-        return
 
 
     def join_card_pieces(self, line_pieces, line_array):
@@ -169,7 +164,7 @@ class TemplateHandler(Singleton):
             result = re.sub(r'[ \t]{2,}', " ", result)  # remove extra spaces
             line_array.append(result)
             index += 1
-        return
+
 
     def _recurse_continue(self, pieces, start_index, num=0):
         """
@@ -217,7 +212,6 @@ class TemplateHandler(Singleton):
                 self.all_options[made_card.number] = made_card
             else:
                 print(f"Card for {made_card} with line '{line}' not found")
-        return
 
 
     @staticmethod
@@ -231,7 +225,6 @@ class TemplateHandler(Singleton):
         for number in comment_dict:
             if number in card_dict:
                 card_dict[number].set_comment(comment_dict[number])
-        return
 
 
     def print_file(self, out_filename, element_comments):
@@ -261,9 +254,7 @@ class TemplateHandler(Singleton):
     @staticmethod
     def print_dict_list(out_file, dictionary):
         for universe in dictionary:
-            for comment in dictionary[universe]:
-                print(f'c  ******* u={universe} {comment} *******', file=out_file)
-        return
+            print(f'c  ******* u={universe} {dictionary[universe]} *******', file=out_file)
 
 
     @staticmethod
@@ -282,4 +273,3 @@ class TemplateHandler(Singleton):
                 print(card.__str__(element_comments), file=out_file)
             else:
                 print(card, file=out_file)
-        return

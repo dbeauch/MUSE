@@ -17,7 +17,7 @@ def layout(page_background):
 
                     # Current Assembly dropdown
                     dbc.Row([
-                        dbc.Col(html.H4("Current Assembly:"), width=3, align="end", style={'textAlign': 'right'}),
+                        dbc.Col("Current Assembly:", width=3, align="end", className='current-card'),
                         dbc.Col(dcc.Dropdown(id='assembly_selector', placeholder='Select an Assembly', clearable=True,
                                              persistence=True, persistence_type='session',
                                              style={'width': '10vw', 'textAlign': 'left'}),
@@ -34,19 +34,17 @@ def layout(page_background):
 
                             html.Hr(),
 
-                            dbc.Row([
-                                dbc.Col(html.Button('Apply Changes', id='assembly_apply_button', n_clicks=0), width=4),
-                                dbc.Col(width=7),
-                            ], className='g-0', justify='start')
+                            html.Button('Apply Changes', id='assembly_apply_button', n_clicks=0)
                         ], width=6),
 
                         dbc.Col([
                             dcc.Tabs([
                                 dcc.Tab(label='Assembly Preview',
-                                        className='tab-1',
+                                        className='tab',
                                         children=dcc.Textarea(
                                             id='assembly_preview',
                                             style={
+                                                'fontSize': 'calc(5px + 0.5vw)',
                                                 'backgroundColor': '#333333',
                                                 'color': '#A9A9A9',
                                                 'border': '3px solid black',
@@ -54,10 +52,10 @@ def layout(page_background):
                                                 'width': '40vw',
                                                 'overflow': 'scrollX',
                                                 'inputMode': 'email',
-                                            },
+                                            }, className='scrollbar-hidden'
                                         )
                                         )
-                            ], className='tab-container-1')
+                            ], className='tab-container')
                         ], width=6)
                     ]),
                 ], fluid=True),
@@ -122,5 +120,3 @@ def update_console(apply_clicked, pathname, assembly, current_messages):
         #     return current_messages
 
         return current_messages
-    else:
-        return
