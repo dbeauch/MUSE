@@ -24,8 +24,8 @@ if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     # if file_to_read == '':
     #     file_to_read = '../mcnp_templates/NBSR_HEU_720[236]/NBSR_HEU_720.i'
     # file_to_read = '../mcnp_templates/NNR/test.i'
-    file_to_read = '../mcnp_templates/NNR/burn_Box9_v02_SU_cycle8.i'
-    # file_to_read = '../mcnp_templates/NBSR_HEU_720[236]/NBSR_HEU_720.i'
+    # file_to_read = '../mcnp_templates/NNR/burn_Box9_v02_SU_cycle8.i'
+    file_to_read = '../mcnp_templates/NBSR_HEU_720[236]/NBSR_HEU_720.i'
     template.read_template(file_to_read)
 
 app = dash.Dash(
@@ -88,19 +88,21 @@ navbar = html.Div([
 
 console = html.Div([
     dbc.Row([
-        dbc.Col(html.Div("Console"), width=4),
-        dbc.Col(dcc.Input(id='file_path', type='text', placeholder='File path', debounce=True), width=2),
-        dbc.Col(dbc.Col(html.Button('Print File', id='print_button', n_clicks=0)), width=1),
-        dbc.Col(dcc.Checklist(id='element_comments', options=['Element Comments'], value=['Element Comments']),
-                width=3),
-        dbc.Col(html.Button("-", id="console_toggler"), width=1)
-    ], align='start',
+        dbc.Col(html.Div("Console", style={'textAlign': 'left'}), width=3),
+        dbc.Col(dcc.Input(id='file_path', type='text', placeholder='File path',
+                        style={'textAlign': 'left'}, debounce=True), width='auto', style={'textAlign': 'right'}),
+        dbc.Col(html.Button('Print File', id='print_button', n_clicks=0), width='auto', style={'marginRight': '6vw'}),
+        dbc.Col(dcc.Checklist(id='element_comments', options=['Element Comments'], value=['Element Comments']), width='auto',
+                        style={'textAlign': 'left'}),
+        dbc.Col(html.Div(html.Button(" ", id="console_toggler",
+                        className='minimize-button')), width='auto', style={'marginLeft': 'auto'})
+    ], align='center',
         style={
             'marginTop': 20,
             'backgroundColor': 'black',
             'color': 'white',
             'padding': console_banner_height,
-            'fontSize': 'calc((2vh + 1vw) / 2)'
+            'fontSize': 'calc((2vh + 1vw) / 2)',
         },
         className='gx-0'),
 
@@ -115,7 +117,7 @@ console = html.Div([
                 'height': console_height,
                 'overflow': 'scroll',
                 'overflow-x': 'hidden',
-            },
+            }, className='scrollbar-hidden'
         ),
         id='console_output_window',
         is_open=True
@@ -125,7 +127,7 @@ console = html.Div([
         'marginLeft': navbar_width,
         'position': 'fixed',
         'bottom': 0,
-        'width': 'calc(100%)',
+        'width': f'calc(100% - {navbar_width})',
     }
 )
 
