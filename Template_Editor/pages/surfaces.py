@@ -19,7 +19,7 @@ def layout(page_background):
                     dbc.Col("Current Surface:", width=3, align="end", className='current-card'),
                     dbc.Col(dcc.Dropdown(id='surface_selector', placeholder='Select a Surface', clearable=True,
                                          persistence=True, persistence_type='session',
-                                         style={'width': '10vw', 'textAlign': 'left'}),
+                                         className='dropdown'),
                             width=3, align="center")
                 ]),
                 html.Hr(),

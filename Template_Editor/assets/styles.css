@@ -5,9 +5,10 @@
 }
 
 .tab {
-    width: 10vw !important;
+    width: 12vw !important;
+    height: 8vh !important;
     font-weight: bold !important;
-    font-size: 15px !important;
+    font-size: calc(2px + 0.7vw) !important;
     color: white !important;
     background-color: black !important;
     align-items: center;
@@ -38,6 +39,11 @@
     display: none;  /* Chrome, Safari and Opera */
 }
 
+.input-row {
+    margin-top: calc(5px + 0.5vh) !important;
+
+}
+
 .input-label {
     text-align: right !important;
     font-size: calc(7px + 0.5vw) !important;
@@ -62,4 +68,11 @@
     width: calc(20px + 6vw) !important;
     height: calc(10px + 2vh) !important;
     font-size: calc(5px + 0.5vw) !important;
+}
+
+.dropdown {
+    width: 10vw !important;
+    font-size: calc(5px + 0.5vw) !important;
+    height: 4vh !important;
+    text-align: left !important;
 }

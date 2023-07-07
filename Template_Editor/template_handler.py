@@ -1,7 +1,8 @@
 import os.path
 import re
 
-from Template_Editor.mcnp_cards import CardFactory, Cell, Surface, DataCard, Material, Temperature
+from mcnp_cards import CardFactory, Cell, LikeCell, RegularCell, VoidCell,\
+    Surface, DataCard, Material, Temperature
 
 
 class Singleton:
@@ -30,11 +31,11 @@ class TemplateHandler(Singleton):
 
             self.cell_comments = {}
             self.surface_comments = {}
-            self.data_comments = {"Void": "Void Cell"}
+            self.data_comments = {0: "Void Cell"}
 
             self.all_cells = {}
             self.all_surfaces = {}
-            self.all_materials = {"Void": Material("m0"), "WIP": Material("m00")}  # mt card numbers stored as 't16'
+            self.all_materials = {0: Material("m0"), "WIP": Material("m00")}  # mt card numbers stored as 't16'
             self.all_options = {}
 
             self.all_assembly = {}
@@ -77,6 +78,8 @@ class TemplateHandler(Singleton):
             self.make_cards(self.cell_lines)
             self.make_cards(self.surface_lines)
             self.make_cards(self.data_lines)
+
+            self.relate_cells()
 
             self.apply_comments(self.all_cells, self.cell_comments)
             self.apply_comments(self.all_surfaces, self.surface_comments)
@@ -212,6 +215,34 @@ class TemplateHandler(Singleton):
                 self.all_options[made_card.number] = made_card
             else:
                 print(f"Card for {made_card} with line '{line}' not found")
+
+
+    def relate_cells(self):
+        for cell in self.all_cells.values():
+            if type(cell) is LikeCell:
+                origin_cell = self.all_cells[cell.related_cell]
+                if origin_cell is not None:
+                    # LikeCell Material
+                    mat_change = re.search(r'mat=\d+', cell.changes)
+                    if mat_change is not None:
+                        cell.material = cell.changes[mat_change.span()[0]+4: mat_change.span()[1]+1].strip()
+                    else:
+                        cell.material = origin_cell.material
+
+                    # LikeCell Density
+                    cell.density = origin_cell.density
+
+                    # LikeCell Geometry
+                    cell.geom = origin_cell.geom
+
+                    # LikeCell Translation
+                    trcl_change = re.search(r'\*?trcl=\d+', cell.changes)
+                    if trcl_change is not None:
+                        cell.param = cell.changes[trcl_change.span()[0] + 4: trcl_change.span()[1] + 1].strip()
+                    else:
+                        cell.param = origin_cell.param
+
+
 
 
     @staticmethod

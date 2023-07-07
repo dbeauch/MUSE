@@ -310,8 +310,7 @@ class RegularCell(Cell):
         density_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*', line).span()[1] + 1
         self.density = line[material_end: density_end].strip()
 
-        geom_end = \
-        re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+', line).span()[1]
+        geom_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+', line).span()[1]
         self.geom = line[density_end: geom_end].strip()
 
         self.param = line[geom_end:].strip()
@@ -371,11 +370,10 @@ class LikeCell(Cell):
         but_end = re.search(r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]+but', line).span()[1] + 1
         self.changes = line[but_end:].strip()
 
-        self.comment = "WIP"
-        self.material = "WIP"
-        self.density = "WIP"
-        self.geom = "WIP"
-        self.param = "WIP"
+        self.material = ""
+        self.density = ""
+        self.geom = ""
+        self.param = ""
 
     def __str__(self):
         printed_changes = ""

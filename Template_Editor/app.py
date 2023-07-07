@@ -163,11 +163,10 @@ app.layout = html.Div([
     Output('page_content', 'children'),
     Output('console_output_window', 'is_open', allow_duplicate=True),
     Input('url', 'pathname'),
-    State('console_output_window', 'is_open'),
     State('manually-closed', 'data'),
     prevent_initial_call=True,
 )
-def display_page(pathname, console_open, manually_closed):
+def display_page(pathname, manually_closed):
     console_should_open = not manually_closed
     if pathname == '/':
         return home.layout(page_background), False

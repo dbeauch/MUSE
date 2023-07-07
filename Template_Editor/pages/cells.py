@@ -4,7 +4,6 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html, Input, Output, State, callback
 
-import Template_Editor.mcnp_cards
 from Template_Editor.mcnp_cards import RegularCell, VoidCell, LikeCell
 from Template_Editor.template_handler_instance import template_handler_instance as template
 
@@ -21,7 +20,7 @@ def layout(page_background):
                     dbc.Col('Current Cell:', width=3, align='end', className='current-card'),
                     dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell', clearable=True,
                                          persistence=True, persistence_type='session',
-                                         style={'width': '10vw', 'textAlign': 'left'}), width=3, align='center')
+                                         className='dropdown'), width=3, align='center')
                 ]),
                 html.Hr(),
 
@@ -32,37 +31,38 @@ def layout(page_background):
                             dbc.Col('Description:', className='input-label', width=2),
                             dbc.Col(
                                 dbc.Input(id='cell_description', type='text', className='input-box'))
-                        ], align='center', style={'marginTop': 20}),
+                        ], align='center', className='input-row'),
 
                         # Material dropdown
                         dbc.Row([
                             dbc.Col('Material:', className='input-label', width=2),
                             dbc.Col(dcc.Dropdown(id='cell_material_selector', placeholder="", clearable=False,
-                                                 style={'color': 'black'}), width=3),
+                                                 className='dropdown'), width=3),
                             dbc.Col(id='cell_material_description', children='Material Description',
-                                    style={'textAlign': 'left', 'fontSize': 'calc(5px + 0.5vw)', 'color': 'black'}, width=7),
-                        ], align='center', style={'marginTop': 20}),
+                                    style={'textAlign': 'left', 'fontSize': 'calc(5px + 0.5vw)', 'color': 'black'},
+                                    width=7),
+                        ], align='center', className='input-row'),
 
                         # Density input
                         dbc.Row([
                             dbc.Col('Density:', className='input-label', width=2),
                             dbc.Col(
                                 dbc.Input(id='density_input', type='text', className='input-box'))
-                        ], align='center', style={'marginTop': 20}),
+                        ], align='center', className='input-row'),
 
                         # Geometry input
                         dbc.Row([
                             dbc.Col('Geometry:', className='input-label', width=2),
                             dbc.Col(
                                 dbc.Input(id='geom_input', type='text', className='input-box'))
-                        ], align='center', style={'marginTop': 20}),
+                        ], align='center', className='input-row'),
 
                         # Parameters input
                         dbc.Row([
                             dbc.Col('Parameters:', className='input-label', width=2),
                             dbc.Col(
                                 dbc.Input(id='param_input', type='text', className='input-box'))
-                        ], align='center', style={'marginTop': 20}),
+                        ], align='center', className='input-row'),
 
                         html.Hr(),
 
@@ -75,6 +75,22 @@ def layout(page_background):
                                     className='tab',
                                     children=dcc.Textarea(
                                         id='cell_preview',
+                                        style={
+                                            'fontSize': 'calc(5px + 0.5vw)',
+                                            'backgroundColor': '#333333',
+                                            'color': '#A9A9A9',
+                                            'border': '3px solid black',
+                                            'height': '60vh',
+                                            'width': '40vw',
+                                            'overflow': 'scrollX',
+                                            'inputMode': 'email',
+                                        }, className='scrollbar-hidden'
+                                    )
+                                    ),
+                            dcc.Tab(label='Origin Cell',
+                                    className='tab',
+                                    children=dcc.Textarea(
+                                        id='origin_preview',
                                         style={
                                             'fontSize': 'calc(5px + 0.5vw)',
                                             'backgroundColor': '#333333',
@@ -102,6 +118,7 @@ def layout(page_background):
     Output('cell_material_description', 'children'),
     Output('cell_description', 'value'),
     Output('cell_preview', 'value'),
+    Output('origin_preview', 'value'),
     Input('cell_selector', 'value'),
     Input('cell_material_selector', 'value'),
 )
@@ -111,15 +128,20 @@ def update_cell_display(cell, cell_material_select):
     if button_id == 'cell_selector' or ctx.triggered_id is None:
         if cell is not None:
             selected_cell = template.all_cells.get(cell)
-            return selected_cell.get_material(), selected_cell.get_density(), selected_cell.geom, selected_cell.param, template.all_materials.get(
-                selected_cell.get_material()).comment, selected_cell.comment, str(selected_cell)
+            origin_cell = ""
+            print(type(selected_cell), LikeCell)
+            if type(selected_cell) is type(LikeCell):
+                print("reahced")
+                origin_cell = template.all_cells[selected_cell.related_cell]
+            return selected_cell.get_material(), selected_cell.get_density(), selected_cell.geom, selected_cell.param, \
+                template.all_materials.get(selected_cell.get_material()).comment, selected_cell.comment, str(selected_cell), str(origin_cell)
         else:
-            return "", "", "", "", "Material Description", "", ""
+            return "", "", "", "", "Material Description", "", "", ""
     elif button_id == 'material_selector' and cell_material_select is not None:
         return dash.no_update, dash.no_update, dash.no_update, dash.no_update, template.all_materials.get(
-            cell_material_select).comment, dash.no_update
+            cell_material_select).comment, dash.no_update, dash.no_update
     else:
-        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
 
 @callback(
@@ -165,7 +187,8 @@ def update_console(apply_clicked, pathname, cell, description, material, density
             if material is None:
                 return current_messages
             selected_cell = template.all_cells.get(cell)
-            if selected_cell.comment == description and selected_cell.material == material and selected_cell.density == density and selected_cell.geom == geom and selected_cell.param == param:
+            if selected_cell.comment == description and selected_cell.material == material and \
+                    selected_cell.density == density and selected_cell.geom == geom and selected_cell.param == param:
                 message = f'({timestamp})\tNo changes made to Cell {cell}'
                 current_messages.insert(0, html.P(message))
                 return current_messages
@@ -190,13 +213,14 @@ def update_console(apply_clicked, pathname, cell, description, material, density
                 current_messages.insert(0, html.P(message))
                 return current_messages
             elif type(selected_cell) is LikeCell:
-                print("WIP Page change")
+                print("WIP LikeCell")
             elif type(selected_cell) is VoidCell:
-                if selected_cell.comment == description and "Void" == material and "Void" == density and selected_cell.geom == geom and selected_cell.param == param:
+                if selected_cell.comment == description and "Void" == material and "Void" == density \
+                        and selected_cell.geom == geom and selected_cell.param == param:
                     message = f'({timestamp})\tNo changes made to Cell {cell}'
                     current_messages.insert(0, html.P(message))
                     return current_messages
-                if material != "Void" or density != "Void":
+                if material != "0" or density != "Void":
                     message = f'({timestamp})\tCannot make changes to material or density of a void cell'
                     current_messages.insert(0, html.P(message))
                     return current_messages

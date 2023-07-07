@@ -4,7 +4,6 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html, Input, Output, State, callback
 
-from Template_Editor.mcnp_cards import *
 from Template_Editor.template_handler_instance import template_handler_instance as template
 
 
@@ -20,7 +19,7 @@ def layout(page_background):
                         dbc.Col("Current Option:", width=3, align="end", className='current-card'),
                         dbc.Col(dcc.Dropdown(id='option_selector', placeholder='Select an Option', clearable=True,
                                              persistence=True, persistence_type='session',
-                                             style={'width': '10vw', 'textAlign': 'left'}),
+                                             className='dropdown'),
                                 width=3, align="center"),
                         dbc.Col(html.H5(id='option_description', children='Option Description'),
                                 width=6, align="end"),

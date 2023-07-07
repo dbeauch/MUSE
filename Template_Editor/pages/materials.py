@@ -4,7 +4,6 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html, Input, Output, State, callback
 
-from Template_Editor.mcnp_cards import *
 from Template_Editor.template_handler_instance import template_handler_instance as template
 
 
@@ -20,7 +19,7 @@ def layout(page_background):
                     dbc.Col("Current Material:", width=3, align="end", className='current-card'),
                     dbc.Col(dcc.Dropdown(id='material_selector', placeholder='Select a Material', clearable=True,
                                          persistence=True, persistence_type='session',
-                                         style={'width': '10vw', 'textAlign': 'left'}),
+                                         className='dropdown'),
                             width=3, align="center")
                 ]),
 
@@ -39,7 +38,7 @@ def layout(page_background):
                         dbc.Row([
                             dbc.Col('Zaid:', className='input-label', width=2),
                             dbc.Col(dcc.Dropdown(id='zaid_selector', placeholder='', clearable=True,
-                                                 style={'color': 'black'}), width=3),
+                                                 className='dropdown'), width=3),
                         ], align='center', style={'marginTop': 20}),
 
                         html.Hr(),
