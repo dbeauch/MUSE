@@ -36,7 +36,7 @@ def layout(page_background):
 
                             html.Hr(),
 
-                            html.Button('Apply Changes', id='universe_apply_button', n_clicks=0)
+                            html.Button('Apply Changes', id='universe_apply_button', n_clicks=0, className='apply-button')
                         ], width=6),
 
                         dbc.Col([
@@ -113,6 +113,7 @@ def update_universe_display(universe):
             if universe in template.all_universe_names.keys():
                 description_results = template.all_universe_names.get(universe)
             return universe_results, fill_results, description_results
+    return "", "", ""
 
 
 @callback(
@@ -143,7 +144,6 @@ def update_console(apply_clicked, pathname, universe, description, current_messa
                 return current_messages
 
             if description is not None or description != "":
-                print(template.all_universe_names)
                 template.all_universe_names[universe] = description
 
             message = f'({timestamp})\tApplied changes to Universe {universe}'

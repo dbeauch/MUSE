@@ -56,7 +56,7 @@ def layout(page_background):
 
                         html.Hr(),
 
-                        html.Button('Apply Changes', id='surface_apply_button', n_clicks=0),
+                        html.Button('Apply Changes', id='surface_apply_button', n_clicks=0, className='apply-button'),
                     ], width=6),
 
                     dbc.Col([

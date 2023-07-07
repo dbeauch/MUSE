@@ -20,8 +20,8 @@ navbar_color = '#004a80'
 # Only runs preprocessing operation for the main server process not for monitor process
 if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     sys.setrecursionlimit(8000)
-    # file_to_read = input(f"Template to read ('' to run default template):")
-    # if file_to_read == '':
+    # file_to_read = input(f"Template to read (default to run default template):")
+    # if file_to_read == 'default':
     #     file_to_read = '../mcnp_templates/NBSR_HEU_720[236]/NBSR_HEU_720.i'
     # file_to_read = '../mcnp_templates/NNR/test.i'
     # file_to_read = '../mcnp_templates/NNR/burn_Box9_v02_SU_cycle8.i'
@@ -143,6 +143,7 @@ content = html.Div(
 
 app.layout = html.Div([
     dcc.Location(id="url"),
+    dcc.Store(id='manually-closed', data=False),
     dbc.Row([
         dbc.Col(navbar, width='auto'),
         dbc.Col([
@@ -160,39 +161,44 @@ app.layout = html.Div([
 
 @app.callback(
     Output('page_content', 'children'),
-    Output("console_output_window", "is_open", allow_duplicate=True),
+    Output('console_output_window', 'is_open', allow_duplicate=True),
     Input('url', 'pathname'),
+    State('console_output_window', 'is_open'),
+    State('manually-closed', 'data'),
     prevent_initial_call=True,
 )
-def display_page(pathname):
+def display_page(pathname, console_open, manually_closed):
+    console_should_open = not manually_closed
     if pathname == '/':
         return home.layout(page_background), False
     elif pathname == '/cells':
-        return cells.layout(page_background), True
+        return cells.layout(page_background), console_should_open
     elif pathname == '/surfaces':
-        return surfaces.layout(page_background), True
+        return surfaces.layout(page_background), console_should_open
     elif pathname == '/materials':
-        return materials.layout(page_background), True
+        return materials.layout(page_background), console_should_open
     elif pathname == '/universes':
-        return universes.layout(page_background), True
+        return universes.layout(page_background), console_should_open
     elif pathname == '/assembly':
-        return fuel_assemblies.layout(page_background), True
+        return fuel_assemblies.layout(page_background), console_should_open
     elif pathname == '/options':
-        return options.layout(page_background), True
+        return options.layout(page_background), console_should_open
     else:
         return '404 Error: This page does not exist...YET!', False
 
 
 @app.callback(
     Output('console_output_window', 'is_open', allow_duplicate=True),
+    Output('manually-closed', 'data'),
     Input('console_toggler', 'n_clicks'),
     State('console_output_window', 'is_open'),
+    State('manually-closed', 'data'),
     prevent_initial_call=True,
 )
-def toggle_console(n, is_open):
+def toggle_console(n, is_open, manually_closed):
     if n:
-        return not is_open
-    return is_open
+        return not is_open, not manually_closed
+    return is_open, False
 
 
 @app.callback(
