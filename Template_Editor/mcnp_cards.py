@@ -292,7 +292,7 @@ class Cell(Card):
         return super().__str__()
 
     def get_material(self):
-        return "Void" if isinstance(self, VoidCell) else self.material
+        return self.material
 
     def get_density(self):
         return "Void" if isinstance(self, VoidCell) else self.density
@@ -314,6 +314,8 @@ class RegularCell(Cell):
         self.geom = line[density_end: geom_end].strip()
 
         self.param = line[geom_end:].strip()
+
+        self.children = []
 
     def __str__(self):
         printed_geom = re.sub(r'\)[ \t]+\(', f")\n{line_indent}(", self.geom)
@@ -347,6 +349,8 @@ class VoidCell(Cell):
 
         self.param = line[geom_end:].strip()
 
+        self.children = []
+
     def __str__(self):
         printed_geom = re.sub(r'\)[ \t]+\(', f")\n{line_indent}(", self.geom)
         printed_geom = re.sub(r':[ \t]+\(', f":\n{line_indent}(", printed_geom)
@@ -364,8 +368,8 @@ class LikeCell(Cell):
         self.number = line[0: number_end].strip()
 
         like_end = re.search(r'^\d{1,6}[ \t]+like', line).span()[1] + 1
-        related_cell_end = re.search(r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}', line).span()[1] + 1
-        self.related_cell = line[like_end: related_cell_end].strip()
+        origin_cell_end = re.search(r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}', line).span()[1] + 1
+        self.origin_cell = line[like_end: origin_cell_end].strip()
 
         but_end = re.search(r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]+but', line).span()[1] + 1
         self.changes = line[but_end:].strip()
@@ -376,12 +380,10 @@ class LikeCell(Cell):
         self.param = ""
 
     def __str__(self):
-        printed_changes = ""
         parts = self.changes.split()
-        for i in range(0, len(parts), 5):
-            printed_changes += ' '.join(parts[i:i + 5]) + "\n" + line_indent
-        printed_changes = printed_changes[:re.search(r'\s+$', printed_changes).span()[0]]
-        return f"{self.number} like {self.related_cell} but {printed_changes}\t{self.get_inline_comment()}"
+        # Print changes with newlines every 5 spaces
+        printed_changes = f'\n {line_indent}'.join([' '.join(parts[i:i + 5]) for i in range(0, len(parts), 5)])
+        return f"{self.number} like {self.origin_cell} but {printed_changes}\t{self.get_inline_comment()}"
 
 
 class Surface(Card):

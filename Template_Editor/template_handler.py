@@ -31,11 +31,11 @@ class TemplateHandler(Singleton):
 
             self.cell_comments = {}
             self.surface_comments = {}
-            self.data_comments = {0: "Void Cell"}
+            self.data_comments = {"0": "Void Cell"}
 
             self.all_cells = {}
             self.all_surfaces = {}
-            self.all_materials = {0: Material("m0"), "WIP": Material("m00")}  # mt card numbers stored as 't16'
+            self.all_materials = {"0": Material("m0"), "WIP": Material("m00")}  # mt card numbers stored as 't16'
             self.all_options = {}
 
             self.all_assembly = {}
@@ -43,6 +43,16 @@ class TemplateHandler(Singleton):
             self.all_universes = {}
             self.all_fills = {}
             self.is_initialized = True
+
+            self.param_cards = [
+                re.compile(r'tmp=-?\.?\d+(\.\d+)?[eE]?-?\d*'),
+                re.compile(r'imp:n,p=\d+'),
+                re.compile(r'\*?trcl=[^a-zA-z]+'),
+                re.compile(r'fill=(((-?\d+:-?\d+[ \t]+){3}([ \t]*\d+r?)+))'),
+                re.compile(r'lat=\d+'),
+                re.compile(r'u=\d+'),
+                re.compile(r'vol=-?\.?\d+(\.\d+)?[eE]?-?\d*'),
+            ]
 
 
     def read_template(self, in_filename):
@@ -79,7 +89,7 @@ class TemplateHandler(Singleton):
             self.make_cards(self.surface_lines)
             self.make_cards(self.data_lines)
 
-            self.relate_cells()
+            self.set_like_cell([o for o in self.all_cells.values() if type(o) is LikeCell], True)
 
             self.apply_comments(self.all_cells, self.cell_comments)
             self.apply_comments(self.all_surfaces, self.surface_comments)
@@ -217,12 +227,21 @@ class TemplateHandler(Singleton):
                 print(f"Card for {made_card} with line '{line}' not found")
 
 
-    def relate_cells(self):
-        for cell in self.all_cells.values():
+    def set_like_cell(self, cell_list, initial_call=False):
+        """
+        Finds all LikeCells in cell_list after template is read and sets the
+        attributes of the LikeCells to reflect its origin cell
+        :return: None
+        """
+        for cell in cell_list:
             if type(cell) is LikeCell:
-                origin_cell = self.all_cells[cell.related_cell]
+                origin_cell = self.all_cells[cell.origin_cell]
                 if origin_cell is not None:
-                    # LikeCell Material
+                    # Add to children of origin_cell on initial call
+                    if initial_call:
+                        origin_cell.children.append(cell)
+
+                    # LikeCell Material; Treated separate from params since has its own input display
                     mat_change = re.search(r'mat=\d+', cell.changes)
                     if mat_change is not None:
                         cell.material = cell.changes[mat_change.span()[0]+4: mat_change.span()[1]+1].strip()
@@ -235,14 +254,43 @@ class TemplateHandler(Singleton):
                     # LikeCell Geometry
                     cell.geom = origin_cell.geom
 
-                    # LikeCell Translation
-                    trcl_change = re.search(r'\*?trcl=\d+', cell.changes)
-                    if trcl_change is not None:
-                        cell.param = cell.changes[trcl_change.span()[0] + 4: trcl_change.span()[1] + 1].strip()
-                    else:
-                        cell.param = origin_cell.param
+                    # Create LikeCell Param
+                    param = []
+                    for regex in self.param_cards:
+                        in_changes = regex.search(cell.changes)
+                        in_origin = regex.search(origin_cell.param)
+                        if in_changes is not None:
+                            param.append(in_changes.group())
+                        elif in_origin is not None:
+                            param.append(in_origin.group())
+                    cell.param = " ".join(param)
+
+                    self.dissect_like_param(cell)
 
 
+    def dissect_like_param(self, cell):
+        """
+        Called to separate the param of a LikeCell into the param of the origin cell and the LikeCell changes
+        and sets cell.changes property
+        :param cell: LikeCell to operate on
+        :return: None
+        """
+        final_param = []
+        final_changes = []
+        for regex in self.param_cards:
+            combined_match = regex.search(cell.param)
+            if combined_match is not None:
+                final_param.append(combined_match.group())
+                origin_match = regex.search(self.all_cells[cell.origin_cell].param)
+                if origin_match is None or origin_match.group() != combined_match.group():
+                    final_changes.append(combined_match.group())
+
+
+        if cell.material != self.all_cells[cell.origin_cell].material:
+            final_changes.append(f'mat={cell.material}')
+
+        cell.param = " ".join(final_param)
+        cell.changes = " ".join(final_changes)
 
 
     @staticmethod

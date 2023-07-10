@@ -4,8 +4,10 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html, Input, Output, State, callback
 
-from Template_Editor.mcnp_cards import RegularCell, VoidCell, LikeCell
 from Template_Editor.template_handler_instance import template_handler_instance as template
+# Workaround import since files in pages folder import classes as Template_Editor.mcnp_cards.____
+# do not compare correctly with mcnp_cards.____
+from Template_Editor.template_handler_instance import RegularCell, VoidCell, LikeCell
 
 
 def layout(page_background):
@@ -87,7 +89,7 @@ def layout(page_background):
                                         }, className='scrollbar-hidden'
                                     )
                                     ),
-                            dcc.Tab(label='Origin Cell',
+                            dcc.Tab(label='Related Cells',
                                     className='tab',
                                     children=dcc.Textarea(
                                         id='origin_preview',
@@ -128,13 +130,14 @@ def update_cell_display(cell, cell_material_select):
     if button_id == 'cell_selector' or ctx.triggered_id is None:
         if cell is not None:
             selected_cell = template.all_cells.get(cell)
-            origin_cell = ""
-            print(type(selected_cell), LikeCell)
-            if type(selected_cell) is type(LikeCell):
-                print("reahced")
-                origin_cell = template.all_cells[selected_cell.related_cell]
+            if type(selected_cell) is LikeCell:
+                second_tab = template.all_cells[selected_cell.origin_cell]
+            elif type(selected_cell) in [RegularCell, VoidCell]:
+                second_tab = "\n".join(str(o) for o in selected_cell.children)
+            else:
+                second_tab = "Something went wrong"
             return selected_cell.get_material(), selected_cell.get_density(), selected_cell.geom, selected_cell.param, \
-                template.all_materials.get(selected_cell.get_material()).comment, selected_cell.comment, str(selected_cell), str(origin_cell)
+                template.all_materials.get(selected_cell.get_material()).comment, selected_cell.comment, str(selected_cell), str(second_tab)
         else:
             return "", "", "", "", "Material Description", "", "", ""
     elif button_id == 'material_selector' and cell_material_select is not None:
@@ -209,11 +212,40 @@ def update_console(apply_clicked, pathname, cell, description, material, density
                 if param is not None:
                     selected_cell.param = param
 
+                if len(selected_cell.children) > 0:
+                    template.set_like_cell(selected_cell.children)
+
                 message = f'({timestamp})\tApplied changes to Cell {cell}'
                 current_messages.insert(0, html.P(message))
                 return current_messages
+
             elif type(selected_cell) is LikeCell:
-                print("WIP LikeCell")
+                if description is not None:
+                    selected_cell.comment = description
+
+                if material is not None:
+                    selected_cell.material = material
+                    selected_cell.changes += f'mat={material}'
+                    template.dissect_like_param(selected_cell)
+
+                if density != selected_cell.density:
+                    message = f'({timestamp})\tCannot make changes to density of a Like Cell'
+                    current_messages.insert(0, html.P(message))
+                    return current_messages
+
+                if geom != selected_cell.geom:
+                    message = f'({timestamp})\tCannot make changes to geometry of a Like Cell'
+                    current_messages.insert(0, html.P(message))
+                    return current_messages
+
+                if param is not None:
+                    selected_cell.param = param
+                    template.dissect_like_param(selected_cell)
+
+                message = f'({timestamp})\tApplied changes to Cell {cell}'
+                current_messages.insert(0, html.P(message))
+                return current_messages
+
             elif type(selected_cell) is VoidCell:
                 if selected_cell.comment == description and "Void" == material and "Void" == density \
                         and selected_cell.geom == geom and selected_cell.param == param:
@@ -221,7 +253,7 @@ def update_console(apply_clicked, pathname, cell, description, material, density
                     current_messages.insert(0, html.P(message))
                     return current_messages
                 if material != "0" or density != "Void":
-                    message = f'({timestamp})\tCannot make changes to material or density of a void cell'
+                    message = f'({timestamp})\tCannot make changes to material or density of a Void Cell'
                     current_messages.insert(0, html.P(message))
                     return current_messages
 
