@@ -4,149 +4,7 @@ TEMPLATE FOR MCNP CARDS
 """
 
 import re
-from mendeleev import element
-
-line_indent = "        "
-element_symbols = {  # Cached to decrease runtime; mendeleev.element() is slow
-    '1': 'H',
-    '2': 'He',
-    '3': 'Li',
-    '4': 'Be',
-    '5': 'B',
-    '6': 'C',
-    '7': 'N',
-    '8': 'O',
-    '9': 'F',
-    '10': 'Ne',
-    '11': 'Na',
-    '12': 'Mg',
-    '13': 'Al',
-    '14': 'Si',
-    '15': 'P',
-    '16': 'S',
-    '17': 'Cl',
-    '18': 'Ar',
-    '19': 'K',
-    '20': 'Ca',
-    '21': 'Sc',
-    '22': 'Ti',
-    '23': 'V',
-    '24': 'Cr',
-    '25': 'Mn',
-    '26': 'Fe',
-    '27': 'Co',
-    '28': 'Ni',
-    '29': 'Cu',
-    '30': 'Zn',
-    '31': 'Ga',
-    '32': 'Ge',
-    '33': 'As',
-    '34': 'Se',
-    '35': 'Br',
-    '36': 'Kr',
-    '37': 'Rb',
-    '38': 'Sr',
-    '39': 'Y',
-    '40': 'Zr',
-    '41': 'Nb',
-    '42': 'Mo',
-    '43': 'Tc',
-    '44': 'Ru',
-    '45': 'Rh',
-    '46': 'Pd',
-    '47': 'Ag',
-    '48': 'Cd',
-    '49': 'In',
-    '50': 'Sn',
-    '51': 'Sb',
-    '52': 'Te',
-    '53': 'I',
-    '54': 'Xe',
-    '55': 'Cs',
-    '56': 'Ba',
-    '57': 'La',
-    '58': 'Ce',
-    '59': 'Pr',
-    '60': 'Nd',
-    '61': 'Pm',
-    '62': 'Sm',
-    '63': 'Eu',
-    '64': 'Gd',
-    '65': 'Tb',
-    '66': 'Dy',
-    '67': 'Ho',
-    '68': 'Er',
-    '69': 'Tm',
-    '70': 'Yb',
-    '71': 'Lu',
-    '72': 'Hf',
-    '73': 'Ta',
-    '74': 'W',
-    '75': 'Re',
-    '76': 'Os',
-    '77': 'Ir',
-    '78': 'Pt',
-    '79': 'Au',
-    '80': 'Hg',
-    '81': 'Tl',
-    '82': 'Pb',
-    '83': 'Bi',
-    '84': 'Po',
-    '85': 'At',
-    '86': 'Rn',
-    '87': 'Fr',
-    '88': 'Ra',
-    '89': 'Ac',
-    '90': 'Th',
-    '91': 'Pa',
-    '92': 'U',
-    '93': 'Np',
-    '94': 'Pu',
-    '95': 'Am',
-    '96': 'Cm',
-    '97': 'Bk',
-    '98': 'Cf',
-    '99': 'Es',
-    '100': 'Fm',
-    '101': 'Md',
-    '102': 'No',
-    '103': 'Lr',
-    '104': 'Rf',
-    '105': 'Db',
-    '106': 'Sg',
-    '107': 'Bh',
-    '108': 'Hs',
-    '109': 'Mt',
-    '110': 'Ds',
-    '111': 'Rg',
-    '112': 'Cn',
-    '113': 'Nh',
-    '114': 'Fl',
-    '115': 'Mc',
-    '116': 'Lv',
-    '117': 'Ts',
-    '118': 'Og',
-}
-
-
-def zaid_to_isotope(zaid):
-    if len(zaid) < 4 or 'c' in zaid or '.' in zaid:
-        return 'Unrecognized ZAID'
-
-    element_number = zaid[:-3]
-    isotope_number = zaid[-3:]
-
-    if element_number in element_symbols.keys():
-        return f'{element_symbols[element_number]}-{isotope_number}'
-    else:
-        try:
-            element_name = element(element_number).symbol
-            element_symbols[element_number] = element_name
-            print(f"'{element_number}': '{element_name}',")
-            return f'{element_name}-{isotope_number}'
-        except Exception as e:
-            print(f"Could not retrieve element with Zaid '{zaid}'. Error: {str(e)}")
-            return f"Could not retrieve element with Zaid {zaid}"
+from element_tools import element_symbols, zaid_to_isotope
 
 
 class CardFactory:
@@ -181,7 +39,7 @@ class CardFactory:
     }
 
     MATERIAL_TEMPERATURE_REGEX = {
-        'material': re.compile(r'^ {0,6}m\d+[ \t]+(\d+(\.\d*)?c?[ \t]+-?\.?\d+(\.\d*)?([eE]-?\d+)?[ \t]+)+'),
+        'material': re.compile(r'^ {0,6}m\d+[ \t]+(\d+(\.\d*)?c?[ \t]+-?\.?\d+(\.\d*)?([eE]-?\d+)?[ \t]*)+'),
         'temperature': re.compile(r'^ {0,6}mt\d{1,6}[ \t]+.+$')
     }
 
@@ -244,6 +102,8 @@ class CardFactory:
 
 
 class Card:
+    line_indent = "        "
+
     def __init__(self, comment=""):
         self.comment = comment
 
@@ -283,7 +143,7 @@ class Cell(Card):
             self.fill = []
             for f in fills:
                 if 'r' in f:
-                    continue  # Catches repeated fill: 200 '20r'
+                    continue  # Catches repeated fills: 200 '20r'
                 self.fill.append(f)
         else:
             self.fill = None
@@ -318,19 +178,17 @@ class RegularCell(Cell):
         self.children = []
 
     def __str__(self):
-        printed_geom = re.sub(r'\)[ \t]+\(', f")\n{line_indent}(", self.geom)
-        printed_geom = re.sub(r':[ \t]+\(', f":\n{line_indent}(", printed_geom)
+        printed_geom = re.sub(r'\)[ \t]+\(', f")\n{self.line_indent}(", self.geom)
+        printed_geom = re.sub(r':[ \t]+\(', f":\n{self.line_indent}(", printed_geom)
         digit_parenth = re.search(r'\d[ \t]+\(', printed_geom)
         if digit_parenth is not None:
-            printed_geom = printed_geom[:digit_parenth.span()[0] + 1] + f"\n{line_indent}" + printed_geom[
+            printed_geom = printed_geom[:digit_parenth.span()[0] + 1] + f"\n{self.line_indent}" + printed_geom[
                                                                                              digit_parenth.span()[
                                                                                                  0] + 2:]
-        printed_param = ""
         parts = self.param.split()
-        for i in range(0, len(parts), 5):
-            printed_param += ' '.join(parts[i:i + 5]) + "\n" + line_indent
+        printed_param = '\n'.join([' '.join(parts[i:i + 5]) + self.line_indent for i in range(0, len(parts), 5)])
         printed_param = printed_param[:re.search(r'\s+$', printed_param).span()[0]]
-        return f"{self.number}\t{self.material}\t{self.density}{self.get_inline_comment()}\n{line_indent}{printed_geom}\n{line_indent}{printed_param}"
+        return f"{self.number}\t{self.material}\t{self.density}{self.get_inline_comment()}\n{self.line_indent}{printed_geom}\n{self.line_indent}{printed_param}"
 
 
 class VoidCell(Cell):
@@ -352,13 +210,13 @@ class VoidCell(Cell):
         self.children = []
 
     def __str__(self):
-        printed_geom = re.sub(r'\)[ \t]+\(', f")\n{line_indent}(", self.geom)
-        printed_geom = re.sub(r':[ \t]+\(', f":\n{line_indent}(", printed_geom)
+        printed_geom = re.sub(r'\)[ \t]+\(', f")\n{self.line_indent}(", self.geom)
+        printed_geom = re.sub(r':[ \t]+\(', f":\n{self.line_indent}(", printed_geom)
         digit_par = re.search(r'\d[ \t]+\(', printed_geom)
         if digit_par is not None:
-            printed_geom = printed_geom[:digit_par.span()[0] + 1] + f"\n{line_indent}" + printed_geom[
+            printed_geom = printed_geom[:digit_par.span()[0] + 1] + f"\n{self.line_indent}" + printed_geom[
                                                                                          digit_par.span()[0] + 2:]
-        return f"{self.number}\t{self.material}{self.get_inline_comment()}\n{line_indent}{printed_geom}\n{line_indent}{self.param}"
+        return f"{self.number}\t{self.material}{self.get_inline_comment()}\n{self.line_indent}{printed_geom}\n{self.line_indent}{self.param}"
 
 
 class LikeCell(Cell):
@@ -382,7 +240,7 @@ class LikeCell(Cell):
     def __str__(self):
         parts = self.changes.split()
         # Print changes with newlines every 5 spaces
-        printed_changes = f'\n {line_indent}'.join([' '.join(parts[i:i + 5]) for i in range(0, len(parts), 5)])
+        printed_changes = f'\n {self.line_indent}'.join([' '.join(parts[i:i + 5]) for i in range(0, len(parts), 5)])
         return f"{self.number} like {self.origin_cell} but {printed_changes}\t{self.get_inline_comment()}"
 
 
@@ -439,8 +297,7 @@ class KSrc(DataCard):
 
     def __str__(self):
         locations_str = ""
-        for triplet in self.locations:
-            locations_str += f"\n{line_indent}{triplet[0]}  {triplet[1]}  {triplet[2]}"
+        locations_str = '\n'.join([f"{self.line_indent}{triplet[0]}  {triplet[1]}  {triplet[2]}" for triplet in self.locations])
         return f"{super().__str__()}ksrc{locations_str}"
 
 
@@ -456,11 +313,10 @@ class Material(DataCard):
         self.comment = ""
 
     def __str__(self, comments_on):
-        zaid_fracs_str = ""
-        for pair in self.zaid_fracs:
-            zaid_fracs_str += f"\n{line_indent}{pair[0]}\t{pair[1]}"
-            if comments_on:
-                zaid_fracs_str += f"    \t$ {zaid_to_isotope(pair[0])}"
+        zaid_fracs_str = '\n'.join([
+            f"{self.line_indent}{pair[0]}\t{pair[1]}" + (f"    \t$ {zaid_to_isotope(pair[0])}" if comments_on else "")
+            for pair in self.zaid_fracs
+        ])
         return f"{super().__str__()}m{self.number}{zaid_fracs_str}"
 
 
@@ -499,8 +355,6 @@ class Option(DataCard):
         self.param = line[start:].strip()
 
     def __str__(self):
-        printed_param = ""
         parts = self.param.split()
-        for i in range(0, len(parts), 5):
-            printed_param += "\n" + line_indent + ' '.join(parts[i:i + 5])
+        printed_param = "\n".join([self.line_indent + ' '.join(parts[i:i + 5]) for i in range(0, len(parts), 5)])
         return f"{self.number}{self.get_inline_comment()}{printed_param}"

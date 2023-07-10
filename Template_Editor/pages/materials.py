@@ -109,6 +109,7 @@ def update_material_display(material):
 
 @callback(
     Output('console_output', 'children', allow_duplicate=True),
+    Output('material_selector', 'value'),
     Input('material_apply_button', 'n_clicks'),
     State('url', 'pathname'),
     State('material_selector', 'value'),
@@ -127,18 +128,18 @@ def update_console(apply_clicked, pathname, material, description, current_messa
 
         if button_id == 'material_apply_button' and material is not None:
             if description is None:
-                return current_messages
+                return current_messages, dash.no_update
             selected_material = template.all_materials.get(material)
             if selected_material.comment == description:
                 message = f'({timestamp})\tNo changes made to Material {material}'
                 current_messages.insert(0, html.P(message))
-                return current_messages
+                return current_messages, dash.no_update
 
             if description is not None:
                 selected_material.comment = description
 
             message = f'({timestamp})\tApplied changes to Material {material}'
             current_messages.insert(0, html.P(message))
-            return current_messages
+            return current_messages, material
 
-        return current_messages
+        return current_messages, dash.no_update

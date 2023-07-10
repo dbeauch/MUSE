@@ -94,6 +94,7 @@ def update_assembly_display(option):
 
 @callback(
     Output('console_output', 'children', allow_duplicate=True),
+    Output('option_selector', 'value'),
     Input('option_apply_button', 'n_clicks'),
     State('url', 'pathname'),
     State('option_selector', 'value'),
@@ -111,15 +112,15 @@ def update_console(apply_clicked, pathname, option, current_messages):
 
         # if button_id == 'option_apply_button' and option is not None:
         #     if something is None:
-        #         return current_messages
+        #         return current_messages, dash.no_update
         #     selected_option = template.all_options.get(option)
         #     if selected_option == option:
         #         message = f'({timestamp})\tNo changes made to Option {option}'
         #         current_messages.insert(0, html.P(message))
-        #         return current_messages
+        #         return current_messages, option
         #
         #     message = f'({timestamp})\tApplied changes to Option {option}'
         #     current_messages.insert(0, html.P(message))
-        #     return current_messages
+        #     return current_messages, option
 
-        return current_messages
+        return current_messages, dash.no_update

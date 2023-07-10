@@ -117,6 +117,7 @@ def update_universe_display(universe):
 
 @callback(
     Output('console_output', 'children', allow_duplicate=True),
+    Output('universe_selector', 'value'),
     Input('universe_apply_button', 'n_clicks'),
     State('url', 'pathname'),
     State('universe_selector', 'value'),
@@ -135,18 +136,18 @@ def update_console(apply_clicked, pathname, universe, description, current_messa
 
         if button_id == 'universe_apply_button' and universe is not None:
             if description is None or description == "":
-                return current_messages
+                return current_messages, dash.no_update
             selected_universe = template.all_universes.get(universe)
             if selected_universe == universe and template.all_universe_names.get(universe) == description:
                 message = f'({timestamp})\tNo changes made to Universe {universe}'
                 current_messages.insert(0, html.P(message))
-                return current_messages
+                return current_messages, universe
 
             if description is not None or description != "":
                 template.all_universe_names[universe] = description
 
             message = f'({timestamp})\tApplied changes to Universe {universe}'
             current_messages.insert(0, html.P(message))
-            return current_messages
+            return current_messages, universe
 
-        return current_messages
+        return current_messages, dash.no_update

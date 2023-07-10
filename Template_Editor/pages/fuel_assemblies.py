@@ -90,6 +90,7 @@ def update_assembly_display(assembly):
 
 @callback(
     Output('console_output', 'children', allow_duplicate=True),
+    Output('assembly_selector', 'value'),
     Input('assembly_apply_button', 'n_clicks'),
     State('url', 'pathname'),
     State('assembly_selector', 'value'),
@@ -107,15 +108,15 @@ def update_console(apply_clicked, pathname, assembly, current_messages):
 
         # if button_id == 'assembly_apply_button' and assembly is not None:
         #     if something is None:
-        #         return current_messages
+        #         return current_messages, dash.no_update
         #     selected_assembly = template.all_assembly.get(assembly)
         #     if selected_assembly == assembly:
         #         message = f'({timestamp})\tNo changes made to Assembly {assembly}'
         #         current_messages.insert(0, html.P(message))
-        #         return current_messages
+        #         return current_messages, assembly
         #
         #     message = f'({timestamp})\tApplied changes to Assembly {assembly}'
         #     current_messages.insert(0, html.P(message))
-        #     return current_messages
+        #     return current_messages, assembly
 
-        return current_messages
+        return current_messages, dash.no_update

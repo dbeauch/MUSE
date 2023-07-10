@@ -131,13 +131,14 @@ def update_cell_display(cell, cell_material_select):
         if cell is not None:
             selected_cell = template.all_cells.get(cell)
             if type(selected_cell) is LikeCell:
-                second_tab = template.all_cells[selected_cell.origin_cell]
+                second_tab = template.all_cells.get(selected_cell.origin_cell)
             elif type(selected_cell) in [RegularCell, VoidCell]:
                 second_tab = "\n".join(str(o) for o in selected_cell.children)
             else:
                 second_tab = "Something went wrong"
             return selected_cell.get_material(), selected_cell.get_density(), selected_cell.geom, selected_cell.param, \
-                template.all_materials.get(selected_cell.get_material()).comment, selected_cell.comment, str(selected_cell), str(second_tab)
+                template.all_materials.get(selected_cell.get_material()).comment, selected_cell.comment, str(
+                selected_cell), str(second_tab)
         else:
             return "", "", "", "", "Material Description", "", "", ""
     elif button_id == 'material_selector' and cell_material_select is not None:
@@ -166,6 +167,7 @@ def update_material_options(search_value):
 
 @callback(
     Output('console_output', 'children', allow_duplicate=True),
+    Output('cell_selector', 'value'),
     Input('cell_apply_button', 'n_clicks'),
     State('url', 'pathname'),
     State('cell_selector', 'value'),
@@ -188,13 +190,13 @@ def update_console(apply_clicked, pathname, cell, description, material, density
 
         if button_id == 'cell_apply_button' and cell is not None:
             if material is None:
-                return current_messages
+                return current_messages, dash.no_update
             selected_cell = template.all_cells.get(cell)
             if selected_cell.comment == description and selected_cell.material == material and \
                     selected_cell.density == density and selected_cell.geom == geom and selected_cell.param == param:
                 message = f'({timestamp})\tNo changes made to Cell {cell}'
                 current_messages.insert(0, html.P(message))
-                return current_messages
+                return current_messages, dash.no_update
 
             if type(selected_cell) is RegularCell:
                 if description is not None:
@@ -217,7 +219,7 @@ def update_console(apply_clicked, pathname, cell, description, material, density
 
                 message = f'({timestamp})\tApplied changes to Cell {cell}'
                 current_messages.insert(0, html.P(message))
-                return current_messages
+                return current_messages, cell
 
             elif type(selected_cell) is LikeCell:
                 if description is not None:
@@ -231,12 +233,12 @@ def update_console(apply_clicked, pathname, cell, description, material, density
                 if density != selected_cell.density:
                     message = f'({timestamp})\tCannot make changes to density of a Like Cell'
                     current_messages.insert(0, html.P(message))
-                    return current_messages
+                    return current_messages, dash.no_update
 
                 if geom != selected_cell.geom:
                     message = f'({timestamp})\tCannot make changes to geometry of a Like Cell'
                     current_messages.insert(0, html.P(message))
-                    return current_messages
+                    return current_messages, dash.no_update
 
                 if param is not None:
                     selected_cell.param = param
@@ -244,18 +246,18 @@ def update_console(apply_clicked, pathname, cell, description, material, density
 
                 message = f'({timestamp})\tApplied changes to Cell {cell}'
                 current_messages.insert(0, html.P(message))
-                return current_messages
+                return current_messages, cell
 
             elif type(selected_cell) is VoidCell:
                 if selected_cell.comment == description and "Void" == material and "Void" == density \
                         and selected_cell.geom == geom and selected_cell.param == param:
                     message = f'({timestamp})\tNo changes made to Cell {cell}'
                     current_messages.insert(0, html.P(message))
-                    return current_messages
+                    return current_messages, dash.no_update
                 if material != "0" or density != "Void":
                     message = f'({timestamp})\tCannot make changes to material or density of a Void Cell'
                     current_messages.insert(0, html.P(message))
-                    return current_messages
+                    return current_messages, dash.no_update
 
                 if description is not None:
                     selected_cell.comment = description
@@ -268,5 +270,6 @@ def update_console(apply_clicked, pathname, cell, description, material, density
 
                 message = f'({timestamp})\tApplied changes to Void Cell {cell}'
                 current_messages.insert(0, html.P(message))
+                return current_messages, cell
 
-        return current_messages
+        return current_messages, dash.no_update

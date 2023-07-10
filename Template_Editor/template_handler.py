@@ -158,25 +158,28 @@ class TemplateHandler(Singleton):
         :param line_array: array to contain consolidated lines
         :return: None
         """
+        continuation_start_pattern = re.compile(r'[ \t]*&')
+        new_line_start_pattern = re.compile(r'^ {5,}\S+')
+        extra_spaces_pattern = re.compile(r'[ \t]{2,}')
+
         index = 0
         while index < len(line_pieces):
-            result = ""
+            result = []
             num_lines_continues = 0
 
             start_line = line_pieces[index]
-            if re.search(r'[ \t]*&', start_line):
+            if continuation_start_pattern.search(start_line):
                 num_lines_continues = self._recurse_continue(line_pieces, index)
-            elif len(line_pieces) - 1 > index:
-                if re.search(r'^ {5,}\S+', line_pieces[index + 1]):
-                    num_lines_continues = self._recurse_continue(line_pieces, index)
+            elif len(line_pieces) - 1 > index and new_line_start_pattern.search(line_pieces[index + 1]):
+                num_lines_continues = self._recurse_continue(line_pieces, index)
 
-            for j in range(num_lines_continues + 1):
-                result += line_pieces[index + j] + " "
-            index += num_lines_continues
-            result = result.replace("\n", "")  # remove \n
-            result = re.sub(r'[ \t]{2,}', " ", result)  # remove extra spaces
-            line_array.append(result)
-            index += 1
+            result.extend(line_pieces[index: index + num_lines_continues + 1])
+            index += num_lines_continues + 1
+
+            result_str = " ".join(result)
+            result_str = result_str.replace("\n", "")  # remove \n
+            result_str = extra_spaces_pattern.sub(" ", result_str)  # remove extra spaces
+            line_array.append(result_str)
 
 
     def _recurse_continue(self, pieces, start_index, num=0):

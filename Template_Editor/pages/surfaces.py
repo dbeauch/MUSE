@@ -115,6 +115,7 @@ def update_surface_display(surface):
 
 @callback(
     Output('console_output', 'children', allow_duplicate=True),
+    Output('surface_selector', 'value'),
     Input('surface_apply_button', 'n_clicks'),
     State('url', 'pathname'),
     State('surface_selector', 'value'),
@@ -136,12 +137,12 @@ def update_console(apply_clicked, pathname, surface, description, mnemonic, tran
 
         if button_id == 'surface_apply_button' and surface is not None:
             if mnemonic is None:
-                return current_messages
+                return current_messages, dash.no_update
             selected_surface = template.all_surfaces.get(surface)
             if selected_surface.comment == description and selected_surface.mnemonic == mnemonic and selected_surface.transform == transform and selected_surface.dimensions == dimensions:
                 message = f'({timestamp})\tNo changes made to Surface {surface}'
                 current_messages.insert(0, html.P(message))
-                return current_messages
+                return current_messages, dash.no_update
 
             if description is not None:
                 selected_surface.comment = description
@@ -157,6 +158,5 @@ def update_console(apply_clicked, pathname, surface, description, mnemonic, tran
 
             message = f'({timestamp})\tApplied changes to Surface {surface}'
             current_messages.insert(0, html.P(message))
-            return current_messages
-
-        return current_messages
+            return current_messages, surface
+        return current_messages, dash.no_update
