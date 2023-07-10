@@ -107,7 +107,7 @@ def update_surface_display(surface):
     if button_id == 'surface_selector' or ctx.triggered_id is None:
         if surface is not None:
             selected_surface = template.all_surfaces.get(surface)
-            return selected_surface.mnemonic, selected_surface.transform, selected_surface.dimensions, selected_surface.get_comment(), str(
+            return selected_surface.mnemonic, selected_surface.transform, selected_surface.dimensions, selected_surface.comment, str(
                 selected_surface)
         else:
             return "", "", "", "", ""

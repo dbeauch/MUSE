@@ -151,70 +151,70 @@ def zaid_to_isotope(zaid):
 
 class CardFactory:
     CELLS_REGEX = {
-        'regular': r' {0,6}^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+[ \t]+[a-zA-z:,]+=.*$',
-        'void': r'^ {0,6}\d{1,6}[ \t]+0[ \t][^a-zA-z]+[ \t]+[a-zA-z:,]+=.*$',
-        'like_but': r'^ {0,6}\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]but[ \t]+.+$'
+        'regular': re.compile(r' {0,6}^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+[ \t]+[a-zA-z:,]+=.*$'),
+        'void': re.compile(r'^ {0,6}\d{1,6}[ \t]+0[ \t][^a-zA-z]+[ \t]+[a-zA-z:,]+=.*$'),
+        'like_but': re.compile(r'^ {0,6}\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]but[ \t]+.+$')
     }
 
     SURFACES_REGEX = {
-        'regular': r'^ {0,6}\d+[ \t]+[^-\d\.]+[-\d\. \tr]+$',
-        'transform': r'^ {0,6}\d+[ \t]+\d+[^-\d\.]+[-\d\. \tr]+$'
+        'regular': re.compile(r'^ {0,6}\d+[ \t]+[^-\d\.]+[-\d\. \tr]+$'),
+        'transform': re.compile(r'^ {0,6}\d+[ \t]+\d+[^-\d\.]+[-\d\. \tr]+$')
     }
 
     OPTIONS_REGEX = {
-        'ksrc': r'^ {0,6}ksrc[ \t]+((-?\d+(\.\d+)?[eE]?-?\d*[ \t]+){3})+$',
-        'transform': r'^ {0,6}\*?(tr|TR)\d{1,6}[ \t]+(-?\d+\.?\d*[ \t]*)+$',
-        'mode': r'^ {0,6}mode[ \t]+.+$',
-        'kcode': r'^ {0,6}kcode[ \t]+.+$',
-        'prdmp': r'^ {0,6}prdmp[ \t]+',
-        'print': r'^ {0,6}print[ \t]+',
-        'F': r'^ {0,6}[fF]\d+:[np][ \t]+',
-        'fq': r'^ {0,6}fq\d+[ \t]+',
-        'fc': r'^ {0,6}fc\d+[ \t]+',
-        'SD': r'^ {0,6}SD\d+[ \t]+',
-        'FM': r'^ {0,6}FM\d+[ \t]+',
-        'E': r'^ {0,6}E\d+[ \t]+',
-        'FMESH': r'^ {0,6}FMESH\d+:n[ \t]+',
-        'read': r'^ {0,6}read file=.*',
-        'tmp': r'^ {0,6}tmp[ \t]+',
-        'lost': r'^ {0,6}lost[ \t]+',
+        'ksrc': re.compile(r'^ {0,6}ksrc[ \t]+((-?\d+(\.\d+)?[eE]?-?\d*[ \t]+){3})+$'),
+        'transform': re.compile(r'^ {0,6}\*?(tr|TR)\d{1,6}[ \t]+(-?\d+\.?\d*[ \t]*)+$'),
+        'mode': re.compile(r'^ {0,6}mode[ \t]+.+$'),
+        'kcode': re.compile(r'^ {0,6}kcode[ \t]+.+$'),
+        'prdmp': re.compile(r'^ {0,6}prdmp[ \t]+'),
+        'print': re.compile(r'^ {0,6}print[ \t]+'),
+        'F': re.compile(r'^ {0,6}[fF]\d+:[np][ \t]+'),
+        'fq': re.compile(r'^ {0,6}fq\d+[ \t]+'),
+        'fc': re.compile(r'^ {0,6}fc\d+[ \t]+'),
+        'SD': re.compile(r'^ {0,6}SD\d+[ \t]+'),
+        'FM': re.compile(r'^ {0,6}FM\d+[ \t]+'),
+        'E': re.compile(r'^ {0,6}E\d+[ \t]+'),
+        'FMESH': re.compile(r'^ {0,6}FMESH\d+:n[ \t]+'),
+        'read': re.compile(r'^ {0,6}read file=.*'),
+        'tmp': re.compile(r'^ {0,6}tmp[ \t]+'),
+        'lost': re.compile(r'^ {0,6}lost[ \t]+'),
     }
 
     MATERIAL_TEMPERATURE_REGEX = {
-        'material': r'^ {0,6}m\d+[ \t]+(\d+(\.\d*)?c?[ \t]+-?\.?\d+(\.\d*)?([eE]-?\d+)?[ \t]+)+',
-        'temperature': r'^ {0,6}mt\d{1,6}[ \t]+.+$'
+        'material': re.compile(r'^ {0,6}m\d+[ \t]+(\d+(\.\d*)?c?[ \t]+-?\.?\d+(\.\d*)?([eE]-?\d+)?[ \t]+)+'),
+        'temperature': re.compile(r'^ {0,6}mt\d{1,6}[ \t]+.+$')
     }
 
     def __init__(self, template):
         self.template = template
 
     def create_card(self, line, comment=""):
-        if re.search(self.CELLS_REGEX['regular'], line):
+        if self.CELLS_REGEX['regular'].search(line):
             made_card = RegularCell(line.strip())
-        elif re.search(self.CELLS_REGEX['void'], line):
+        elif self.CELLS_REGEX['void'].search(line):
             made_card = VoidCell(line.strip())
-        elif re.search(self.CELLS_REGEX['like_but'], line):
+        elif self.CELLS_REGEX['like_but'].search(line):
             made_card = LikeCell(line.strip())
-        elif re.search(self.SURFACES_REGEX['regular'], line):
+        elif self.SURFACES_REGEX['regular'].search(line):
             made_card = Surface(line.strip())
-        elif re.search(self.SURFACES_REGEX['transform'], line):
+        elif self.SURFACES_REGEX['transform'].search(line):
             made_card = Surface(line.strip())
-        elif re.search(self.MATERIAL_TEMPERATURE_REGEX['material'], line):
+        elif self.MATERIAL_TEMPERATURE_REGEX['material'].search(line):
             made_card = Material(line.strip())
-        elif re.search(self.MATERIAL_TEMPERATURE_REGEX['temperature'], line):
+        elif self.MATERIAL_TEMPERATURE_REGEX['temperature'].search(line):
             made_card = Temperature(line.strip())
-        elif re.search(self.OPTIONS_REGEX['transform'], line):
+        elif self.OPTIONS_REGEX['transform'].search(line):
             made_card = Transform(line.strip())
-        elif re.search(self.OPTIONS_REGEX['ksrc'], line):
+        elif self.OPTIONS_REGEX['ksrc'].search(line):
             made_card = KSrc(line.strip())
-        elif re.search(self.OPTIONS_REGEX['kcode'], line):
+        elif self.OPTIONS_REGEX['kcode'].search(line):
             made_card = KCode(line.strip())
-        elif re.search(self.OPTIONS_REGEX['mode'], line):
+        elif self.OPTIONS_REGEX['mode'].search(line):
             made_card = Mode(line.strip())
         else:
             matched = False
             for regex in self.OPTIONS_REGEX.values():
-                search = re.search(regex, line)
+                search = regex.search(line)
                 if search is not None:
                     start = search.span()[1]
                     made_card = Option(line.strip(), start)
