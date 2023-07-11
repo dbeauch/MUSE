@@ -44,6 +44,7 @@ class TemplateHandler(Singleton):
             self.all_fills = {}
             self.is_initialized = True
 
+            # Used to identify valid param fields of cell cards
             self.param_cards = [
                 re.compile(r'tmp=-?\.?\d+(\.\d+)?[eE]?-?\d*'),
                 re.compile(r'imp:n,p=\d+'),
