@@ -51,9 +51,25 @@ def layout(page_background):
                                                 'width': '40vw',
                                                 'overflow': 'scrollX',
                                                 'inputMode': 'email',
-                                            }, className='scrollbar-hidden'
+                                            },
                                         )
+                                        ),
+                                dcc.Tab(label='Plate Preview',
+                                        className='tab',
+                                        children=dcc.Textarea(
+                                            id='plate_preview',
+                                            style={
+                                                'fontSize': 'calc(5px + 0.5vw)',
+                                                'backgroundColor': '#333333',
+                                                'color': '#A9A9A9',
+                                                'border': '3px solid black',
+                                                'height': '60vh',
+                                                'width': '40vw',
+                                                'overflow': 'scrollX',
+                                                'inputMode': 'email',
+                                            },
                                         )
+                                        ),
                             ], className='tab-container')
                         ], width=6)
                     ]),
@@ -67,25 +83,37 @@ def layout(page_background):
     Input("assembly_selector", "search_value"),
 )
 def update_assembly_options(search_value):
-    result = [o for o in template.all_assembly.keys()]
+    result = [o for o in template.all_fuel_assemblies.keys()]
     result.sort()
     return result
 
 
 @callback(
     Output('assembly_preview', 'value'),
+    Output('plate_preview', 'value'),
     Output('assembly_description', 'children'),
     Input('assembly_selector', 'value'),
+    Input('assembly_description', 'value'),
 )
-def update_assembly_display(assembly):
+def update_assembly_display(assembly, descr):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if button_id == 'assembly_selector' or ctx.triggered_id is None:
         if assembly is not None:
             if assembly in template.data_comments.keys():
                 description_results = template.data_comments.get(assembly)
-                return "", description_results
-    return "", "Assembly Description"
+                return "", "", description_results
+
+            assembly_results = f'\n'.join(str(c) for c in template.all_fuel_assemblies[assembly])
+            preview = ""
+            for universe in template.all_fuel_cells.keys():
+                preview += f'Universe {universe} Plate Sections\n'
+                for cell in template.all_fuel_cells[universe]:
+                    preview += str(cell) + '\n'
+                preview += f'\n\n'
+
+            return assembly_results, preview, "Assembly Description"
+    return dash.no_update, dash.no_update, dash.no_update
 
 
 @callback(

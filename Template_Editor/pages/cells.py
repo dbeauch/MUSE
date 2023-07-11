@@ -5,8 +5,8 @@ import dash_bootstrap_components as dbc
 from dash import dcc, html, Input, Output, State, callback
 
 from Template_Editor.template_handler_instance import template_handler_instance as template
-# Workaround import since files in pages folder import classes as Template_Editor.mcnp_cards.____
-# do not compare correctly with mcnp_cards.____
+# Workaround import since files in pages folder import classes as Template_Editor.mcnp_cards.<Class>
+# do not compare correctly with mcnp_cards.<Class>
 from Template_Editor.template_handler_instance import RegularCell, VoidCell, LikeCell
 
 
@@ -22,7 +22,8 @@ def layout(page_background):
                     dbc.Col('Current Cell:', width=3, align='end', className='current-card'),
                     dbc.Col(dcc.Dropdown(id='cell_selector', placeholder='Select a Cell', clearable=True,
                                          persistence=True, persistence_type='session',
-                                         className='dropdown'), width=3, align='center')
+                                         className='dropdown'),
+                            width=3, align='center')
                 ]),
                 html.Hr(),
 
@@ -137,15 +138,11 @@ def update_cell_display(cell, cell_material_select):
             else:
                 second_tab = "Something went wrong"
             return selected_cell.get_material(), selected_cell.get_density(), selected_cell.geom, selected_cell.param, \
-                template.all_materials.get(selected_cell.get_material()).comment, selected_cell.comment, str(
-                selected_cell), str(second_tab)
+                template.all_materials.get(selected_cell.get_material()).comment, selected_cell.comment,\
+                str(selected_cell), str(second_tab)
         else:
             return "", "", "", "", "Material Description", "", "", ""
-    elif button_id == 'material_selector' and cell_material_select is not None:
-        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, template.all_materials.get(
-            cell_material_select).comment, dash.no_update, dash.no_update
-    else:
-        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
 
 @callback(
@@ -162,6 +159,7 @@ def update_cell_options(search_value):
 )
 def update_material_options(search_value):
     result = [o for o in template.all_materials]
+    result.sort()
     return result
 
 

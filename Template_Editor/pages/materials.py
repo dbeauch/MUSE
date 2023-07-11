@@ -32,14 +32,14 @@ def layout(page_background):
                             dbc.Col('Description:', className='input-label', width=2),
                             dbc.Col(
                                 dbc.Input(id='material_description', type='text', className='input-box'))
-                        ], align='center', style={'marginTop': 20}),
+                        ], align='center', className='input-row'),
 
                         # Zaid
                         dbc.Row([
                             dbc.Col('Zaid:', className='input-label', width=2),
                             dbc.Col(dcc.Dropdown(id='zaid_selector', placeholder='', clearable=True,
                                                  className='dropdown'), width=3),
-                        ], align='center', style={'marginTop': 20}),
+                        ], align='center', className='input-row'),
 
                         html.Hr(),
 
@@ -87,8 +87,9 @@ def update_material_options(search_value):
     Output('material_description', 'value'),
     Output('zaid_selector', 'options'),
     Input('material_selector', 'value'),
+    Input('material_description', 'value'),
 )
-def update_material_display(material):
+def update_material_display(material, descr):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if button_id == 'material_selector' or ctx.triggered_id is None:

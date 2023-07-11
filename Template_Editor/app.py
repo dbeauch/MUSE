@@ -65,6 +65,7 @@ navbar = html.Div([
         style={
             'margin': '1vh',
             'fontSize': 'calc((2vh + 1vw) / 2)',
+            'textColor': 'white',
         },
     ),
 

@@ -31,28 +31,28 @@ def layout(page_background):
                             dbc.Col('Description:', className='input-label', width=2),
                             dbc.Col(
                                 dbc.Input(id='surface_description', type='text', className='input-box'))
-                        ], align='center', style={'marginTop': 20}),
+                        ], align='center', className='input-row'),
 
                         # Mnemonic
                         dbc.Row([
                             dbc.Col('Mnemonic:', className='input-label', width=2),
                             dbc.Col(
                                 dbc.Input(id='mnemonic_input', type='text', className='input-box'))
-                        ], align='center', style={'marginTop': 20}),
+                        ], align='center', className='input-row'),
 
                         # Transform
                         dbc.Row([
                             dbc.Col('Transform:', className='input-label', width=2),
                             dbc.Col(
                                 dbc.Input(id='transform_input', type='text', className='input-box'))
-                        ], align='center', style={'marginTop': 20}),
+                        ], align='center', className='input-row'),
 
                         # Dimensions
                         dbc.Row([
                             dbc.Col('Dimensions:', className='input-label', width=2),
                             dbc.Col(
                                 dbc.Input(id='dimensions_input', type='text', className='input-box'))
-                        ], align='center', style={'marginTop': 20}),
+                        ], align='center', className='input-row'),
 
                         html.Hr(),
 
@@ -90,7 +90,9 @@ def layout(page_background):
     Input("surface_selector", "search_value"),
 )
 def update_surface_options(search_value):
-    return [o for o in template.all_surfaces]
+    result = [o for o in template.all_surfaces]
+    result.sort()
+    return result
 
 
 @callback(
@@ -100,8 +102,9 @@ def update_surface_options(search_value):
     Output('surface_description', 'value'),
     Output('surface_preview', 'value'),
     Input('surface_selector', 'value'),
+    Input('surface_description', 'value'),
 )
-def update_surface_display(surface):
+def update_surface_display(surface, descr):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if button_id == 'surface_selector' or ctx.triggered_id is None:
@@ -110,7 +113,9 @@ def update_surface_display(surface):
             return selected_surface.mnemonic, selected_surface.transform, selected_surface.dimensions, selected_surface.comment, str(
                 selected_surface)
         else:
-            return "", "", "", "", ""
+            return "", "", "", "Surface Description", ""
+    else:
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
 
 @callback(

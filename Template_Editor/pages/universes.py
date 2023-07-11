@@ -31,7 +31,7 @@ def layout(page_background):
                                 dbc.Col('Description:', className='input-label', width=2),
                                 dbc.Col(
                                     dbc.Input(id='universe_description', type='text', className='input-box'))
-                            ], align='center', style={'marginTop': 20}),
+                            ], align='center', className='input-row'),
 
                             html.Hr(),
 
@@ -45,6 +45,7 @@ def layout(page_background):
                                         children=dcc.Textarea(
                                             id='universe_contents',
                                             style={
+                                                'fontSize': 'calc(5px + 0.5vw)',
                                                 'backgroundColor': '#333333',
                                                 'color': '#A9A9A9',
                                                 'border': '3px solid black',
@@ -94,8 +95,9 @@ def update_universe_options(search_value):
     Output('fill_uses', 'value'),
     Output('universe_description', 'value'),
     Input('universe_selector', 'value'),
+    Input('universe_description', 'value'),
 )
-def update_universe_display(universe):
+def update_universe_display(universe, descr):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if button_id == 'universe_selector' or ctx.triggered_id is None:

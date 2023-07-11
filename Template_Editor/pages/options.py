@@ -76,8 +76,9 @@ def update_assembly_options(search_value):
     Output('option_preview', 'value'),
     Output('option_description', 'children'),
     Input('option_selector', 'value'),
+    Input('option_description', 'value'),
 )
-def update_assembly_display(option):
+def update_assembly_display(option, descr):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if button_id == 'option_selector' or ctx.triggered_id is None:

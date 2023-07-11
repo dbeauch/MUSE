@@ -133,7 +133,7 @@ class Cell(Card):
             self.universe = None
 
         # Finds fill parameters
-        basic_fill_param = re.search(r'fill=\d+\s', line)
+        basic_fill_param = re.search(r'fill=\d+', line)
         complex_fill_param = re.search(r'fill=(((-?\d+:-?\d+[ \t]+){3}([ \t]*\d+r?)+))', line)
         if basic_fill_param is not None:
             self.fill = [line[basic_fill_param.span()[0] + 5: basic_fill_param.span()[1]].strip()]
@@ -144,6 +144,8 @@ class Cell(Card):
             for f in fills:
                 if 'r' in f:
                     continue  # Catches repeated fills: 200 '20r'
+                if f in self.fill:
+                    continue  # Catches if already in fill
                 self.fill.append(f)
         else:
             self.fill = None
@@ -186,7 +188,7 @@ class RegularCell(Cell):
                                                                                              digit_parenth.span()[
                                                                                                  0] + 2:]
         parts = self.param.split()
-        printed_param = '\n'.join([' '.join(parts[i:i + 5]) + self.line_indent for i in range(0, len(parts), 5)])
+        printed_param = f'\n{self.line_indent}'.join([' '.join(parts[i:i + 5]) + self.line_indent for i in range(0, len(parts), 5)])
         printed_param = printed_param[:re.search(r'\s+$', printed_param).span()[0]]
         return f"{self.number}\t{self.material}\t{self.density}{self.get_inline_comment()}\n{self.line_indent}{printed_geom}\n{self.line_indent}{printed_param}"
 

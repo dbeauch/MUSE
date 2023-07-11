@@ -38,10 +38,15 @@ class TemplateHandler(Singleton):
             self.all_materials = {"0": Material("m0"), "WIP": Material("m00")}  # mt card numbers stored as 't16'
             self.all_options = {}
 
-            self.all_assembly = {}
             self.all_universe_names = {}
             self.all_universes = {}
             self.all_fills = {}
+
+            self.all_fuel_materials = {}
+            self.all_fuel_cells = {}
+            self.all_fuel_plates = {}
+            self.all_fuel_assemblies = {}
+
             self.is_initialized = True
 
             # Used to identify valid param fields of cell cards
@@ -49,6 +54,7 @@ class TemplateHandler(Singleton):
                 re.compile(r'tmp=-?\.?\d+(\.\d+)?[eE]?-?\d*'),
                 re.compile(r'imp:n,p=\d+'),
                 re.compile(r'\*?trcl=[^a-zA-z]+'),
+                re.compile(r'fill=\d+'),
                 re.compile(r'fill=(((-?\d+:-?\d+[ \t]+){3}([ \t]*\d+r?)+))'),
                 re.compile(r'lat=\d+'),
                 re.compile(r'u=\d+'),
@@ -92,6 +98,8 @@ class TemplateHandler(Singleton):
 
             self.set_like_cell([o for o in self.all_cells.values() if type(o) is LikeCell], True)
 
+            self.make_assemblies()
+
             self.apply_comments(self.all_cells, self.cell_comments)
             self.apply_comments(self.all_surfaces, self.surface_comments)
             self.apply_comments(self.all_materials, self.data_comments)
@@ -106,22 +114,27 @@ class TemplateHandler(Singleton):
         :param comment_array: Dictionary to place new comments in
         :return: None
         """
+        valid_card_start = re.compile(r'^m?t?\d{1,6}')
         i = len(line_array)-1
         while 0 <= i:
             dollar_index = re.search(r'\$.*$', line_array[i])
             if dollar_index is not None:    # Find any '$' comments to save/delete
-                if re.search(r'^m?t?\d{1,6}', line_array[i]) is not None:
+                if valid_card_start.search(line_array[i]) is not None:  # '$' comment on same line
                     new_comment = line_array[i][dollar_index.span()[0] + 1:].strip()
-                    number_end = re.search(r'^m?t?\d{1,6}', line_array[i]).span()[1] + 1
+                    number_end = valid_card_start.search(line_array[i]).span()[1] + 1
                     number = line_array[i][0: number_end].strip()
                     if number[0] == "m":
                         number = number[1:]
                     comment_array[number] = new_comment
-                    line_array[i] = line_array[i][: dollar_index.span()[0]]
-                else:
-                    line_array[i] = line_array[i][: dollar_index.span()[0]]
+                elif i-1 >= 0 and valid_card_start.search(line_array[i-1]) is not None:  # '$' comment on following line
+                    new_comment = line_array[i][dollar_index.span()[0] + 1:].strip()
+                    number_end = valid_card_start.search(line_array[i-1]).span()[1] + 1
+                    number = line_array[i-1][0: number_end].strip()
+                    if number[0] == "m":
+                        number = number[1:]
+                    comment_array[number] = new_comment
+                line_array[i] = line_array[i][: dollar_index.span()[0]]  # delete the comment
             if re.search(r'^[cC].*$', line_array[i]) is not None:   # Find any 'cC' comments to save/delete
-
                 #   Find comments describing a universe. c  *** u=200 ...***
                 if re.search(r'^[cC][ \t]+\*+.*u=\d+[^\*]*\*+', line_array[i]) is not None:
                     number_start = re.search(r'^[cC][ \t]+\*+.*u=', line_array[i]).span()[1]
@@ -133,8 +146,8 @@ class TemplateHandler(Singleton):
 
                 elif re.search(r'^[cC][ \t]+\S.*$', line_array[i]) is not None:   # Find meaningful 'cC' comments
                     #   Find comments line before a cell/surface/material/temperature card
-                    if i < len(line_array) - 1 and re.search(r'^m?t?\d{1,6}', line_array[i+1]) is not None:
-                        number_end = re.search(r'^m?t?\d{1,6}', line_array[i+1]).span()[1] + 1
+                    if i < len(line_array) - 1 and valid_card_start.search(line_array[i+1]) is not None:
+                        number_end = valid_card_start.search(line_array[i+1]).span()[1] + 1
                         number = line_array[i+1][0: number_end].strip()
                         if number[0] == "m":
                             number = number[1:]
@@ -297,6 +310,36 @@ class TemplateHandler(Singleton):
         cell.changes = " ".join(final_changes)
 
 
+    def make_assemblies(self):
+        """
+        Searches self.all_cells for cells with materials containing the target fuel composition;
+        Uses universe associations to find fuel assemblies in core
+        :return: None
+        """
+        # Find cells with fuel material in zaid
+        for cell in self.all_cells.values():
+            if cell.material not in [None, "0"]:
+                for zaid_frac in self.all_materials.get(cell.material).zaid_fracs:
+                    if zaid_frac[0][:2] == "92":
+                        if cell.universe in self.all_fuel_cells.keys():
+                            self.all_fuel_cells[cell.universe].append(cell)
+                        else:
+                            self.all_fuel_cells[cell.universe] = [cell]
+                        break
+
+        # Assemble cells with fuel material into assemblies
+        for meat_universe in self.all_fuel_cells.keys():  # 12 cards per key; u=240 in NBSR_HEU_720
+            # Universe where meat universe was used as a fill; only takes element [0] since should only be one
+            universe_uses_as_fill = self.all_fills[meat_universe][0].universe
+            for card in self.all_fills[universe_uses_as_fill]:
+                print(card)
+                if card.universe not in card.fill:  # Filter out lat cell which fills with itself
+                    if card.universe not in self.all_fuel_assemblies.keys():
+                        self.all_fuel_assemblies[card.universe] = [card]
+                    else:
+                        self.all_fuel_assemblies[card.universe].append(card)
+
+
     @staticmethod
     def apply_comments(card_dict, comment_dict):
         """
@@ -356,3 +399,47 @@ class TemplateHandler(Singleton):
                 print(card.__str__(element_comments), file=out_file)
             else:
                 print(card, file=out_file)
+
+    def reset(self):
+        """
+        Resets the TemplateHandler object to default state
+        :return: None
+        """
+        self.default_out_file = '../mcnp_templates/test.i'
+
+        self.file_title = ""
+        self.cell_line_pieces = []
+        self.surface_line_pieces = []
+        self.data_line_pieces = []
+
+        self.cell_lines = []
+        self.surface_lines = []
+        self.data_lines = []
+
+        self.cell_comments = {}
+        self.surface_comments = {}
+        self.data_comments = {"0": "Void Cell"}
+
+        self.all_cells = {}
+        self.all_surfaces = {}
+        self.all_materials = {"0": Material("m0"), "WIP": Material("m00")}
+        self.all_options = {}
+
+        self.all_universe_names = {}
+        self.all_universes = {}
+        self.all_fills = {}
+
+        self.all_fuel_materials = {}
+        self.all_fuel_cells = {}
+        self.all_fuel_plates = {}
+        self.all_fuel_assemblies = {}
+
+        self.param_cards = [
+            re.compile(r'tmp=-?\.?\d+(\.\d+)?[eE]?-?\d*'),
+            re.compile(r'imp:n,p=\d+'),
+            re.compile(r'\*?trcl=[^a-zA-z]+'),
+            re.compile(r'fill=(((-?\d+:-?\d+[ \t]+){3}([ \t]*\d+r?)+))'),
+            re.compile(r'lat=\d+'),
+            re.compile(r'u=\d+'),
+            re.compile(r'vol=-?\.?\d+(\.\d+)?[eE]?-?\d*'),
+        ]
