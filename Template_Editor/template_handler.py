@@ -21,36 +21,35 @@ class TemplateHandler(Singleton):
             # self.default_out_file = '../mcnp_templates/NNR/test2.i'
 
             self.file_title = ""
-            self.cell_line_pieces = []
-            self.surface_line_pieces = []
-            self.data_line_pieces = []
+            self.cell_line_pieces = []                      # Raw lines of cell section
+            self.surface_line_pieces = []                   # Raw lines of surface section
+            self.data_line_pieces = []                      # Raw lines of data section
 
-            self.cell_lines = []
-            self.surface_lines = []
-            self.data_lines = []
+            self.cell_lines = []                            # Cleaned lines of cell section
+            self.surface_lines = []                         # Cleaned lines of surface section
+            self.data_lines = []                            # Cleaned lines of data section
 
-            self.cell_comments = {}
-            self.surface_comments = {}
-            self.data_comments = {"0": "Void Cell"}
+            self.cell_comments = {}                         # Comments found in cell section {'Cell.number': 'comment'}
+            self.surface_comments = {}                      # Comments in surface section {'Surface.number': 'comment'}
+            self.data_comments = {"0": "Void Cell"}         # Comments found in data section
 
-            self.all_cells = {}
-            self.all_surfaces = {}
+            self.all_cells = {}                             # Cell cards {'Cell.number': 'Cell'}
+            self.all_surfaces = {}                          # Surface cards {'Surface.number': 'Surface'}
             self.all_materials = {"0": Material("m0"), "WIP": Material("m00")}  # mt card numbers stored as 't16'
-            self.all_options = {}
+            self.all_options = {}                           # Option cards {'Card.code': 'OptionCard'}
 
-            self.all_universe_names = {}
-            self.all_universes = {}
-            self.all_fills = {}
+            self.all_universe_names = {}                    # Universe names found from *u=x * {'u-number': 'comment'}
+            self.all_universes = {}                         # Universe contents {'u-number': [Cell]}
+            self.all_fills = {}                             # Cells that use a fill {'u-number': [Cell]}
 
-            self.all_fuel_materials = {}
-            self.all_fuel_cells = {}
-            self.all_fuel_plates = {}
-            self.all_fuel_assemblies = {}
+            self.all_fuel_plates = {}                   # Cells with Uranium material {'plate u-number': [Cell]}
+            self.all_fuel_sections = {}                 # Fuel section plates {'assembly u-number': ['plate u-numbers']}
+            self.all_fuel_assemblies = {}               # Fuel assemblies {'assembly u-number': [Cell]}
 
             self.is_initialized = True
 
-            # Used to identify valid param fields of cell cards
-            self.param_cards = [
+
+            self.param_cards = [                            # Used to identify valid param fields of cell cards
                 re.compile(r'tmp=-?\.?\d+(\.\d+)?[eE]?-?\d*'),
                 re.compile(r'imp:n,p=\d+'),
                 re.compile(r'\*?trcl=[^a-zA-z]+'),
@@ -323,26 +322,39 @@ class TemplateHandler(Singleton):
             if cell.material not in [None, "0"]:
                 for zaid_frac in self.all_materials.get(cell.material).zaid_fracs:
                     if zaid_frac[0][:2] == "92":
-                        if cell.universe in self.all_fuel_cells.keys():
-                            self.all_fuel_cells[cell.universe].append(cell)
+                        if cell.universe in self.all_fuel_plates.keys():
+                            self.all_fuel_plates[cell.universe].append(cell)
                         else:
-                            self.all_fuel_cells[cell.universe] = [cell]
+                            self.all_fuel_plates[cell.universe] = [cell]
                         break
 
         # Assemble cells with fuel material into assemblies
-        for array in self.all_fuel_cells.values():
-            print(f'\n\n')
-            for card in array:
-                print(f'{card.__str__()}')
-        for meat_universe in self.all_fuel_cells.keys():  # 12 cards per key; u=240 in NBSR_HEU_720
-            # Universe where meat universe was used as a fill; only takes element [0] since should only be one
-            universe_uses_as_fill = self.all_fills[meat_universe][0].universe
-            for card in self.all_fills[universe_uses_as_fill]:
-                if card.universe not in card.fill:  # Filter out lat cell which fills with itself
-                    if card.universe not in self.all_fuel_assemblies.keys():
-                        self.all_fuel_assemblies[card.universe] = [card]
-                    else:
-                        self.all_fuel_assemblies[card.universe].append(card)
+        for fuel_plate_universe in self.all_fuel_plates.keys():
+            # Universe where meat universe was used as a fill is fuel plate lattice universe
+            # Takes element [0] since should only be one
+            fuel_lattice_card = self.all_fills.get(fuel_plate_universe)[0]
+            if len(self.all_fills.get(fuel_plate_universe)) != 1:
+                print("Error: Fuel section has multiple fills")
+            for fuel_section_card in self.all_fills.get(fuel_lattice_card.universe):
+                if fuel_section_card.universe not in fuel_section_card.fill:  # Filter out lat cell which fills with itself
+                    if fuel_section_card.universe not in self.all_fuel_assemblies.keys():
+                        self.all_fuel_assemblies[fuel_section_card.universe] = [fuel_section_card]
+
+        # Store plates in all_fuel_sections
+        for assembly_universe in self.all_fuel_assemblies.keys():
+            fuel_section_card = self.all_fuel_assemblies.get(assembly_universe)[0]  # TODO: change [0] to assembly class
+            fuel_lattice_universe = fuel_section_card.fill[0]
+            if len(fuel_section_card.fill) != 1:
+                print("Error: Fuel section has multiple fills")
+            fuel_lattice_card = self.all_universes.get(fuel_lattice_universe)[0]
+            if len(self.all_universes.get(fuel_lattice_universe)) != 1:
+                print("Error: Fuel lattice universe has multiple elements")
+            self.all_fuel_sections[assembly_universe] = []
+            for fill in fuel_lattice_card.fill:
+                if fill != fuel_lattice_card.universe:  # filter out lat since fills itself in NBSR
+                    self.all_fuel_sections[assembly_universe].append(fill)
+
+        # Find other pieces of fuel assembly & append to self.all_fuel_assemblies[universe]
 
 
     @staticmethod
@@ -434,9 +446,8 @@ class TemplateHandler(Singleton):
         self.all_universes = {}
         self.all_fills = {}
 
-        self.all_fuel_materials = {}
-        self.all_fuel_cells = {}
         self.all_fuel_plates = {}
+        self.all_fuel_sections = {}
         self.all_fuel_assemblies = {}
 
         self.param_cards = [

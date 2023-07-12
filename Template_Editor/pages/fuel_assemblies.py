@@ -95,24 +95,30 @@ def update_assembly_options(search_value):
     Input('assembly_selector', 'value'),
     Input('assembly_description', 'value'),
 )
-def update_assembly_display(assembly, descr):
+def update_assembly_display(assembly_u, descr):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if button_id == 'assembly_selector' or ctx.triggered_id is None:
-        if assembly is not None:
-            if assembly in template.data_comments.keys():
-                description_results = template.data_comments.get(assembly)
+        if assembly_u is not None:
+            if assembly_u in template.data_comments.keys():
+                description_results = template.data_comments.get(assembly_u)
                 return "", "", description_results
 
-            assembly_results = f'\n'.join(str(c) for c in template.all_fuel_assemblies[assembly])
-            preview = ""
-            for universe in template.all_fuel_cells.keys():
-                preview += f'Universe {universe} Plate Sections\n'
-                for cell in template.all_fuel_cells[universe]:
-                    preview += str(cell) + '\n'
-                preview += f'\n\n'
+            selected_assembly = template.all_fuel_assemblies.get(assembly_u)
+            if selected_assembly is not None:
+                assembly_results = f'Fuel Section Cell:\n'
+                assembly_results += f'\n'.join(str(card) for card in template.all_fuel_assemblies.get(assembly_u))
+                assembly_results += f'\n\nFuel Lattice Cell:\n'
+                assembly_results += f'{template.all_universes.get(template.all_fuel_assemblies.get(assembly_u)[0].fill[0])[0]}'
 
-            return assembly_results, preview, "Assembly Description"
+                # Not worth readability sacrifice to do list comp
+                plate_preview = ""
+                for plate_num in template.all_fuel_sections.get(assembly_u):
+                    for meat_cell in template.all_fuel_plates.get(plate_num):
+                        plate_preview += str(meat_cell) + f'\n'
+                    plate_preview += f'\n\n'
+
+                return assembly_results, plate_preview, "Assembly Description"
     return dash.no_update, dash.no_update, dash.no_update
 
 
