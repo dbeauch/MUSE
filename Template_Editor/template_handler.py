@@ -175,6 +175,7 @@ class TemplateHandler(Singleton):
         continuation_start_pattern = re.compile(r'[ \t]*&')
         new_line_start_pattern = re.compile(r'^ {5,}\S+')
         extra_spaces_pattern = re.compile(r'[ \t]{2,}')
+        universe_space_pattern = re.compile(r'u=[ \t]+')
 
         index = 0
         while index < len(line_pieces):
@@ -191,8 +192,9 @@ class TemplateHandler(Singleton):
             index += num_lines_continues + 1
 
             result_str = " ".join(result)
-            result_str = result_str.replace("\n", "")  # remove \n
-            result_str = extra_spaces_pattern.sub(" ", result_str)  # remove extra spaces
+            result_str = result_str.replace("\n", "")                   # remove \n
+            result_str = extra_spaces_pattern.sub(" ", result_str)      # remove extra spaces
+            result_str = universe_space_pattern.sub("u=", result_str)   # remove unnecessary space after u=
             line_array.append(result_str)
 
 
@@ -328,11 +330,14 @@ class TemplateHandler(Singleton):
                         break
 
         # Assemble cells with fuel material into assemblies
+        for array in self.all_fuel_cells.values():
+            print(f'\n\n')
+            for card in array:
+                print(f'{card.__str__()}')
         for meat_universe in self.all_fuel_cells.keys():  # 12 cards per key; u=240 in NBSR_HEU_720
             # Universe where meat universe was used as a fill; only takes element [0] since should only be one
             universe_uses_as_fill = self.all_fills[meat_universe][0].universe
             for card in self.all_fills[universe_uses_as_fill]:
-                print(card)
                 if card.universe not in card.fill:  # Filter out lat cell which fills with itself
                     if card.universe not in self.all_fuel_assemblies.keys():
                         self.all_fuel_assemblies[card.universe] = [card]
