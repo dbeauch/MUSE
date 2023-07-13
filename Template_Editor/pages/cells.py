@@ -129,7 +129,7 @@ def update_cell_display(cell, cell_material_select):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if button_id == 'cell_selector' or ctx.triggered_id is None:
-        if cell is not None:
+        if cell is not None and template.all_cells.get(cell) is not None:
             selected_cell = template.all_cells.get(cell)
             if type(selected_cell) is LikeCell:
                 second_tab = template.all_cells.get(selected_cell.origin_cell)

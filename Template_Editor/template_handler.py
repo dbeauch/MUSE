@@ -335,7 +335,7 @@ class TemplateHandler(Singleton):
             # Takes element [0] since should only be one
             fuel_lattice_card = self.all_fills.get(fuel_plate_universe)[0]
             if len(self.all_fills.get(fuel_plate_universe)) != 1:
-                print("Error: Fuel section has multiple fills")
+                print("Error: Fuel section has multiple fills")  # TODO: reanalyze; might not work if same plate used on other assemblies
             for fuel_section_card in self.all_fills.get(fuel_lattice_card.universe):
                 if fuel_section_card.universe not in fuel_section_card.fill:  # Filter out lat cell which fills with itself
                     if fuel_section_card.universe not in self.all_fuel_assemblies.keys():

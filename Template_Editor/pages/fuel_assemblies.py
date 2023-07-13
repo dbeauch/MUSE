@@ -216,10 +216,7 @@ def update_console(apply_clicked, new_mat, descr, pathname, current_messages):
             return current_messages
         for assembly in template.all_fuel_sections.keys():
             for plate in template.all_fuel_sections.get(assembly):
-                print(plate)
-                print(template.all_fuel_plates.get(plate))
                 for sect in template.all_fuel_plates.get(plate):
-                    print(sect)
                     sect.material = new_mat
                     if type(sect) is LikeCell:
                         template.dissect_like_param(sect)
@@ -374,8 +371,8 @@ def update_material(section_cell, plate_u):
         if plate_u == "All Plates":
             return "Many"
         else:
-            if section_cell is not None:
-                for section in template.all_fuel_plates[plate_u]:
+            if section_cell is not None and template.all_fuel_plates.get(plate_u) is not None:
+                for section in template.all_fuel_plates.get(plate_u):
                     if section.number == section_cell:
                         return section.material
     return ""
