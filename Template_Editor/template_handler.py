@@ -114,6 +114,7 @@ class TemplateHandler(Singleton):
         :return: None
         """
         valid_card_start = re.compile(r'^m?t?\d{1,6}')
+        valid_nomaterial_start = re.compile(r'^\d{1,6}')
         i = len(line_array)-1
         while 0 <= i:
             dollar_index = re.search(r'\$.*$', line_array[i])
@@ -125,9 +126,9 @@ class TemplateHandler(Singleton):
                     if number[0] == "m":
                         number = number[1:]
                     comment_array[number] = new_comment
-                elif i-1 >= 0 and valid_card_start.search(line_array[i-1]) is not None:  # '$' comment on following line
+                elif i-1 >= 0 and valid_nomaterial_start.search(line_array[i-1]) is not None:  # '$' comment on following line
                     new_comment = line_array[i][dollar_index.span()[0] + 1:].strip()
-                    number_end = valid_card_start.search(line_array[i-1]).span()[1] + 1
+                    number_end = valid_nomaterial_start.search(line_array[i-1]).span()[1] + 1
                     number = line_array[i-1][0: number_end].strip()
                     if number[0] == "m":
                         number = number[1:]

@@ -102,10 +102,9 @@ def update_material_display(material, descr):
                 material_results = selected_material.__str__(True)
                 for zf in selected_material.zaid_fracs:
                     zaid_list.append(zf[0])
-            if material in template.data_comments.keys():
-                description_results = template.data_comments.get(material)
+            description_results = template.all_materials.get(material).comment
             return material_results, description_results, zaid_list
-    return "", "", []
+    return dash.no_update, dash.no_update, dash.no_update
 
 
 @callback(

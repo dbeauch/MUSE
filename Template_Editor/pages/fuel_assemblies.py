@@ -100,9 +100,9 @@ def update_assembly_display(assembly_u, descr):
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if button_id == 'assembly_selector' or ctx.triggered_id is None:
         if assembly_u is not None:
+            description_results = ""
             if assembly_u in template.data_comments.keys():
                 description_results = template.data_comments.get(assembly_u)
-                return "", "", description_results
 
             selected_assembly = template.all_fuel_assemblies.get(assembly_u)
             if selected_assembly is not None:
@@ -114,11 +114,12 @@ def update_assembly_display(assembly_u, descr):
                 # Not worth readability sacrifice to do list comp
                 plate_preview = ""
                 for plate_num in template.all_fuel_sections.get(assembly_u):
+                    plate_preview += f'Plate Universe {plate_num}:\n'
                     for meat_cell in template.all_fuel_plates.get(plate_num):
                         plate_preview += str(meat_cell) + f'\n'
                     plate_preview += f'\n\n'
 
-                return assembly_results, plate_preview, "Assembly Description"
+                return assembly_results, plate_preview, description_results
     return dash.no_update, dash.no_update, dash.no_update
 
 

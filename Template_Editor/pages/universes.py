@@ -114,7 +114,7 @@ def update_universe_display(universe, descr):
             if universe in template.all_universe_names.keys():
                 description_results = template.all_universe_names.get(universe)
             return universe_results, fill_results, description_results
-    return "", "", ""
+    return dash.no_update, dash.no_update, dash.no_update
 
 
 @callback(
