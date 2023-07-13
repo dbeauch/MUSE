@@ -212,6 +212,7 @@ def update_console(apply_clicked, pathname, cell, description, material, density
                 if param is not None:
                     selected_cell.param = param
 
+                # Propogate changes to children
                 if len(selected_cell.children) > 0:
                     template.set_like_cell(selected_cell.children)
 

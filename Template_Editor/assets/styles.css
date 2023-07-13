@@ -79,7 +79,7 @@
     text-align: left !important;
 }
 
-.edit-modal {
+.edit-modal-button {
     width: calc(20px + 6vw) !important;
     height: calc(10px + 2vh) !important;
     font-size: calc(1px + 0.4vw + 0.4vh) !important;
