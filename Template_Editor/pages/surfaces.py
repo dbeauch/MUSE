@@ -113,7 +113,7 @@ def update_surface_display(surface, descr):
             return selected_surface.mnemonic, selected_surface.transform, selected_surface.dimensions, selected_surface.comment, str(
                 selected_surface)
         else:
-            return "", "", "", "Surface Description", ""
+            return "", "", "", "", ""
     else:
         return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 

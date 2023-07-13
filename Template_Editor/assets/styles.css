@@ -41,7 +41,6 @@
 
 .input-row {
     margin-top: calc(5px + 0.5vh) !important;
-
 }
 
 .input-label {
@@ -67,7 +66,10 @@
 .apply-button {
     width: calc(20px + 6vw) !important;
     height: calc(10px + 2vh) !important;
-    font-size: calc(5px + 0.5vw) !important;
+    font-size: calc(1px + 0.4vw + 0.4vh) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 .dropdown {
@@ -75,4 +77,26 @@
     font-size: calc(5px + 0.5vw) !important;
     height: 4vh !important;
     text-align: left !important;
+}
+
+.edit-modal {
+    width: calc(20px + 6vw) !important;
+    height: calc(10px + 2vh) !important;
+    font-size: calc(1px + 0.4vw + 0.4vh) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.assembly-modal .modal-dialog {
+    position: absolute !important;
+    top: 25vh !important;
+    left: 16.5vw !important;
+    margin: auto 0 !important;
+    max-width: 40vw !important;
+    width: 100% !important;
+}
+
+.assembly-model .modal-body {
+    overflow-y: auto !important;
 }

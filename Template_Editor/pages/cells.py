@@ -136,7 +136,7 @@ def update_cell_display(cell, cell_material_select):
             elif type(selected_cell) in [RegularCell, VoidCell]:
                 second_tab = "\n".join(str(o) for o in selected_cell.children)
             else:
-                second_tab = "Something went wrong"
+                second_tab = f"Error: Generic Cell created: {selected_cell}"
             return selected_cell.get_material(), selected_cell.get_density(), selected_cell.geom, selected_cell.param, \
                 template.all_materials.get(selected_cell.get_material()).comment, selected_cell.comment,\
                 str(selected_cell), str(second_tab)

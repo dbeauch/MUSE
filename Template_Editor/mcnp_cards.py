@@ -4,7 +4,8 @@ TEMPLATE FOR MCNP CARDS
 """
 
 import re
-from element_tools import element_symbols, zaid_to_isotope
+
+from element_tools import zaid_to_isotope
 
 
 class CardFactory:
