@@ -361,3 +361,17 @@ class Option(DataCard):
         parts = self.param.split()
         printed_param = "\n".join([self.line_indent + ' '.join(parts[i:i + 5]) for i in range(0, len(parts), 5)])
         return f"{self.number}{self.get_inline_comment()}{printed_param}"
+
+
+class Assembly:
+    def __init__(self, number, fuel_section, fuel_lattice):
+        self.number = number
+        self.fuel_section = fuel_section
+        self.fuel_lattice = fuel_lattice
+        self.plates = []
+        self.other_components = []
+
+
+    def __str__(self):
+        return f"Universe: {self.number}\nFuel Section:{self.fuel_section}\nFuel Lattice: {self.fuel_lattice}\n" \
+               f"Other Components: {self.other_components}"

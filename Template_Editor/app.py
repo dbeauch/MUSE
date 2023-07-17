@@ -25,8 +25,8 @@ if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     # if file_to_read == 'default':
     #     file_to_read = '../mcnp_templates/NBSR_HEU_720[236]/NBSR_HEU_720.i'
     # file_to_read = '../mcnp_templates/NNR/test.i'
-    # file_to_read = '../mcnp_templates/NNS/burn_Box9_v02_SU_cycle8.i'
-    file_to_read = '../mcnp_templates/NBSR_HEU_720[236]/NBSR_HEU_720.i'
+    file_to_read = '../mcnp_templates/NNS/burn_Box9_v02_SU_cycle8.i'
+    # file_to_read = '../mcnp_templates/NBSR_HEU_720[236]/NBSR_HEU_720.i'
     template.read_template(file_to_read)
 
 app = dash.Dash(
@@ -70,9 +70,8 @@ navbar = html.Div([
     ),
 
     html.A(
-        html.Img(src='/assets/NCNR_nonlogo.png',
+        html.Img(src='/assets/ncnrBWLogo.png',
                  style={
-                     'height': '15vh',
                      'width': navbar_width,
                      'position': 'fixed',
                      'bottom': 0,

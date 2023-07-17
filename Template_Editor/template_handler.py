@@ -2,7 +2,7 @@ import os.path
 import re
 
 from mcnp_cards import CardFactory, Cell, LikeCell, RegularCell, VoidCell,\
-    Surface, DataCard, Material, Temperature
+    Surface, DataCard, Material, Temperature, Assembly
 
 
 class Singleton:
@@ -43,8 +43,7 @@ class TemplateHandler(Singleton):
             self.all_fills = {}                             # Cells that use a fill {'u-number': [Cell]}
 
             self.all_fuel_plates = {}                   # Cells with Uranium material {'plate u-number': [Cell]}
-            self.all_fuel_sections = {}                 # Fuel section plates {'assembly u-number': ['plate u-numbers']}
-            self.all_fuel_assemblies = {}               # Fuel assemblies {'assembly u-number': [Cell]}
+            self.all_fuel_assemblies = {}               # Fuel assemblies {'assembly u-number': Assembly}
 
             self.is_initialized = True
 
@@ -333,27 +332,25 @@ class TemplateHandler(Singleton):
         for fuel_plate_universe in self.all_fuel_plates.keys():
             # Universe where meat universe was used as a fill is fuel plate lattice universe
             # Takes element [0] since should only be one
-            fuel_lattice_card = self.all_fills.get(fuel_plate_universe)[0]
-            if len(self.all_fills.get(fuel_plate_universe)) != 1:
-                print("Error: Fuel section has multiple fills")  # TODO: reanalyze; might not work if same plate used on other assemblies
-            for fuel_section_card in self.all_fills.get(fuel_lattice_card.universe):
-                if fuel_section_card.universe not in fuel_section_card.fill:  # Filter out lat cell which fills with itself
-                    if fuel_section_card.universe not in self.all_fuel_assemblies.keys():
-                        self.all_fuel_assemblies[fuel_section_card.universe] = [fuel_section_card]
+            for fuel_lattice_card in self.all_fills.get(fuel_plate_universe):
+                for fuel_section_card in self.all_fills.get(fuel_lattice_card.universe):
+                    if fuel_section_card.universe not in fuel_section_card.fill:  # Filter out lat cell which fills with itself
+                        if fuel_section_card.universe not in self.all_fuel_assemblies.keys():
+                            new_assembly = Assembly(fuel_section_card.universe, fuel_section_card, fuel_lattice_card)
+                            self.all_fuel_assemblies[new_assembly.number] = new_assembly
 
-        # Store plates in all_fuel_sections
+        # Store plates in assembly plates[]
         for assembly_universe in self.all_fuel_assemblies.keys():
-            fuel_section_card = self.all_fuel_assemblies.get(assembly_universe)[0]  # TODO: change [0] to assembly class
-            fuel_lattice_universe = fuel_section_card.fill[0]
+            curr_assembly = self.all_fuel_assemblies.get(assembly_universe)
+            fuel_section_card = curr_assembly.fuel_section
+            fuel_lattice_card = curr_assembly.fuel_lattice
             if len(fuel_section_card.fill) != 1:
                 print("Error: Fuel section has multiple fills")
-            fuel_lattice_card = self.all_universes.get(fuel_lattice_universe)[0]
-            if len(self.all_universes.get(fuel_lattice_universe)) != 1:
+            if len(self.all_universes.get(fuel_lattice_card.universe)) != 1:
                 print("Error: Fuel lattice universe has multiple elements")
-            self.all_fuel_sections[assembly_universe] = []
             for fill in fuel_lattice_card.fill:
                 if fill != fuel_lattice_card.universe:  # filter out lat since fills itself in NBSR
-                    self.all_fuel_sections[assembly_universe].append(fill)
+                    curr_assembly.plates.append(fill)
 
         # Find other pieces of fuel assembly & append to self.all_fuel_assemblies[universe]
 
@@ -448,7 +445,6 @@ class TemplateHandler(Singleton):
         self.all_fills = {}
 
         self.all_fuel_plates = {}
-        self.all_fuel_sections = {}
         self.all_fuel_assemblies = {}
 
         self.param_cards = [

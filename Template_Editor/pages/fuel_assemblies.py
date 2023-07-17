@@ -120,7 +120,7 @@ def layout(page_background):
 )
 def update_plate_options(search_value, assembly_u):
     if assembly_u is not None:
-        result = [o for o in template.all_fuel_sections[assembly_u]]
+        result = [o for o in template.all_fuel_assemblies.get(assembly_u).plates]
         result.append("All Plates")
         result.sort()
         return result
@@ -166,27 +166,26 @@ def update_assembly_display(assembly_u, descr):
                 description_results = template.data_comments.get(assembly_u)
 
             selected_assembly = template.all_fuel_assemblies.get(assembly_u)
-            # TODO: A lot of changes once assembly class
-            lat_universe = selected_assembly[0].fill[0]
-            if selected_assembly[0] is not None:
+            lat_universe = selected_assembly.fuel_lattice.universe
+            if selected_assembly is not None:
                 assembly_results = f'Fuel Section Cell:\n'
-                assembly_results += f'\n'.join(str(card) for card in template.all_fuel_assemblies.get(assembly_u))
+                assembly_results += f'{template.all_fuel_assemblies.get(assembly_u).fuel_section}'
                 assembly_results += f'\n\nFuel Lattice Cell:\n'
-                assembly_results += f'{template.all_universes.get(template.all_fuel_assemblies.get(assembly_u)[0].fill[0])[0]}'
+                assembly_results += f'{template.all_fuel_assemblies.get(assembly_u).fuel_lattice}'
                 assembly_results += f'\n\nOther Assembly Contents:\n'
                 assembly_results += f'\n'.join(
-                    str(card) for card in template.all_universes.get(assembly_u) if card.material != '0')
+                    str(card) for card in template.all_universes.get(assembly_u) if card.material != '0')  # TODO: append components to Assembly
 
                 # Not worth readability sacrifice to use list comprehension
                 plate_preview = ""
-                for plate_num in template.all_fuel_sections.get(assembly_u):
+                for plate_num in template.all_fuel_assemblies.get(assembly_u).plates:
                     plate_preview += f'Plate Universe {plate_num}:\n'
                     for meat_cell in template.all_fuel_plates.get(plate_num):
                         plate_preview += str(meat_cell) + f'\n'
                     plate_preview += f'\n\n'
 
-                return assembly_results, plate_preview, description_results, selected_assembly[0].number, \
-                    template.all_universes.get(template.all_fuel_assemblies.get(assembly_u)[0].fill[0])[0].number
+                return assembly_results, plate_preview, description_results, selected_assembly.number,\
+                    selected_assembly.fuel_lattice.number
     return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
 
@@ -214,8 +213,8 @@ def update_console(apply_clicked, new_mat, descr, pathname, current_messages):
             message = f'({timestamp})\tError: Material not found'
             current_messages.insert(0, html.P(message))
             return current_messages
-        for assembly in template.all_fuel_sections.keys():
-            for plate in template.all_fuel_sections.get(assembly):
+        for assembly in template.all_fuel_assemblies.values():
+            for plate in assembly.plates:
                 for sect in template.all_fuel_plates.get(plate):
                     sect.material = new_mat
                     if type(sect) is LikeCell:
@@ -354,7 +353,7 @@ def modal_display(plate_button, assembly_u, plate_u):
         if plate_u == "All Plates":
             plate_options = ["All Sections"]
         else:
-            plate_options = [o.number for o in template.all_fuel_plates[plate_u]]
+            plate_options = [o.number for o in template.all_fuel_plates.get(plate_u)]
         plate_options.sort()
 
         return plate_options, plate_options[0]
@@ -406,7 +405,7 @@ def plate_apply_changes(plate_apply_button, assembly_u, descr, plate_u, section_
             current_messages.insert(0, html.P(message))
             return current_messages, ""
         if plate_u == "All Plates":
-            for plate in template.all_fuel_sections.get(assembly_u):
+            for plate in template.all_fuel_assemblies.get(assembly_u).plates:
                 for sect in template.all_fuel_plates.get(plate):
                     sect.material = new_mat
                     if type(sect) is LikeCell:
@@ -419,8 +418,8 @@ def plate_apply_changes(plate_apply_button, assembly_u, descr, plate_u, section_
                 pass
             else:
                 selected_cell = None
-                # Search for section TODO: change with Assembly class
-                for section in template.all_fuel_plates[plate_u]:
+                # Search for section
+                for section in template.all_fuel_plates.get(plate_u):
                     if section.number == section_cell:
                         selected_cell = section
 
