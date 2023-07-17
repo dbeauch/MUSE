@@ -131,7 +131,7 @@ def update_material(section_cell, plate_u):
     Output('assembly_description', 'value', allow_duplicate=True),
     Input("plate_apply", "n_clicks"),
     State('assembly_selector', 'value'),
-    State('assembly_description', 'value'),
+    State('assembly_description', 'children'),
     State("plate_selector", "value"),
     State("plate_cell_selector", "value"),
     State("current_material", "value"),

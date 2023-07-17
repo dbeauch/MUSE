@@ -293,22 +293,23 @@ class TemplateHandler(Singleton):
         :param cell: LikeCell to operate on
         :return: None
         """
-        final_param = []
-        final_changes = []
-        for regex in self.param_cards:
-            combined_match = regex.search(cell.param)
-            if combined_match is not None:
-                final_param.append(combined_match.group())
-                origin_match = regex.search(self.all_cells[cell.origin_cell].param)
-                if origin_match is None or origin_match.group() != combined_match.group():
-                    final_changes.append(combined_match.group())
+        if type(cell) is LikeCell:
+            final_param = []
+            final_changes = []
+            for regex in self.param_cards:
+                combined_match = regex.search(cell.param)
+                if combined_match is not None:
+                    final_param.append(combined_match.group())
+                    origin_match = regex.search(self.all_cells[cell.origin_cell].param)
+                    if origin_match is None or origin_match.group() != combined_match.group():
+                        final_changes.append(combined_match.group())
 
 
-        if cell.material != self.all_cells[cell.origin_cell].material:
-            final_changes.append(f'mat={cell.material}')
+            if cell.material != self.all_cells[cell.origin_cell].material:
+                final_changes.append(f'mat={cell.material}')
 
-        cell.param = " ".join(final_param)
-        cell.changes = " ".join(final_changes)
+            cell.param = " ".join(final_param)
+            cell.changes = " ".join(final_changes)
 
 
     def make_assemblies(self):
@@ -339,20 +340,24 @@ class TemplateHandler(Singleton):
                             new_assembly = Assembly(fuel_section_card.universe, fuel_section_card, fuel_lattice_card)
                             self.all_fuel_assemblies[new_assembly.number] = new_assembly
 
-        # Store plates in assembly plates[]
+        # Store objects in Assembly: plates['u-number'] and other_components[Cell]
         for assembly_universe in self.all_fuel_assemblies.keys():
             curr_assembly = self.all_fuel_assemblies.get(assembly_universe)
             fuel_section_card = curr_assembly.fuel_section
             fuel_lattice_card = curr_assembly.fuel_lattice
             if len(fuel_section_card.fill) != 1:
-                print("Error: Fuel section has multiple fills")
+                print("Error: Fuel section filled with multiple lattices")
             if len(self.all_universes.get(fuel_lattice_card.universe)) != 1:
-                print("Error: Fuel lattice universe has multiple elements")
+                print("Error: Fuel lattice universe has multiple Cells")
+            # Store plate universes in Assembly.plates
             for fill in fuel_lattice_card.fill:
                 if fill != fuel_lattice_card.universe:  # filter out lat since fills itself in NBSR
                     curr_assembly.plates.append(fill)
 
-        # Find other pieces of fuel assembly & append to self.all_fuel_assemblies[universe]
+            # Find other pieces of fuel assembly & append to Assembly
+            for card in self.all_universes.get(assembly_universe):
+                if card.material != '0':
+                    curr_assembly.other_components.append(card)
 
 
     @staticmethod

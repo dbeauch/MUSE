@@ -151,16 +151,17 @@ def update_material_options(search_value):
 @callback(
     Output('assembly_preview', 'value'),
     Output('plate_preview', 'value'),
-    Output('assembly_description', 'children'),
+    Output('assembly_description', 'value', allow_duplicate=True),
     Output('section_number', 'value'),
     Output('lattice_number', 'value'),
     Input('assembly_selector', 'value'),
     Input('assembly_description', 'value'),
+    prevent_initial_call=True
 )
 def update_assembly_display(assembly_u, descr):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if button_id == 'assembly_selector' or ctx.triggered_id is None:
+    if button_id in ['assembly_selector', 'assembly_description'] or ctx.triggered_id is None:
         if assembly_u is not None:
             description_results = ""
             if assembly_u in template.data_comments.keys():
@@ -170,17 +171,15 @@ def update_assembly_display(assembly_u, descr):
             lat_universe = selected_assembly.fuel_lattice.universe
             if selected_assembly is not None:
                 assembly_results = f'Fuel Section Cell:\n'
-                assembly_results += f'{template.all_fuel_assemblies.get(assembly_u).fuel_section}'
+                assembly_results += f'{selected_assembly.fuel_section}'
                 assembly_results += f'\n\nFuel Lattice Cell:\n'
-                assembly_results += f'{template.all_fuel_assemblies.get(assembly_u).fuel_lattice}'
+                assembly_results += f'{selected_assembly.fuel_lattice}'
                 assembly_results += f'\n\nOther Assembly Contents:\n'
-                assembly_results += f'\n'.join(
-                    str(card) for card in template.all_universes.get(assembly_u) if
-                    card.material != '0')  # TODO: append components to Assembly
+                assembly_results += f'\n'.join(str(card) for card in selected_assembly.other_components)
 
                 # Not worth readability sacrifice to use list comprehension
                 plate_preview = ""
-                for plate_num in template.all_fuel_assemblies.get(assembly_u).plates:
+                for plate_num in selected_assembly.plates:
                     plate_preview += f'Plate Universe {plate_num}:\n'
                     for meat_cell in template.all_fuel_plates.get(plate_num):
                         plate_preview += str(meat_cell) + f'\n'
@@ -193,6 +192,7 @@ def update_assembly_display(assembly_u, descr):
 
 @callback(
     Output('console_output', 'children', allow_duplicate=True),
+    Output('assembly_description', 'value', allow_duplicate=True),
     Input('master_button', 'n_clicks'),
     State('master_material_selector', 'value'),
     State('assembly_description', 'value'),
@@ -210,11 +210,11 @@ def update_console(apply_clicked, new_mat, descr, pathname, current_messages):
 
     if button_id == 'master_button' and new_mat is not None:
         if descr is None:
-            return current_messages
+            return current_messages, descr
         if template.all_materials.get(new_mat) is None:
             message = f'({timestamp})\tError: Material not found'
             current_messages.insert(0, html.P(message))
-            return current_messages
+            return current_messages, descr
         for assembly in template.all_fuel_assemblies.values():
             for plate in assembly.plates:
                 for sect in template.all_fuel_plates.get(plate):
@@ -223,8 +223,8 @@ def update_console(apply_clicked, new_mat, descr, pathname, current_messages):
                         template.dissect_like_param(sect)
         message = f'({timestamp})\tApplied changes made to all plate sections'
         current_messages.insert(0, html.P(message))
-        return current_messages
-    return current_messages
+        return current_messages, descr
+    return current_messages, descr
 
 
 assembly_tabs = dcc.Tabs([

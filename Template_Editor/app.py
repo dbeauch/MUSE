@@ -50,21 +50,23 @@ navbar = html.Div([
     banner,
     dbc.Nav(
         [
-            dbc.NavLink("Home", href="/", active="exact", className="nav-item"),
-            dbc.NavLink("Fuel Assembly", href="/assembly", active="exact", className="nav-item"),
-            dbc.NavLink("Universes", href="/universes", active="exact", className="nav-item"),
-            dbc.DropdownMenu(
-                nav=True,
-                in_navbar=True,
-                label="Card Views",
-                className="nav-item",
-                children=[
-                    dbc.DropdownMenuItem("Cell Cards", href="/cells", className="dropdown-item"),
-                    dbc.DropdownMenuItem("Surface Cards", href="/surfaces", className="dropdown-item"),
-                    dbc.DropdownMenuItem("Material Cards", href="/materials", className="dropdown-item"),
-                    dbc.DropdownMenuItem("Option Cards", href="/options", className="dropdown-item"),
-                ],
-            ),
+            dbc.NavLink("Home", href="/", active="exact", class_name="nav-item"),
+            dbc.NavLink("Fuel Assembly", href="/assembly", active="exact", class_name="nav-item"),
+            dbc.NavLink("Universes", href="/universes", active="exact", class_name="nav-item"),
+            dbc.Card(
+                [
+                    dbc.NavLink("\u25BC Card Views ", id="card-views-toggle", class_name="nav-item"),
+                    dbc.Collapse(
+                        id="card-views-collapse",
+                        children=[
+                            dbc.NavLink("Cell Cards", href="/cells", active="exact", class_name="nav-item", style={"paddingLeft": "40px"}),
+                            dbc.NavLink("Surface Cards", href="/surfaces", active="exact", class_name="nav-item", style={"paddingLeft": "40px"}),
+                            dbc.NavLink("Material Cards", href="/materials", active="exact", class_name="nav-item", style={"paddingLeft": "40px"}),
+                            dbc.NavLink("Option Cards", href="/options", active="exact", class_name="nav-item", style={"paddingLeft": "40px"}),
+                        ],
+                    ),
+                ], style={"backgroundColor": navbar_color, "border": "none"}
+            )
         ],
         vertical=True,
         pills=True,
@@ -160,6 +162,17 @@ app.layout = html.Div([
           'width': '100vw',
           }
 )
+
+
+@app.callback(
+    Output("card-views-collapse", "is_open"),
+    [Input("card-views-toggle", "n_clicks")],
+    [State("card-views-collapse", "is_open")],
+)
+def toggle_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
 
 
 @app.callback(
