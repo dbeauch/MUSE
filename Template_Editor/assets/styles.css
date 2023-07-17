@@ -100,3 +100,34 @@
 .assembly-model .modal-body {
     overflow-y: auto !important;
 }
+
+.nav-item {
+    background-color: #004a80 !important;
+    color: black !important;
+    font-size: calc((2vh + 1vw) / 2) !important;
+    text-decoration: none !important;
+}
+
+.dropdown-item {
+    background-color: #004a80 !important;
+    color: black !important;
+    text-decoration: none !important;
+    padding-left: 2vw !important;
+}
+
+.nav-item.active {
+    background-color: black !important;
+    color: white !important;
+}
+
+.dropdown-menu {
+    background-color: #004a80 !important;
+    color: white !important;
+    font-size: calc((2vh + 1vw) / 2) !important;
+    text-decoration: none !important;
+}
+
+.dropdown-menu.active {
+    background-color: black !important;
+    color: white !important;
+}

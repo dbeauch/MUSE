@@ -10,7 +10,6 @@ import dash_bootstrap_components as dbc
 from pages import home, cells, surfaces, materials, universes, fuel_assemblies, options
 from Template_Editor.controllers.template_handler_instance import template_handler_instance as template
 
-
 # Sizes and Colors
 navbar_width = '15vw'
 console_height = '20vh'
@@ -49,24 +48,26 @@ banner = html.Header(
 
 navbar = html.Div([
     banner,
-
     dbc.Nav(
         [
-            dbc.NavLink("Home", href="/", active="exact"),
-            dbc.NavLink("Cell Cards", href="/cells", active="exact"),
-            dbc.NavLink("Surface Cards", href="/surfaces", active="exact"),
-            dbc.NavLink("Material Cards", href="/materials", active="exact"),
-            dbc.NavLink("Universes", href="/universes", active="exact"),
-            dbc.NavLink("Fuel Assembly", href="/assembly", active="exact"),
-            dbc.NavLink("Option Cards", href="/options", active="exact"),
+            dbc.NavLink("Home", href="/", active="exact", className="nav-item"),
+            dbc.NavLink("Fuel Assembly", href="/assembly", active="exact", className="nav-item"),
+            dbc.NavLink("Universes", href="/universes", active="exact", className="nav-item"),
+            dbc.DropdownMenu(
+                nav=True,
+                in_navbar=True,
+                label="Card Views",
+                className="nav-item",
+                children=[
+                    dbc.DropdownMenuItem("Cell Cards", href="/cells", className="dropdown-item"),
+                    dbc.DropdownMenuItem("Surface Cards", href="/surfaces", className="dropdown-item"),
+                    dbc.DropdownMenuItem("Material Cards", href="/materials", className="dropdown-item"),
+                    dbc.DropdownMenuItem("Option Cards", href="/options", className="dropdown-item"),
+                ],
+            ),
         ],
         vertical=True,
         pills=True,
-        style={
-            'margin': '1vh',
-            'fontSize': 'calc((2vh + 1vw) / 2)',
-            'textColor': 'white',
-        },
     ),
 
     html.A(
@@ -84,19 +85,20 @@ navbar = html.Div([
     'backgroundColor': navbar_color,
     'width': navbar_width,
     'height': '100vh',
-    'position': 'fixed'
+    'position': 'fixed',
 })
 
 console = html.Div([
     dbc.Row([
         dbc.Col(html.Div("Console", style={'textAlign': 'left'}), width=3),
         dbc.Col(dcc.Input(id='file_path', type='text', placeholder='File path',
-                        style={'textAlign': 'left'}, debounce=True), width='auto', style={'textAlign': 'right'}),
+                          style={'textAlign': 'left'}, debounce=True), width='auto', style={'textAlign': 'right'}),
         dbc.Col(html.Button('Print File', id='print_button', n_clicks=0), width='auto', style={'marginRight': '6vw'}),
-        dbc.Col(dcc.Checklist(id='element_comments', options=['Element Comments'], value=['Element Comments']), width='auto',
-                        style={'textAlign': 'left'}),
+        dbc.Col(dcc.Checklist(id='element_comments', options=['Element Comments'], value=['Element Comments']),
+                width='auto',
+                style={'textAlign': 'left'}),
         dbc.Col(html.Div(html.Button("", id="console_toggler",
-                        className='minimize-button')), width='auto', style={'marginLeft': 'auto'})
+                                     className='minimize-button')), width='auto', style={'marginLeft': 'auto'})
     ], align='center',
         style={
             'marginTop': 20,
