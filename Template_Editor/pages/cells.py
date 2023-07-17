@@ -4,10 +4,10 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html, Input, Output, State, callback
 
-from Template_Editor.template_handler_instance import template_handler_instance as template
+from Template_Editor.controllers.template_handler_instance import template_handler_instance as template
 # Workaround import since files in pages folder import classes as Template_Editor.mcnp_cards.<Class>
 # do not compare correctly with mcnp_cards.<Class>
-from Template_Editor.template_handler_instance import RegularCell, VoidCell, LikeCell
+from Template_Editor.models.mcnp_cards import RegularCell, VoidCell, LikeCell
 
 
 def layout(page_background):

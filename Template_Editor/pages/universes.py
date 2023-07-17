@@ -4,7 +4,7 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html, Input, Output, State, callback
 
-from Template_Editor.template_handler_instance import template_handler_instance as template
+from Template_Editor.controllers.template_handler_instance import template_handler_instance as template
 
 
 def layout(page_background):

@@ -1,11 +1,11 @@
 """
 Created by: Duncan Beauch
-TEMPLATE FOR MCNP CARDS
+DEFINITION OF MCNP CARD CLASSES
 """
 
 import re
 
-from element_tools import zaid_to_isotope
+from Template_Editor.models.element_tools import zaid_to_isotope
 
 
 class CardFactory:

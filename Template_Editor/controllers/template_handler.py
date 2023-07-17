@@ -1,7 +1,7 @@
 import os.path
 import re
 
-from mcnp_cards import CardFactory, Cell, LikeCell, RegularCell, VoidCell,\
+from Template_Editor.models.mcnp_cards import CardFactory, Cell, LikeCell, RegularCell, VoidCell,\
     Surface, DataCard, Material, Temperature, Assembly
 
 
@@ -17,7 +17,7 @@ class Singleton:
 class TemplateHandler(Singleton):
     def __init__(self):
         if not hasattr(self, 'is_initialized'):
-            self.default_out_file = '../mcnp_templates/test.i'
+            self.default_out_file = '../../mcnp_templates/test.i'
             # self.default_out_file = '../mcnp_templates/NNR/test2.i'
 
             self.file_title = ""
@@ -420,7 +420,7 @@ class TemplateHandler(Singleton):
         Resets the TemplateHandler object to default state
         :return: None
         """
-        self.default_out_file = '../mcnp_templates/test.i'
+        self.default_out_file = '../../mcnp_templates/test.i'
 
         self.file_title = ""
         self.cell_line_pieces = []

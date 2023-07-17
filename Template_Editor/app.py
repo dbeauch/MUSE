@@ -8,7 +8,7 @@ from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 
 from pages import home, cells, surfaces, materials, universes, fuel_assemblies, options
-from template_handler_instance import template_handler_instance as template
+from Template_Editor.controllers.template_handler_instance import template_handler_instance as template
 
 
 # Sizes and Colors
