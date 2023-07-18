@@ -7,7 +7,7 @@ from dash import html, dcc
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 
-from pages import home, cells, surfaces, materials, universes, fuel_assemblies, options
+from pages import home, cells, surfaces, materials, universes, fuel_assemblies, legacy_fuel_assemblies, options
 from Template_Editor.controllers.template_handler_instance import template_handler_instance as template
 
 # Sizes and Colors
@@ -53,6 +53,7 @@ navbar = html.Div([
             dbc.NavLink("Home", href="/", active="exact", class_name="nav-item"),
             dbc.NavLink("Fuel Assembly", href="/assembly", active="exact", class_name="nav-item"),
             dbc.NavLink("Universes", href="/universes", active="exact", class_name="nav-item"),
+            dbc.NavLink("Legacy Assembly", href="/legacy-assembly", active="exact", class_name="nav-item"),
             dbc.Card(
                 [
                     dbc.NavLink("\u25BC Card Views ", id="card-views-toggle", class_name="nav-item"),
@@ -196,6 +197,8 @@ def display_page(pathname, manually_closed):
         return universes.layout(page_background), console_should_open
     elif pathname == '/assembly':
         return fuel_assemblies.layout(page_background), console_should_open
+    elif pathname == '/legacy-assembly':
+        return legacy_fuel_assemblies.layout(page_background), console_should_open
     elif pathname == '/options':
         return options.layout(page_background), console_should_open
     else:

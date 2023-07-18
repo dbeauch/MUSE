@@ -12,7 +12,7 @@ from Template_Editor.models.mcnp_cards import LikeCell
 
 @callback(
     Output("section_modal", "is_open"),
-    Input("section_open", "n_clicks"),
+    Input("legacy_section_open", "n_clicks"),
     Input("section_close", "n_clicks"),
     State("section_modal", "is_open"),
 )
@@ -46,7 +46,7 @@ section_modal = dbc.Modal(id="section_modal",
 
 @callback(
     Output("lattice_modal", "is_open"),
-    Input("lattice_open", "n_clicks"),
+    Input("legacy_lattice_open", "n_clicks"),
     Input("lattice_close", "n_clicks"),
     State("lattice_modal", "is_open"),
 )
@@ -80,7 +80,7 @@ lattice_modal = dbc.Modal(id="lattice_modal",
 
 @callback(
     Output("plate_modal", "is_open"),
-    Input("plate_open", "n_clicks"),
+    Input("legacy_plate_open", "n_clicks"),
     Input("plate_close", "n_clicks"),
     State("plate_modal", "is_open"),
 )
@@ -91,11 +91,11 @@ def toggle_modal(n1, n2, is_open):
 
 
 @callback(
-    Output("plate_cell_selector", "options"),
-    Output("plate_cell_selector", "value"),
-    Input("plate_open", "n_clicks"),
-    State("assembly_selector", "value"),
-    State("plate_selector", "value"),
+    Output("legacy_plate_cell_selector", "options"),
+    Output("legacy_plate_cell_selector", "value"),
+    Input("legacy_plate_open", "n_clicks"),
+    State("legacy_assembly_selector", "value"),
+    State("legacy_plate_selector", "value"),
 )
 def modal_display(plate_button, assembly_u, plate_u):
     if assembly_u is not None and plate_u is not None:
@@ -110,9 +110,9 @@ def modal_display(plate_button, assembly_u, plate_u):
 
 
 @callback(
-    Output("current_material", "value"),
-    Input("plate_cell_selector", "value"),
-    State("plate_selector", "value"),
+    Output("legacy_current_material", "value"),
+    Input("legacy_plate_cell_selector", "value"),
+    State("legacy_plate_selector", "value"),
 )
 def update_material(section_cell, plate_u):
     if plate_u is not None:
@@ -128,14 +128,14 @@ def update_material(section_cell, plate_u):
 
 @callback(
     Output('console_output', 'children', allow_duplicate=True),
-    Output('assembly_description', 'value', allow_duplicate=True),
-    Input("plate_apply", "n_clicks"),
-    State('assembly_selector', 'value'),
-    State('assembly_description', 'children'),
-    State("plate_selector", "value"),
-    State("plate_cell_selector", "value"),
-    State("current_material", "value"),
-    State("new_material", "value"),
+    Output('legacy_assembly_description', 'value', allow_duplicate=True),
+    Input("legacy_plate_apply", "n_clicks"),
+    State('legacy_assembly_selector', 'value'),
+    State('legacy_assembly_description', 'children'),
+    State("legacy_plate_selector", "value"),
+    State("legacy_plate_cell_selector", "value"),
+    State("legacy_current_material", "value"),
+    State("legacy_new_material", "value"),
     State('console_output', 'children'),
     prevent_initial_call=True
 )
@@ -218,7 +218,7 @@ plate_modal = dbc.Modal(id="plate_modal",
 
 @callback(
     Output("component_modal", "is_open"),
-    Input("component_open", "n_clicks"),
+    Input("legacy_component_open", "n_clicks"),
     Input("component_close", "n_clicks"),
     State("component_modal", "is_open"),
 )

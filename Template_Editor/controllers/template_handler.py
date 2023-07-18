@@ -17,7 +17,7 @@ class Singleton:
 class TemplateHandler(Singleton):
     def __init__(self):
         if not hasattr(self, 'is_initialized'):
-            self.default_out_file = '../../mcnp_templates/test.i'
+            self.default_out_file = '../mcnp_templates/test.i'
             # self.default_out_file = '../mcnp_templates/NNR/test2.i'
 
             self.file_title = ""
@@ -419,45 +419,3 @@ class TemplateHandler(Singleton):
                 print(card.__str__(element_comments), file=out_file)
             else:
                 print(card, file=out_file)
-
-    def reset(self):
-        """
-        Resets the TemplateHandler object to default state
-        :return: None
-        """
-        self.default_out_file = '../../mcnp_templates/test.i'
-
-        self.file_title = ""
-        self.cell_line_pieces = []
-        self.surface_line_pieces = []
-        self.data_line_pieces = []
-
-        self.cell_lines = []
-        self.surface_lines = []
-        self.data_lines = []
-
-        self.cell_comments = {}
-        self.surface_comments = {}
-        self.data_comments = {"0": "Void Cell"}
-
-        self.all_cells = {}
-        self.all_surfaces = {}
-        self.all_materials = {"0": Material("m0"), "WIP": Material("m00")}
-        self.all_options = {}
-
-        self.all_universe_names = {}
-        self.all_universes = {}
-        self.all_fills = {}
-
-        self.all_fuel_plates = {}
-        self.all_fuel_assemblies = {}
-
-        self.param_cards = [
-            re.compile(r'tmp=-?\.?\d+(\.\d+)?[eE]?-?\d*'),
-            re.compile(r'imp:n,p=\d+'),
-            re.compile(r'\*?trcl=[^a-zA-z]+'),
-            re.compile(r'fill=(((-?\d+:-?\d+[ \t]+){3}([ \t]*\d+r?)+))'),
-            re.compile(r'lat=\d+'),
-            re.compile(r'u=\d+'),
-            re.compile(r'vol=-?\.?\d+(\.\d+)?[eE]?-?\d*'),
-        ]

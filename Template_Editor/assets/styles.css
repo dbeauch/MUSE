@@ -131,3 +131,12 @@
     background-color: black !important;
     color: white !important;
 }
+
+.d-plot {
+    font-size: calc(5px + 0.5vw);
+    background-color: #D3D3D3;
+    color: #A9A9A9;
+    border: 2px solid black;
+    height: 40vh;
+    width: 40vw;
+}
