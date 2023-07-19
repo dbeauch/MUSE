@@ -97,7 +97,7 @@ segment_plots = [create_3d_plane([0, j * segment_spacing, 0], segment_width, seg
                                  color=default_color) for j in range(30)]
 
 assembly_graph = html.Div([dcc.Graph(
-    id='assembly-plot',
+    id='assembly_plot',
     figure={
         'data': assembly_plots,
         'layout': go.Layout(
@@ -121,7 +121,7 @@ assembly_graph = html.Div([dcc.Graph(
 )
 
 plate_graph = html.Div([dcc.Graph(
-    id='plate-plot',
+    id='plate_plot',
     figure={
         'data': plate_plots,
         'layout': go.Layout(
@@ -174,13 +174,16 @@ segment_graph = html.Div([dcc.Graph(
 
 # Assembly plot callback
 @callback(
-    Output('assembly-plot', 'figure', allow_duplicate=True),
-    Input('assembly-plot', 'clickData'),
-    State('assembly-plot', 'figure'),
+    Output('assembly_plot', 'figure', allow_duplicate=True),
+    Output('assembly_plot_camera', 'data'),
+    Input('assembly_plot', 'clickData'),
+    Input('assembly_plot', 'relayoutData'),
+    State('assembly_plot', 'figure'),
+    State('assembly_plot_camera', 'data'),
     State('select_mode', 'value'),
     prevent_initial_call=True
 )
-def handle_click_assembly(clickData, figure, select_mode):
+def handle_click_assembly(clickData, relayoutData, figure, camera_data, select_mode):
     if clickData:
         clicked_object = int(clickData['points'][0]['curveNumber'])
 
@@ -193,18 +196,29 @@ def handle_click_assembly(clickData, figure, select_mode):
                 data['color'] = default_color
             figure['data'][clicked_object]['color'] = selected_color
 
-    return figure
+    # if the relayoutData contains camera information, then update the stored camera data
+    if relayoutData and 'scene.camera' in relayoutData:
+        camera_data = relayoutData['scene.camera']
+
+    # set the camera position to the stored camera position, if one exists
+    if camera_data:
+        figure['layout']['scene']['camera'] = camera_data
+
+    return figure, camera_data
 
 
 # Plate plot callback
 @callback(
-    Output('plate-plot', 'figure', allow_duplicate=True),
-    Input('plate-plot', 'clickData'),
-    State('plate-plot', 'figure'),
+    Output('plate_plot', 'figure', allow_duplicate=True),
+    Output('plate_plot_camera', 'data'),
+    Input('plate_plot', 'clickData'),
+    Input('plate_plot', 'relayoutData'),
+    State('plate_plot', 'figure'),
+    State('plate_plot_camera', 'data'),
     State('select_mode', 'value'),
     prevent_initial_call=True
 )
-def handle_click_plate(clickData, figure, select_mode):
+def handle_click_plate(clickData, relayoutData, figure, camera_data, select_mode):
     if clickData:
         clicked_object = int(clickData['points'][0]['curveNumber'])
 
@@ -217,18 +231,27 @@ def handle_click_plate(clickData, figure, select_mode):
                 data['color'] = default_color
             figure['data'][clicked_object]['color'] = selected_color
 
-    return figure
+    if relayoutData and 'scene.camera' in relayoutData:
+        camera_data = relayoutData['scene.camera']
+
+    if camera_data:
+        figure['layout']['scene']['camera'] = camera_data
+
+    return figure, camera_data
 
 
 # Section plot callback
 @callback(
     Output('section_plot', 'figure', allow_duplicate=True),
+    Output('section_plot_camera', 'data'),
     Input('section_plot', 'clickData'),
+    Input('section_plot', 'relayoutData'),
     State('section_plot', 'figure'),
+    State('section_plot_camera', 'data'),
     State('select_mode', 'value'),
     prevent_initial_call=True
 )
-def handle_click_section(clickData, figure, select_mode):
+def handle_click_section(clickData, relayoutData, figure, camera_data, select_mode):
     if clickData:
         clicked_object = int(clickData['points'][0]['curveNumber'])
 
@@ -241,16 +264,22 @@ def handle_click_section(clickData, figure, select_mode):
                 data['color'] = default_color
             figure['data'][clicked_object]['color'] = selected_color
 
-    return figure
+    if relayoutData and 'scene.camera' in relayoutData:
+        camera_data = relayoutData['scene.camera']
+
+    if camera_data:
+        figure['layout']['scene']['camera'] = camera_data
+
+    return figure, camera_data
 
 
 @callback(
-    Output('assembly-plot', 'figure', allow_duplicate=True),
-    Output('plate-plot', 'figure', allow_duplicate=True),
+    Output('assembly_plot', 'figure', allow_duplicate=True),
+    Output('plate_plot', 'figure', allow_duplicate=True),
     Output('section_plot', 'figure', allow_duplicate=True),
     Input('unselect_all_button', 'n_clicks'),
-    State('assembly-plot', 'figure'),
-    State('plate-plot', 'figure'),
+    State('assembly_plot', 'figure'),
+    State('plate_plot', 'figure'),
     State('section_plot', 'figure'),
     prevent_initial_call=True
 )
@@ -268,3 +297,45 @@ def reset_all(n, assembly_figure, plate_figure, single_plate_figure):
         single_plate['color'] = default_color
 
     return assembly_figure, plate_figure, single_plate_figure
+
+
+@callback(
+    Output('assembly_plot', 'figure', allow_duplicate=True),
+    Input('select_all_assemblies', 'value'),
+    State('assembly_plot', 'figure'),
+    prevent_initial_call=True
+)
+def select_all_assemblies(switch, assembly_figure):
+    if switch:
+        for assembly in assembly_figure['data']:
+            assembly['color'] = selected_color
+        return assembly_figure
+    return dash.no_update
+
+
+@callback(
+    Output('plate_plot', 'figure', allow_duplicate=True),
+    Input('select_all_plates', 'value'),
+    State('plate_plot', 'figure'),
+    prevent_initial_call=True
+)
+def select_all_plates(switch, plate_figure):
+    if switch:
+        for plate in plate_figure['data']:
+            plate['color'] = selected_color
+        return plate_figure
+    return dash.no_update
+
+
+@callback(
+    Output('section_plot', 'figure', allow_duplicate=True),
+    Input('select_all_sections', 'value'),
+    State('section_plot', 'figure'),
+    prevent_initial_call=True
+)
+def select_all_sections(switch, section_figure):
+    if switch:
+        for section in section_figure['data']:
+            section['color'] = selected_color
+        return section_figure
+    return dash.no_update

@@ -56,6 +56,10 @@ def layout(page_background):
                                 dbc.Row(dbc.Button("Unselect All", id='unselect_all_button', className='unselect-button')),
                             ], width=4),
 
+                            dcc.Store(id='assembly_plot_camera'),
+                            dcc.Store(id='plate_plot_camera'),
+                            dcc.Store(id='section_plot_camera'),
+
                             dbc.Col([   # Plot Tabs
                                 dcc.Tabs([
                                     dcc.Tab(label='Assembly Plot',
@@ -95,37 +99,6 @@ def update_assembly_options(search_value):
     result = [o for o in template.all_fuel_assemblies.keys()]
     result.sort()
     return result
-
-
-@callback(
-    Output("select_all_plates", "value"),
-    Output("select_all_sections", "value", allow_duplicate=True),
-    Input("select_all_assemblies", "value"),
-    prevent_initial_call=True
-)
-def update_from_assemblies(select_all_assemblies):
-    # If "Select All Assemblies" is toggled on (i.e., its value is True),
-    # set the value of "Select All Plates" and "Select All Sections" to True.
-    # If "Select All Assemblies" is toggled off (i.e., its value is False),
-    # do nothing to the other switches.
-    if select_all_assemblies:
-        return True, True
-    return dash.no_update, dash.no_update
-
-
-@callback(
-    Output("select_all_sections", "value", allow_duplicate=True),
-    Input("select_all_plates", "value"),
-    prevent_initial_call=True
-)
-def update_from_plates(select_all_plates):
-    # If "Select All Plates" is toggled on (i.e., its value is True),
-    # set the value of "Select All Sections" to True.
-    # If "Select All Plates" is toggled off (i.e., its value is False),
-    # do nothing to the other switch.
-    if select_all_plates:
-        return True
-    return dash.no_update
 
 
 @callback(
@@ -180,42 +153,6 @@ def update_assembly_display(assembly_u, descr):
 
                 return assembly_results, plate_preview, description_results
     return dash.no_update, dash.no_update, dash.no_update
-
-
-#
-# @callback(
-#     Output('console_output', 'children', allow_duplicate=True),
-#     Output('assembly_description', 'value', allow_duplicate=True),
-#     State('assembly_description', 'value'),
-#     State('url', 'pathname'),
-#     State('console_output', 'children'),
-#     prevent_initial_call=True
-# )
-# def update_console(descr, pathname, current_messages):
-#     if not current_messages:
-#         current_messages = []
-#
-#     ctx = dash.callback_context
-#     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-#     timestamp = datetime.datetime.now().strftime("%H:%M:%S")
-#
-#     # if button_id == 'master_button' and new_mat is not None:
-#     #     if descr is None:
-#     #         return current_messages, descr
-#     #     if template.all_materials.get(new_mat) is None:
-#     #         message = f'({timestamp})\tError: Material not found'
-#     #         current_messages.insert(0, html.P(message))
-#     #         return current_messages, descr
-#     #     for assembly in template.all_fuel_assemblies.values():
-#     #         for plate in assembly.plates:
-#     #             for sect in template.all_fuel_plates.get(plate):
-#     #                 sect.material = new_mat
-#     #                 if type(sect) is LikeCell:
-#     #                     template.dissect_like_param(sect)
-#     #     message = f'({timestamp})\tApplied changes made to all plate sections'
-#     #     current_messages.insert(0, html.P(message))
-#     #     return current_messages, descr
-#     return current_messages, descr
 
 
 assembly_tabs = dcc.Tabs([
