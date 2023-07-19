@@ -12,17 +12,6 @@ from Template_Editor.controllers.template_handler_instance import template_handl
 from Template_Editor.models.mcnp_cards import LikeCell
 from Template_Editor.pages.select_graphs import assembly_graph, plate_graph, segment_graph
 
-# Settings
-assembly_spacing = 1.5
-assembly_radius = 0.5
-assembly_height = 1
-
-group_spacing = 5
-plate_spacing = 5
-plate_thickness = 0.5
-plate_width = 2
-plate_height = 2
-
 
 def layout(page_background):
     return [
@@ -35,7 +24,7 @@ def layout(page_background):
                 dbc.Row([
                     dbc.Col(html.H5(id='assembly_description', children=''),
                             width=6, align="end"),
-                    dbc.Col("Current Assembly:", width=3, align="end", className='current-card'),
+                    dbc.Col("View Assembly:", width=3, align="end", className='current-card'),
                     dbc.Col(dcc.Dropdown(id='assembly_selector', placeholder='Select an Assembly', clearable=True,
                                          persistence=True, persistence_type='session',
                                          className='dropdown'),
@@ -47,20 +36,42 @@ def layout(page_background):
                 dbc.Row([
                     dbc.Col([  # input half of content
                         dbc.Row([
-                            dcc.Tabs([
-                                dcc.Tab(label='Assembly Plot',
-                                        className='tab',
-                                        children=assembly_graph
-                                        ),
-                                dcc.Tab(label='Plates Plot',
-                                        className='tab',
-                                        children=plate_graph
-                                        ),
-                                dcc.Tab(label='Segments Plot',
-                                        className='tab',
-                                        children=segment_graph
-                                        ),
-                            ], className='tab-container')
+                            dbc.Col([  # Plot Options
+                                html.Div([
+                                    dbc.Row("Select Options", className='input-label'),
+                                    dbc.Row(dcc.RadioItems(
+                                        id="select_mode",
+                                        options=[
+                                            {"label": "Single Select Mode", "value": "single"},
+                                            {"label": "Multiselect Mode", "value": "multi"},
+                                            {"label": "Unselect Mode", "value": "unselect"}
+                                        ],
+                                        value="single"  # Single by default
+                                    )),
+                                    dbc.Row("Mass Highlight Options", className='input-label'),
+                                    dbc.Row(dbc.Switch(id="select_all_assemblies", label="All Assemblies", value=False)),
+                                    dbc.Row(dbc.Switch(id="select_all_plates", label="All Plates", value=False)),
+                                    dbc.Row(dbc.Switch(id="select_all_sections", label="All Sections", value=False))
+                                ], className='plot-options'),
+                                dbc.Row(dbc.Button("Unselect All", id='unselect_all_button', className='unselect-button')),
+                            ], width=4),
+
+                            dbc.Col([   # Plot Tabs
+                                dcc.Tabs([
+                                    dcc.Tab(label='Assembly Plot',
+                                            className='tab',
+                                            children=assembly_graph
+                                            ),
+                                    dcc.Tab(label='Plates Plot',
+                                            className='tab',
+                                            children=plate_graph
+                                            ),
+                                    dcc.Tab(label='Segments Plot',
+                                            className='tab',
+                                            children=segment_graph
+                                            ),
+                                ], className='tab-container')
+                            ], width=8),
                         ]),
                         dbc.Row([
                             # Edit Options
@@ -84,6 +95,52 @@ def update_assembly_options(search_value):
     result = [o for o in template.all_fuel_assemblies.keys()]
     result.sort()
     return result
+
+
+@callback(
+    Output("select_all_plates", "value"),
+    Output("select_all_sections", "value", allow_duplicate=True),
+    Input("select_all_assemblies", "value"),
+    prevent_initial_call=True
+)
+def update_from_assemblies(select_all_assemblies):
+    # If "Select All Assemblies" is toggled on (i.e., its value is True),
+    # set the value of "Select All Plates" and "Select All Sections" to True.
+    # If "Select All Assemblies" is toggled off (i.e., its value is False),
+    # do nothing to the other switches.
+    if select_all_assemblies:
+        return True, True
+    return dash.no_update, dash.no_update
+
+
+@callback(
+    Output("select_all_sections", "value", allow_duplicate=True),
+    Input("select_all_plates", "value"),
+    prevent_initial_call=True
+)
+def update_from_plates(select_all_plates):
+    # If "Select All Plates" is toggled on (i.e., its value is True),
+    # set the value of "Select All Sections" to True.
+    # If "Select All Plates" is toggled off (i.e., its value is False),
+    # do nothing to the other switch.
+    if select_all_plates:
+        return True
+    return dash.no_update
+
+
+@callback(
+    Output("select_all_assemblies", "value", allow_duplicate=True),
+    Output("select_all_plates", "value", allow_duplicate=True),
+    Output("select_all_sections", "value", allow_duplicate=True),
+    Input("unselect_all_button", "n_clicks"),
+    prevent_initial_call=True
+)
+def unselect_all(n_clicks):
+    # When the "Unselect All" button is clicked,
+    # set the value of all switches to False.
+    if n_clicks:
+        return False, False, False
+    return dash.no_update, dash.no_update, dash.no_update
 
 
 @callback(

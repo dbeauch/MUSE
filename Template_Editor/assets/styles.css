@@ -1,12 +1,12 @@
 /* styles.css */
 
 .tab-container {
-    height: 30px !important;
+
 }
 
 .tab {
-    width: 12vw !important;
-    height: 8vh !important;
+    width: 9vw !important;
+    height: 4vh !important;
     font-weight: bold !important;
     font-size: calc(2px + 0.7vw) !important;
     color: white !important;
@@ -133,10 +133,22 @@
 }
 
 .d-plot {
-    font-size: calc(5px + 0.5vw);
-    background-color: #D3D3D3;
-    color: #A9A9A9;
+    height: 40vh !important;
     border: 2px solid black;
-    height: 40vh;
-    width: 40vw;
+}
+
+.plot-options {
+    font-size: calc(2px + 0.7vw) !important;
+    margin-left: 2vw !important;
+    margin-top: 5vh !important;
+}
+
+.unselect-button {
+    width: calc(20px + 8vw) !important;
+    height: calc(10px + 2vh) !important;
+    margin-left: 2vw !important;
+    font-size: calc(1px + 0.4vw + 0.3vh) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
