@@ -77,9 +77,20 @@ def layout(page_background):
                                 ], className='tab-container')
                             ], width=8),
                         ]),
+
+                        html.Hr(),
+
                         dbc.Row([
-                            # Edit Options
-                        ])
+                            dbc.Col('Material:', className='input-label', width=2),
+                            dbc.Col(dcc.Dropdown(id='assembly_material_selector', placeholder="", clearable=False,
+                                                 className='dropdown'), width=3),
+                            dbc.Col(id='assembly_material_description', children='Material Description',
+                                    style={'textAlign': 'left', 'fontSize': 'calc(5px + 0.5vw)', 'color': 'black'},
+                                    width=7),
+                        ], align='center', className='input-row'),
+                        dbc.Row([
+                            html.Button('Apply Changes', id='assembly_apply_button', n_clicks=0, className='apply-button')
+                        ], style={'marginLeft': '2vw', 'marginTop': '1vh'})
                     ]),
 
                     dbc.Col([
@@ -97,6 +108,16 @@ def layout(page_background):
 )
 def update_assembly_options(search_value):
     result = [o for o in template.all_fuel_assemblies.keys()]
+    result.sort()
+    return result
+
+
+@callback(
+    Output("assembly_material_selector", "options"),
+    Input("assembly_material_selector", "search_value"),
+)
+def update_material_options(search_value):
+    result = [o for o in template.all_materials]
     result.sort()
     return result
 
@@ -153,6 +174,32 @@ def update_assembly_display(assembly_u, descr):
 
                 return assembly_results, plate_preview, description_results
     return dash.no_update, dash.no_update, dash.no_update
+
+
+@callback(
+    Output('console_output', 'children', allow_duplicate=True),
+    Output('assembly_selector', 'value'),
+    Input('assembly_apply_button', 'n_clicks'),
+    State('url', 'pathname'),
+    State('assembly_material_selector', 'value'),
+    State('console_output', 'children'),
+    prevent_initial_call=True
+)
+def update_console(apply_clicked, pathname, material, current_messages):
+    if pathname == '/assembly':
+        if not current_messages:
+            current_messages = []
+
+        ctx = dash.callback_context
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+
+        if button_id == 'assembly_apply_button':
+            if material is None:
+                return current_messages, dash.no_update
+
+        return current_messages, dash.no_update
+
 
 
 assembly_tabs = dcc.Tabs([
