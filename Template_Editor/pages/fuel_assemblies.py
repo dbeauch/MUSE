@@ -1,4 +1,5 @@
 import datetime
+from collections import OrderedDict
 
 import dash
 import dash_bootstrap_components as dbc
@@ -11,6 +12,7 @@ from Template_Editor.controllers.template_handler_instance import template_handl
 # do not compare correctly with mcnp_cards.<Class>
 from Template_Editor.models.mcnp_cards import LikeCell
 from Template_Editor.pages.select_graphs import assembly_graph, plate_graph, segment_graph
+from Template_Editor.pages.select_graphs import selected_color, default_color
 
 
 def layout(page_background):
@@ -19,19 +21,6 @@ def layout(page_background):
             dbc.Container([
                 # Top spacing
                 dbc.Row([dbc.Col(html.H1(" "))]),
-
-                # Current Assembly dropdown
-                dbc.Row([
-                    dbc.Col(html.H5(id='assembly_description', children=''),
-                            width=6, align="end"),
-                    dbc.Col("View Assembly:", width=3, align="end", className='current-card'),
-                    dbc.Col(dcc.Dropdown(id='assembly_selector', placeholder='Select an Assembly', clearable=True,
-                                         persistence=True, persistence_type='session',
-                                         className='dropdown'),
-                            width=3, align="center"),
-                ]),
-
-                html.Hr(),
 
                 dbc.Row([
                     dbc.Col([  # input half of content
@@ -49,18 +38,22 @@ def layout(page_background):
                                         value="single"  # Single by default
                                     )),
                                     dbc.Row("Mass Highlight Options", className='input-label'),
-                                    dbc.Row(dbc.Switch(id="select_all_assemblies", label="All Assemblies", value=False)),
-                                    dbc.Row(dbc.Switch(id="select_all_plates", label="All Plates", value=False)),
-                                    dbc.Row(dbc.Switch(id="select_all_sections", label="All Sections", value=False))
+                                    dbc.Button("All Assemblies", id='select_all_assemblies', className='unselect-button'),
+                                    dbc.Button("All Plates", id='select_all_plates', className='unselect-button'),
+                                    dbc.Button("All Sections", id='select_all_sections', className='unselect-button'),
+                                    dbc.Button("Unselect All", id='unselect_all_button',className='unselect-button')
                                 ], className='plot-options'),
-                                dbc.Row(dbc.Button("Unselect All", id='unselect_all_button', className='unselect-button')),
                             ], width=4),
 
-                            dcc.Store(id='assembly_plot_camera'),
-                            dcc.Store(id='plate_plot_camera'),
-                            dcc.Store(id='section_plot_camera'),
+                            dcc.Store(id='assembly_plot_camera', storage_type='session'),
+                            dcc.Store(id='plate_plot_camera', storage_type='session'),
+                            dcc.Store(id='section_plot_camera', storage_type='session'),
 
-                            dbc.Col([   # Plot Tabs
+                            dcc.Store(id='assembly_plot_selected', data=[], storage_type='session'),
+                            dcc.Store(id='plate_plot_selected', data=[], storage_type='session'),
+                            dcc.Store(id='section_plot_selected', data=[], storage_type='session'),
+
+                            dbc.Col([  # Plot Tabs
                                 dcc.Tabs([
                                     dcc.Tab(label='Assembly Plot',
                                             className='tab',
@@ -82,20 +75,47 @@ def layout(page_background):
 
                         dbc.Row([
                             dbc.Col('Material:', className='input-label', width=2),
-                            dbc.Col(dcc.Dropdown(id='assembly_material_selector', placeholder="", clearable=False,
-                                                 className='dropdown'), width=3),
+                            dbc.Col(dcc.Dropdown(id='assembly_material_selector', placeholder="", clearable=True,
+                                                 persistence=True, persistence_type='session', className='dropdown'), width=3),
                             dbc.Col(id='assembly_material_description', children='Material Description',
                                     style={'textAlign': 'left', 'fontSize': 'calc(5px + 0.5vw)', 'color': 'black'},
                                     width=7),
                         ], align='center', className='input-row'),
+
                         dbc.Row([
-                            html.Button('Apply Changes', id='assembly_apply_button', n_clicks=0, className='apply-button')
-                        ], style={'marginLeft': '2vw', 'marginTop': '1vh'})
-                    ]),
+                            dbc.Col('Plate:', className='input-label', width=2),
+                            dbc.Col(dcc.Dropdown(id='assembly_plate_selector', placeholder="", clearable=True,
+                                                 persistence=True, persistence_type='session', className='dropdown'), width=3),
+                            dbc.Col(id='assembly_plate_description', children='Plate Description',
+                                    style={'textAlign': 'left', 'fontSize': 'calc(5px + 0.5vw)', 'color': 'black'},
+                                    width=7),
+                        ], align='center', className='input-row'),
+
+                        html.Hr(),
+
+                        dbc.Row([
+                            html.Button('Apply Changes', id='assembly_apply_button', n_clicks=0,
+                                        className='apply-button')
+                        ], style={'marginLeft': '11vw', 'marginTop': '1vh'})
+                    ], width=8),
 
                     dbc.Col([
-                        assembly_tabs
-                    ], width=6)
+                        # Current Assembly dropdown
+                        dbc.Row([
+                            dbc.Col("Preview Assembly:", width=6, align="end", className='current-card'),
+                            dbc.Col(
+                                dcc.Dropdown(id='assembly_selector', placeholder='Select an Assembly', clearable=True,
+                                             persistence=True, persistence_type='session',
+                                             className='dropdown'),
+                                width=6, align="center"),
+                        ]),
+
+                        html.Hr(id='assembly_description'),
+
+                        dbc.Row([
+                            assembly_tabs
+                        ])
+                    ], width=4)
                 ]),
             ], fluid=True),
         ])
@@ -117,37 +137,258 @@ def update_assembly_options(search_value):
     Input("assembly_material_selector", "search_value"),
 )
 def update_material_options(search_value):
-    result = [o for o in template.all_materials]
+    result = [o for o in template.all_materials.keys()]
     result.sort()
     return result
 
 
 @callback(
-    Output("select_all_assemblies", "value", allow_duplicate=True),
-    Output("select_all_plates", "value", allow_duplicate=True),
-    Output("select_all_sections", "value", allow_duplicate=True),
-    Input("unselect_all_button", "n_clicks"),
+    Output("assembly_plate_selector", "options"),
+    Input("assembly_plate_selector", "search_value"),
+)
+def update_plate_options(search_value):
+    result = [o for o in template.all_fuel_plates.keys()]
+    result.sort()
+    return result
+
+
+# Assembly plot callback
+@callback(
+    Output('assembly_plot', 'figure', allow_duplicate=True),
+    Output('assembly_plot_camera', 'data'),
+    Output('assembly_plot_selected', 'data', allow_duplicate=True),
+    Input('assembly_plot', 'clickData'),
+    State('assembly_plot', 'relayoutData'),
+    State('assembly_plot', 'figure'),
+    State('assembly_plot_selected', 'data'),
+    State('assembly_plot_camera', 'data'),
+    State('select_mode', 'value'),
     prevent_initial_call=True
 )
-def unselect_all(n_clicks):
-    # When the "Unselect All" button is clicked,
-    # set the value of all switches to False.
-    if n_clicks:
-        return False, False, False
+def handle_click_assembly(clickData, relayoutData, figure, selected, camera_data, select_mode):
+    if clickData:
+        clicked_object = int(clickData['points'][0]['curveNumber'])
+
+        if select_mode == "unselect":
+            figure['data'][clicked_object]['color'] = default_color
+        elif select_mode == "multi":
+            figure['data'][clicked_object]['color'] = selected_color
+        else:  # "single"
+            if figure['data'] is not None:
+                for data in figure['data']:
+                    data['color'] = default_color
+            figure['data'][clicked_object]['color'] = selected_color
+
+        # if the relayoutData contains camera information, then update the stored camera data
+        if relayoutData and 'scene.camera' in relayoutData:
+            camera_data = relayoutData['scene.camera']
+
+        # set the camera position to the stored camera position, if one exists
+        if camera_data:
+            figure['layout']['scene']['camera'] = camera_data
+
+        selected = []
+        for i, obj in enumerate(figure['data']):
+            if obj['color'] == selected_color:
+                selected.append(i)
+
+        return figure, camera_data, selected
     return dash.no_update, dash.no_update, dash.no_update
+
+
+# Plate plot callback
+@callback(
+    Output('plate_plot', 'figure', allow_duplicate=True),
+    Output('plate_plot_camera', 'data'),
+    Output('plate_plot_selected', 'data', allow_duplicate=True),
+    Input('plate_plot', 'clickData'),
+    State('plate_plot', 'relayoutData'),
+    State('plate_plot', 'figure'),
+    State('plate_plot_selected', 'data'),
+    State('plate_plot_camera', 'data'),
+    State('select_mode', 'value'),
+    prevent_initial_call=True
+)
+def handle_click_plate(clickData, relayoutData, figure, selected, camera_data, select_mode):
+    if clickData:
+        clicked_object = int(clickData['points'][0]['curveNumber'])
+
+        if select_mode == "unselect":
+            figure['data'][clicked_object]['color'] = default_color
+        elif select_mode == "multi":
+            figure['data'][clicked_object]['color'] = selected_color
+        else:  # "single"
+            for data in figure['data']:
+                data['color'] = default_color
+            figure['data'][clicked_object]['color'] = selected_color
+
+        if relayoutData and 'scene.camera' in relayoutData:
+            camera_data = relayoutData['scene.camera']
+
+        if camera_data:
+            figure['layout']['scene']['camera'] = camera_data
+
+        selected = []
+        for i, obj in enumerate(figure['data']):
+            if obj['color'] == selected_color:
+                selected.append(i)
+
+        return figure, camera_data, selected
+    return dash.no_update, dash.no_update, dash.no_update
+
+
+# Section plot callback
+@callback(
+    Output('section_plot', 'figure', allow_duplicate=True),
+    Output('section_plot_camera', 'data'),
+    Output('section_plot_selected', 'data', allow_duplicate=True),
+    Input('section_plot', 'clickData'),
+    State('section_plot', 'relayoutData'),
+    State('section_plot', 'figure'),
+    State('assembly_plot_selected', 'data'),
+    State('section_plot_camera', 'data'),
+    State('select_mode', 'value'),
+    prevent_initial_call=True
+)
+def handle_click_section(clickData, relayoutData, figure, selected, camera_data, select_mode):
+    if clickData:
+        clicked_object = int(clickData['points'][0]['curveNumber'])
+
+        if select_mode == "unselect":
+            figure['data'][clicked_object]['color'] = default_color
+        elif select_mode == "multi":
+            figure['data'][clicked_object]['color'] = selected_color
+        else:  # "single"
+            for data in figure['data']:
+                data['color'] = default_color
+            figure['data'][clicked_object]['color'] = selected_color
+
+        if relayoutData and 'scene.camera' in relayoutData:
+            camera_data = relayoutData['scene.camera']
+
+        if camera_data:
+            figure['layout']['scene']['camera'] = camera_data
+
+        selected = []
+        for i, obj in enumerate(figure['data']):
+            if obj['color'] == selected_color:
+                selected.append(i)
+
+        return figure, camera_data, selected
+    return dash.no_update, dash.no_update, dash.no_update
+
+
+@callback(
+    Output('assembly_plot', 'figure', allow_duplicate=True),
+    Output('assembly_plot_selected', 'data', allow_duplicate=True),
+    Input('select_all_assemblies', 'n_clicks'),
+    State('assembly_plot', 'figure'),
+    State('assembly_plot_selected', 'data'),
+    prevent_initial_call=True
+)
+def select_all_assemblies(n, figure, selected):
+    if n:
+        for i, obj in enumerate(figure['data']):
+            obj['color'] = selected_color
+            selected.append(i)
+        return figure, selected
+    return dash.no_update, dash.no_update
+
+
+@callback(
+    Output('plate_plot', 'figure', allow_duplicate=True),
+    Output('plate_plot_selected', 'data', allow_duplicate=True),
+    Input('select_all_plates', 'n_clicks'),
+    State('plate_plot', 'figure'),
+    State('plate_plot_selected', 'data'),
+    prevent_initial_call=True
+)
+def select_all_plates(n, figure, selected):
+    if n:
+        for i, obj in enumerate(figure['data']):
+            obj['color'] = selected_color
+            selected.append(i)
+        return figure, selected
+    return dash.no_update, dash.no_update
+
+
+@callback(
+    Output('section_plot', 'figure', allow_duplicate=True),
+    Output('section_plot_selected', 'data', allow_duplicate=True),
+    Input('select_all_sections', 'n_clicks'),
+    State('section_plot', 'figure'),
+    State('section_plot_selected', 'data'),
+    prevent_initial_call=True
+)
+def select_all_sections(n, figure, selected):
+    if n:
+        for i, obj in enumerate(figure['data']):
+            obj['color'] = selected_color
+            selected.append(i)
+        return figure, selected
+    return dash.no_update, dash.no_update
+
+
+@callback(
+    Output('assembly_plot', 'figure', allow_duplicate=True),
+    Output('plate_plot', 'figure', allow_duplicate=True),
+    Output('section_plot', 'figure', allow_duplicate=True),
+    Output('assembly_plot_selected', 'data', allow_duplicate=True),
+    Output('plate_plot_selected', 'data', allow_duplicate=True),
+    Output('section_plot_selected', 'data', allow_duplicate=True),
+    Input('unselect_all_button', 'n_clicks'),
+    State('assembly_plot', 'figure'),
+    State('plate_plot', 'figure'),
+    State('section_plot', 'figure'),
+    prevent_initial_call=True
+)
+def reset_all(n, assembly_figure, plate_figure, single_plate_figure):
+    if n == 0:
+        raise dash.exceptions.PreventUpdate
+
+    for assembly in assembly_figure['data']:
+        assembly['color'] = default_color
+
+    for plate in plate_figure['data']:
+        plate['color'] = default_color
+
+    for single_plate in single_plate_figure['data']:
+        single_plate['color'] = default_color
+
+    return assembly_figure, plate_figure, single_plate_figure, [], [], []
 
 
 @callback(
     Output('assembly_preview', 'value'),
     Output('plate_preview', 'value'),
-    Output('assembly_description', 'value', allow_duplicate=True),
+    Output('assembly_plot', 'figure', allow_duplicate=True),
+    Output('plate_plot', 'figure', allow_duplicate=True),
+    Output('section_plot', 'figure', allow_duplicate=True),
     Input('assembly_selector', 'value'),
-    Input('assembly_description', 'value'),
-    prevent_initial_call=True
+    Input('assembly_description', 'value'),  # Used to trigger on reload
+    State('assembly_plot_selected', 'data'),
+    State('plate_plot_selected', 'data'),
+    State('section_plot_selected', 'data'),
+    State('assembly_plot', 'figure'),
+    State('plate_plot', 'figure'),
+    State('section_plot', 'figure'),
+    prevent_initial_call='initial_duplicate'
 )
-def update_assembly_display(assembly_u, descr):
+def update_assembly_preview(assembly_u, descr, assembly_selected, plate_selected, section_selected, assembly_figure, plate_figure, section_figure):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    if ctx.triggered_id is None:
+        # Update plot selections and cameras from dcc.Stores on reload
+        for i, obj in enumerate(assembly_figure['data']):
+            if i in assembly_selected:
+                obj['color'] = selected_color
+        for i, obj in enumerate(plate_figure['data']):
+            if i in plate_selected:
+                obj['color'] = selected_color
+        for i, obj in enumerate(section_figure['data']):
+            if i in section_selected:
+                obj['color'] = selected_color
+
     if button_id in ['assembly_selector', 'assembly_description'] or ctx.triggered_id is None:
         if assembly_u is not None:
             description_results = ""
@@ -166,14 +407,14 @@ def update_assembly_display(assembly_u, descr):
 
                 # Not worth readability sacrifice to use list comprehension
                 plate_preview = ""
-                for plate_num in selected_assembly.plates:
+                for plate_num in OrderedDict.fromkeys(selected_assembly.plates):     # OrderedDict to remove duplicates
                     plate_preview += f'Plate Universe {plate_num}:\n'
                     for meat_cell in template.all_fuel_plates.get(plate_num):
                         plate_preview += str(meat_cell) + f'\n'
                     plate_preview += f'\n\n'
 
-                return assembly_results, plate_preview, description_results
-    return dash.no_update, dash.no_update, dash.no_update
+                return assembly_results, plate_preview, assembly_figure, plate_figure, section_figure
+    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
 
 @callback(
@@ -182,10 +423,13 @@ def update_assembly_display(assembly_u, descr):
     Input('assembly_apply_button', 'n_clicks'),
     State('url', 'pathname'),
     State('assembly_material_selector', 'value'),
+    State('assembly_plot_selected', 'data'),
+    State('plate_plot_selected', 'data'),
+    State('section_plot_selected', 'data'),
     State('console_output', 'children'),
     prevent_initial_call=True
 )
-def update_console(apply_clicked, pathname, material, current_messages):
+def update_console(apply_clicked, pathname, material, assembly_selected, plate_selected, section_selected, current_messages):
     if pathname == '/assembly':
         if not current_messages:
             current_messages = []
@@ -194,16 +438,61 @@ def update_console(apply_clicked, pathname, material, current_messages):
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
 
-        if button_id == 'assembly_apply_button':
+        if button_id == 'assembly_apply_button' and apply_clicked:
             if material is None:
                 return current_messages, dash.no_update
+            else:
+                if not assembly_selected:
+                    message = f'({timestamp})\tWarning: No assemblies selected'
+                    current_messages.insert(0, html.P(message))
+                    return current_messages, dash.no_update
+                if not plate_selected:
+                    message = f'({timestamp})\tWarning: No plates selected'
+                    current_messages.insert(0, html.P(message))
+                    return current_messages, dash.no_update
 
         return current_messages, dash.no_update
 
 
+@callback(
+    Output('selected_preview', 'value'),
+    Input('assembly_plot_selected', 'data'),
+    Input('plate_plot_selected', 'data'),
+    Input('section_plot_selected', 'data'),
+    State('assembly_plot', 'figure'),
+    State('plate_plot', 'figure'),
+    State('section_plot', 'figure'),
+)
+def update_selected_on_selected(assembly_selected, plate_selected,  section_selected, assembly_plot, plate_plot, section_plot):
+    # Find highlighted objects in each plot
+    preview = ["Assemblies Selected:",
+               "\n".join(str(x) for x in assembly_selected),
+               "Plates Selected:",
+               "\n".join(str(x) for x in plate_selected),
+               "Sections Selected:",
+               "\n".join(str(x) for x in section_selected)
+               ]
+    return "\n".join(preview)
+
 
 assembly_tabs = dcc.Tabs([
-    dcc.Tab(label='Assembly Preview',
+    dcc.Tab(label='Selected Preview',
+            className='tab',
+            children=dcc.Textarea(
+                id='selected_preview',
+                style={
+                    'fontSize': 'calc(5px + 0.5vw)',
+                    'backgroundColor': '#333333',
+                    'color': '#A9A9A9',
+                    'border': '3px solid black',
+                    'height': '60vh',
+                    'width': '100%',
+                    'overflow': 'scrollX',
+                    'inputMode': 'email',
+                },
+            )
+            ),
+    dcc.Tab(label='Assembly',
             className='tab',
             children=dcc.Textarea(
                 id='assembly_preview',
@@ -213,13 +502,13 @@ assembly_tabs = dcc.Tabs([
                     'color': '#A9A9A9',
                     'border': '3px solid black',
                     'height': '60vh',
-                    'width': '40vw',
+                    'width': '100%',
                     'overflow': 'scrollX',
                     'inputMode': 'email',
                 },
             )
             ),
-    dcc.Tab(label='Plate Preview',
+    dcc.Tab(label='Plates',
             className='tab',
             children=dcc.Textarea(
                 id='plate_preview',
@@ -229,7 +518,7 @@ assembly_tabs = dcc.Tabs([
                     'color': '#A9A9A9',
                     'border': '3px solid black',
                     'height': '60vh',
-                    'width': '40vw',
+                    'width': '100%',
                     'overflow': 'scrollX',
                     'inputMode': 'email',
                 },

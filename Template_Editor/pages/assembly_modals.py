@@ -11,74 +11,6 @@ from Template_Editor.models.mcnp_cards import LikeCell
 
 
 @callback(
-    Output("section_modal", "is_open"),
-    Input("legacy_section_open", "n_clicks"),
-    Input("section_close", "n_clicks"),
-    State("section_modal", "is_open"),
-)
-def toggle_modal(n1, n2, is_open):
-    if n1 or n2:
-        return not is_open
-    return is_open
-
-
-section_modal = dbc.Modal(id="section_modal",
-                          children=[dbc.ModalHeader("Edit Section Attributes"),
-                                    dbc.ModalBody(
-                                        [
-                                            dbc.Label("Section Attributes:"),
-                                            dcc.Dropdown(id='section_material_selector',
-                                                         placeholder='Select a Section Attribute',
-                                                         clearable=True,
-                                                         persistence=True, persistence_type='session',
-                                                         className='dropdown'),
-                                            dbc.Label("New Value:"),
-                                            dbc.Input(id="new_value_input", type="text",
-                                                      placeholder="Enter new value")
-                                        ]
-                                    ),
-                                    dbc.ModalFooter(
-                                        dbc.Button("Close", id="section_close", className="ml-auto")
-                                    ),
-                                    ],
-                          is_open=False, modal_class_name='assembly-modal')
-
-
-@callback(
-    Output("lattice_modal", "is_open"),
-    Input("legacy_lattice_open", "n_clicks"),
-    Input("lattice_close", "n_clicks"),
-    State("lattice_modal", "is_open"),
-)
-def toggle_modal(n1, n2, is_open):
-    if n1 or n2:
-        return not is_open
-    return is_open
-
-
-lattice_modal = dbc.Modal(id="lattice_modal",
-                          children=[dbc.ModalHeader("Edit Lattice Attributes"),
-                                    dbc.ModalBody(
-                                        [
-                                            dbc.Label("Lattice Attributes:"),
-                                            dcc.Dropdown(id='lattice_material_selector',
-                                                         placeholder='Select a Lattice Attribute',
-                                                         clearable=True,
-                                                         persistence=True, persistence_type='session',
-                                                         className='dropdown'),
-                                            dbc.Label("New Value:"),
-                                            dbc.Input(id="new_value_input", type="text",
-                                                      placeholder="Enter new value")
-                                        ]
-                                    ),
-                                    dbc.ModalFooter(
-                                        dbc.Button("Close", id="lattice_close", className="ml-auto")
-                                    ),
-                                    ],
-                          is_open=False, modal_class_name='assembly-modal')
-
-
-@callback(
     Output("plate_modal", "is_open"),
     Input("legacy_plate_open", "n_clicks"),
     Input("plate_close", "n_clicks"),
@@ -148,7 +80,7 @@ def plate_apply_changes(plate_apply_button, assembly_u, descr, plate_u, section_
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
     timestamp = datetime.datetime.now().strftime("%H:%M:%S")
 
-    if button_id == 'plate_apply' and None not in [plate_u, section_cell, curr_mat, new_mat]:
+    if button_id == 'legacy_plate_apply' and None not in [plate_u, section_cell, curr_mat, new_mat]:
         if template.all_materials.get(new_mat) is None:
             message = f'({timestamp})\tError: Material not found'
             current_messages.insert(0, html.P(message))
@@ -189,7 +121,7 @@ plate_modal = dbc.Modal(id="plate_modal",
                                   dbc.ModalBody(
                                       [
                                           dbc.Label("Section:"),
-                                          dcc.Dropdown(id='plate_cell_selector',
+                                          dcc.Dropdown(id='legacy_plate_cell_selector',
                                                        placeholder='Select a Plate',
                                                        clearable=True,
                                                        persistence=True, persistence_type='session',
@@ -197,54 +129,20 @@ plate_modal = dbc.Modal(id="plate_modal",
                                           dbc.Row([
                                               dbc.Col([
                                                   dbc.Label("Current Material:"),
-                                                  dbc.Input(id="current_material", type="text",
+                                                  dbc.Input(id="legacy_current_material", type="text",
                                                             placeholder="Enter new value")
                                               ]),
                                               dbc.Col([
                                                   dbc.Label("New Material:"),
-                                                  dbc.Input(id="new_material", type="text",
+                                                  dbc.Input(id="legacy_new_material", type="text",
                                                             placeholder="Enter new value")
                                               ])
                                           ])
                                       ]
                                   ),
                                   dbc.ModalFooter([
-                                      dbc.Button("Apply Changes", id="plate_apply", className="ml-auto"),
+                                      dbc.Button("Apply Changes", id="legacy_plate_apply", className="ml-auto"),
                                       dbc.Button("Close", id="plate_close", className="ml-auto")
                                   ]),
                                   ],
                         is_open=False, modal_class_name='assembly-modal')
-
-
-@callback(
-    Output("component_modal", "is_open"),
-    Input("legacy_component_open", "n_clicks"),
-    Input("component_close", "n_clicks"),
-    State("component_modal", "is_open"),
-)
-def toggle_modal(n1, n2, is_open):
-    if n1 or n2:
-        return not is_open
-    return is_open
-
-
-component_modal = dbc.Modal(id="component_modal",
-                            children=[dbc.ModalHeader("Edit Component Attributes"),
-                                      dbc.ModalBody(
-                                          [
-                                              dbc.Label("Component Attributes:"),
-                                              dcc.Dropdown(id='component_material_selector',
-                                                           placeholder='Select a Component Attribute',
-                                                           clearable=True,
-                                                           persistence=True, persistence_type='session',
-                                                           className='dropdown'),
-                                              dbc.Label("New Value:"),
-                                              dbc.Input(id="new_value_input", type="text",
-                                                        placeholder="Enter new value")
-                                          ]
-                                      ),
-                                      dbc.ModalFooter(
-                                          dbc.Button("Close", id="component_close", className="ml-auto")
-                                      ),
-                                      ],
-                            is_open=False, modal_class_name='assembly-modal', backdrop=False)

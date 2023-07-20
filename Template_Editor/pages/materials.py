@@ -58,7 +58,7 @@ def layout(page_background):
                                             'color': '#A9A9A9',
                                             'border': '3px solid black',
                                             'height': '60vh',
-                                            'width': '40vw',
+                                            'width': '100%',
                                             'overflow': 'scrollX',
                                             'inputMode': 'email',
                                         }, className='scrollbar-hidden'

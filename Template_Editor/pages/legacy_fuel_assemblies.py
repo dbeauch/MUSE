@@ -8,7 +8,7 @@ from Template_Editor.controllers.template_handler_instance import template_handl
 # Workaround import since files in pages folder import classes as Template_Editor.mcnp_cards.<Class>
 # do not compare correctly with mcnp_cards.<Class>
 from Template_Editor.models.mcnp_cards import LikeCell
-from Template_Editor.pages.assembly_modals import section_modal, lattice_modal, plate_modal, component_modal
+from Template_Editor.pages.assembly_modals import plate_modal
 
 
 def layout(page_background):
@@ -37,20 +37,12 @@ def layout(page_background):
                         dbc.Row([
                             dbc.Col('Fuel Section:', className='input-label', width=2),
                             dbc.Col(dbc.Input(id='legacy_section_number', className='input-box'), width=3),
-                            dbc.Col([
-                                dbc.Button("Edit", id="legacy_section_open", color="primary", className='edit-modal-button'),
-                                section_modal,
-                            ], className='input-box'),
                         ], align='center', className='input-row'),
 
                         # Fuel Lattice row
                         dbc.Row([
                             dbc.Col('Fuel Lattice:', className='input-label', width=2),
                             dbc.Col(dbc.Input(id='legacy_lattice_number', className='input-box'), width=3),
-                            dbc.Col([
-                                dbc.Button("Edit", id="legacy_lattice_open", color="primary", className='edit-modal-button'),
-                                lattice_modal,
-                            ], className='input-box'),
                         ], align='center', className='input-row'),
 
                         html.Hr(),
@@ -74,10 +66,6 @@ def layout(page_background):
                                 [dcc.Dropdown(id='legacy_component_selector', placeholder='Select a Component', clearable=True,
                                               persistence=True, persistence_type='session', className='dropdown'
                                               )], className='input-box', width=3),
-                            dbc.Col([
-                                dbc.Button("Edit", id="legacy_component_open", color="primary", className='edit-modal-button'),
-                                component_modal,
-                            ], className='input-box'),
                         ], align='center', className='input-row'),
 
                         html.Hr(),
@@ -121,7 +109,7 @@ def layout(page_background):
 )
 def update_plate_options(search_value, assembly_u):
     if assembly_u is not None:
-        result = [o for o in template.all_fuel_assemblies.get(assembly_u).plates]
+        result = list(set([o for o in template.all_fuel_assemblies.get(assembly_u).plates]))
         result.append("All Plates")
         result.sort()
         return result

@@ -84,7 +84,7 @@ def layout(page_background):
                                             'color': '#A9A9A9',
                                             'border': '3px solid black',
                                             'height': '60vh',
-                                            'width': '40vw',
+                                            'width': '100%',
                                             'overflow': 'scrollX',
                                             'inputMode': 'email',
                                         }, className='scrollbar-hidden'
@@ -100,7 +100,7 @@ def layout(page_background):
                                             'color': '#A9A9A9',
                                             'border': '3px solid black',
                                             'height': '60vh',
-                                            'width': '40vw',
+                                            'width': '100%',
                                             'overflow': 'scrollX',
                                             'inputMode': 'email',
                                         }, className='scrollbar-hidden'
@@ -230,12 +230,12 @@ def update_console(apply_clicked, pathname, cell, description, material, density
                     template.dissect_like_param(selected_cell)
 
                 if density != selected_cell.density:
-                    message = f'({timestamp})\tCannot make changes to density of a Like Cell'
+                    message = f'({timestamp})\tWarning: Cannot make changes to density of a Like Cell'
                     current_messages.insert(0, html.P(message))
                     return current_messages, dash.no_update
 
                 if geom != selected_cell.geom:
-                    message = f'({timestamp})\tCannot make changes to geometry of a Like Cell'
+                    message = f'({timestamp})\tWarning: Cannot make changes to geometry of a Like Cell'
                     current_messages.insert(0, html.P(message))
                     return current_messages, dash.no_update
 
@@ -254,7 +254,7 @@ def update_console(apply_clicked, pathname, cell, description, material, density
                     current_messages.insert(0, html.P(message))
                     return current_messages, dash.no_update
                 if material != "0" or density != "Void":
-                    message = f'({timestamp})\tCannot make changes to material or density of a Void Cell'
+                    message = f'({timestamp})\tWarning: Cannot make changes to material or density of a Void Cell'
                     current_messages.insert(0, html.P(message))
                     return current_messages, dash.no_update
 

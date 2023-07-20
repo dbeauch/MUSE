@@ -6,6 +6,7 @@ import dash
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
+from flask_caching import Cache
 
 from pages import home, cells, surfaces, materials, universes, fuel_assemblies, legacy_fuel_assemblies, options
 from Template_Editor.controllers.template_handler_instance import template_handler_instance as template

@@ -4,6 +4,7 @@ DEFINITION OF MCNP CARD CLASSES
 """
 
 import re
+from collections import OrderedDict
 
 from Template_Editor.models.element_tools import zaid_to_isotope
 
@@ -83,15 +84,15 @@ class CardFactory:
                 return None
 
         if isinstance(made_card, Cell):
-            #   Add cell cards to universe
+            #   Add cell card to universe
             if made_card.universe is not None:
                 if made_card.universe not in self.template.all_universes:
                     self.template.all_universes[made_card.universe] = [made_card]
                 else:
                     self.template.all_universes[made_card.universe].append(made_card)
-            #   Add cell cards to fill dicts
+            #   Add cell card to fill dicts
             if made_card.fill is not None:
-                for fill in made_card.fill:
+                for fill in OrderedDict.fromkeys(made_card.fill):    # OrderedDict to remove duplicates
                     if fill not in self.template.all_fills:
                         self.template.all_fills[fill] = [made_card]
                     else:
@@ -126,6 +127,7 @@ class Card:
 
 class Cell(Card):
     def __init__(self, line):
+        super().__init__()
         #   Finds universe parameter
         u_param = re.search(r'u=\d+', line)
         if u_param is not None:
@@ -142,12 +144,12 @@ class Cell(Card):
             ranges = re.search(r'fill=(((-?\d+:-?\d+[ \t]+){3}))', line)
             fills = line[ranges.span()[1]: complex_fill_param.span()[1]].strip().split()
             self.fill = []
-            for f in fills:
-                if 'r' in f:
-                    continue  # Catches repeated fills: 200 '20r'
-                if f in self.fill:
-                    continue  # Catches if already in fill
-                self.fill.append(f)
+            for i, fill in enumerate(fills):
+                if 'r' in fill:
+                    repeats = re.search(r'r', fill)
+                    self.fill.append('201')
+                    continue  # Catches repeated fills and expands: '200 20r' -> 200 200 ... 200
+                self.fill.append(fill)
         else:
             self.fill = None
 
