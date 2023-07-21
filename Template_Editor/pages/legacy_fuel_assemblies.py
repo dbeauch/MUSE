@@ -111,7 +111,7 @@ def update_plate_options(search_value, assembly_u):
     if assembly_u is not None:
         result = list(set([o for o in template.all_fuel_assemblies.get(assembly_u).plates]))
         result.append("All Plates")
-        result.sort()
+        result.sort(key=lambda x: int(x) if x.isdigit() else float('inf'))
         return result
     return dash.no_update
 
@@ -122,7 +122,7 @@ def update_plate_options(search_value, assembly_u):
 )
 def update_assembly_options(search_value):
     result = [o for o in template.all_fuel_assemblies.keys()]
-    result.sort()
+    result.sort(key=lambda x: int(x) if x.isdigit() else float('inf'))
     return result
 
 
@@ -132,7 +132,7 @@ def update_assembly_options(search_value):
 )
 def update_material_options(search_value):
     result = [o for o in template.all_materials]
-    result.sort()
+    result.sort(key=lambda x: int(x) if x.isdigit() else float('inf'))
     return result
 
 

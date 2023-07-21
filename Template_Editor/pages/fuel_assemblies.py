@@ -128,7 +128,7 @@ def layout(page_background):
 )
 def update_assembly_options(search_value):
     result = [o for o in template.all_fuel_assemblies.keys()]
-    result.sort()
+    result.sort(key=lambda x: int(x) if x.isdigit() else float('inf'))
     return result
 
 
@@ -138,7 +138,8 @@ def update_assembly_options(search_value):
 )
 def update_material_options(search_value):
     result = [o for o in template.all_materials]
-    result.sort()
+    # sorting by int value if possible, otherwise place last
+    result.sort(key=lambda x: int(x) if x.isdigit() else float('inf'))
     return result
 
 
@@ -159,7 +160,7 @@ def update_material_description(mat_number):
 )
 def update_plate_options(search_value):
     result = [o for o in template.all_fuel_plates.keys()]
-    result.sort()
+    result.sort(key=lambda x: int(x) if x.isdigit() else float('inf'))
     return result
 
 
@@ -311,8 +312,9 @@ def handle_click_section(clickData, relayoutData, figure, selected, camera_data,
 def select_all_assemblies(n, figure, selected):
     if n:
         for i, obj in enumerate(figure['data']):
-            obj['color'] = selected_color
-            selected.append(i)
+            if obj['color'] != selected_color:
+                obj['color'] = selected_color
+                selected.append(i)
         return figure, selected
     return dash.no_update, dash.no_update
 
@@ -328,8 +330,9 @@ def select_all_assemblies(n, figure, selected):
 def select_all_plates(n, figure, selected):
     if n:
         for i, obj in enumerate(figure['data']):
-            obj['color'] = selected_color
-            selected.append(i)
+            if obj['color'] != selected_color:
+                obj['color'] = selected_color
+                selected.append(i)
         return figure, selected
     return dash.no_update, dash.no_update
 
@@ -345,8 +348,9 @@ def select_all_plates(n, figure, selected):
 def select_all_sections(n, figure, selected):
     if n:
         for i, obj in enumerate(figure['data']):
-            obj['color'] = selected_color
-            selected.append(i)
+            if obj['color'] != selected_color:
+                obj['color'] = selected_color
+                selected.append(i)
         return figure, selected
     return dash.no_update, dash.no_update
 

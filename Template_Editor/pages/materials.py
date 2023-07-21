@@ -78,7 +78,7 @@ def layout(page_background):
 )
 def update_material_options(search_value):
     result = [o for o in template.all_materials.keys()]
-    result.sort()
+    result.sort(key=lambda x: int(x) if x.isdigit() else float('inf'))
     return result
 
 

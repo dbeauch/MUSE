@@ -91,7 +91,7 @@ def layout(page_background):
 )
 def update_surface_options(search_value):
     result = [o for o in template.all_surfaces]
-    result.sort()
+    result.sort(key=lambda x: int(x) if x.isdigit() else float('inf'))
     return result
 
 

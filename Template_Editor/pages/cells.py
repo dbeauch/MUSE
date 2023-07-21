@@ -150,7 +150,9 @@ def update_cell_display(cell, cell_material_select):
     Input("cell_selector", "search_value"),
 )
 def update_cell_options(search_value):
-    return [o for o in template.all_cells]
+    result = [o for o in template.all_cells]
+    result.sort(key=lambda x: int(x) if x.isdigit() else float('inf'))
+    return result
 
 
 @callback(
@@ -159,7 +161,7 @@ def update_cell_options(search_value):
 )
 def update_material_options(search_value):
     result = [o for o in template.all_materials]
-    result.sort()
+    result.sort(key=lambda x: int(x) if x.isdigit() else float('inf'))
     return result
 
 
