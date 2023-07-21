@@ -137,9 +137,20 @@ def update_assembly_options(search_value):
     Input("assembly_material_selector", "search_value"),
 )
 def update_material_options(search_value):
-    result = [o for o in template.all_materials.keys()]
+    result = [o for o in template.all_materials]
     result.sort()
     return result
+
+
+@callback(
+    Output("assembly_material_description", "children"),
+    Input("assembly_material_selector", "value"),
+)
+def update_material_description(mat_number):
+    material = template.all_materials.get(mat_number)
+    if material is not None:
+        return material.comment
+    return "Material Description"
 
 
 @callback(
@@ -150,6 +161,17 @@ def update_plate_options(search_value):
     result = [o for o in template.all_fuel_plates.keys()]
     result.sort()
     return result
+
+
+@callback(
+    Output("assembly_plate_description", "children"),
+    Input("assembly_plate_selector", "value"),
+)
+def update_material_description(plate_number):
+    u_comment = template.all_universe_names.get(plate_number)
+    if u_comment is not None:
+        return u_comment
+    return "Plate Description"
 
 
 # Assembly plot callback
