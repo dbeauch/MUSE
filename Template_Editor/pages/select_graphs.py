@@ -14,17 +14,18 @@ assembly_radius = 0.5
 assembly_height = 6
 
 # Settings for the plate surfaces
-group_spacing = 12
-plate_spacing = 1.5
-plate_thickness = 8
-plate_width = 0.5
-plate_height = 8
+plate_thickness = 12
+plate_width = 1
+plate_height = 12
+group_spacing = plate_thickness + 1
+plate_spacing = plate_width + 1.5
 
 # Settings for the segmented surfaces
-segment_spacing = plate_thickness / 30
-segment_thickness = segment_spacing
-segment_height = plate_height
-segment_width = plate_width
+segment_thickness = 3.3
+segment_height = 1
+segment_width = 1
+segment_spacing = segment_height + 0.5
+column_spacing = segment_thickness + 0.5
 
 
 def create_3d_trace(center, width, height, thickness, color=default_color):
@@ -94,8 +95,8 @@ groups = 1  # (2)
 plate_plots = [create_3d_plane([j * plate_spacing, 0, i * group_spacing], plate_width, plate_thickness, plate_height,
                                color=default_color) for i in range(groups) for j in range(21)]
 
-segment_plots = [create_3d_plane([0, j * segment_spacing, 0], segment_width, segment_thickness, segment_height,
-                                 color=default_color) for j in range(30)]
+segment_plots = [create_3d_plane([0, j * column_spacing, i * segment_spacing], segment_width, segment_thickness, segment_height,
+                                 color=default_color) for i in range(10) for j in range(3)]
 
 assembly_graph = html.Div([dcc.Graph(
     id='assembly_plot',

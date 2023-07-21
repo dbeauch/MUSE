@@ -126,6 +126,8 @@ class Card:
 
 
 class Cell(Card):
+    # Called for all Cell subclasses to find fill section and separate from the param section
+    # Reorganizes line into beginning of line (essentials) and param section (param & fill)
     def __init__(self, line):
         super().__init__()
         #   Finds universe parameter
@@ -135,23 +137,32 @@ class Cell(Card):
         else:
             self.universe = None
 
-        # Finds fill parameters
-        basic_fill_param = re.search(r'fill=\d+', line)
-        complex_fill_param = re.search(r'fill=(((-?\d+:-?\d+[ \t]+){3}([ \t]*\d+r?)+))', line)
+        # Splits line into self.essentials and self.param
+        param_start = re.search(r'[A-Za-z*]+=', line).span()[0]
+        self.essentials = line[:param_start].strip()
+        self.param = line[param_start:].strip()
+
+        # Separates self.fill_range and self.fill from self.param
+        basic_fill_param = re.search(r'fill=\d+', self.param)
+        complex_fill_param = re.search(r'fill=(((-?\d+:-?\d+[ \t]+){3}([ \t]*\d+r?)+))', self.param)
         if basic_fill_param is not None:
-            self.fill = [line[basic_fill_param.span()[0] + 5: basic_fill_param.span()[1]].strip()]
+            self.fill_range = self.param[basic_fill_param.span()[0]: basic_fill_param.span()[0] + 5].strip()
+            self.fill = [self.param[basic_fill_param.span()[0] + 5: basic_fill_param.span()[1]].strip()]
+            self.param = self.param[:basic_fill_param.span()[0]] + self.param[basic_fill_param.span()[1] + 1:]
         elif complex_fill_param is not None:
-            ranges = re.search(r'fill=(((-?\d+:-?\d+[ \t]+){3}))', line)
-            fills = line[ranges.span()[1]: complex_fill_param.span()[1]].strip().split()
+            ranges = re.search(r'fill=(((-?\d+:-?\d+[ \t]+){3}))', self.param)
+            self.fill_range = self.param[ranges.span()[0]: ranges.span()[1]]
+            fills = self.param[ranges.span()[1]: complex_fill_param.span()[1]].strip().split()
             self.fill = []
             for i, fill in enumerate(fills):
                 if 'r' in fill:
                     repeats = re.search(r'r', fill)
-                    self.fill.append('201')
-                    continue  # Catches repeated fills and expands: '200 20r' -> 200 200 ... 200
+                    continue  # TODO: Catches repeated fills and expands: '200 20r' -> 200 200 ... 200
                 self.fill.append(fill)
+            self.param = self.param[:complex_fill_param.span()[0]] + self.param[complex_fill_param.span()[1] + 1:]
         else:
-            self.fill = None
+            self.fill_range = ""
+            self.fill = []
 
     def __str__(self):
         return super().__str__()
@@ -167,22 +178,23 @@ class RegularCell(Cell):
     def __init__(self, line):
         super().__init__(line)
         number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
-        self.number = line[0: number_end].strip()
+        self.number = self.essentials[0: number_end].strip()
 
-        material_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}', line).span()[1] + 1
-        self.material = line[number_end: material_end].strip()
+        material_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}', self.essentials).span()[1] + 1
+        self.material = self.essentials[number_end: material_end].strip()
 
-        density_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*', line).span()[1] + 1
-        self.density = line[material_end: density_end].strip()
+        density_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*', self.essentials).span()[1] + 1
+        self.density = self.essentials[material_end: density_end].strip()
 
-        geom_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+', line).span()[1]
-        self.geom = line[density_end: geom_end].strip()
-
-        self.param = line[geom_end:].strip()
+        geom_end = re.search(r'^\d{1,6}[ \t]+[1-9]\d{0,6}[ \t]+-?\.?\d+(\.\d+)?[eE]?-?\d*[ \t]+[^a-zA-z]+', self.essentials).span()[1]
+        self.geom = self.essentials[density_end: geom_end].strip()
 
         self.children = []
 
     def __str__(self):
+        if self.number == "1010":
+            print(self.fill_range)
+            print(self.fill)
         printed_geom = re.sub(r'\)[ \t]+\(', f")\n{self.line_indent}(", self.geom)
         printed_geom = re.sub(r':[ \t]+\(', f":\n{self.line_indent}(", printed_geom)
         digit_parenth = re.search(r'\d[ \t]+\(', printed_geom)
@@ -193,24 +205,25 @@ class RegularCell(Cell):
         parts = self.param.split()
         printed_param = f'\n{self.line_indent}'.join([' '.join(parts[i:i + 5]) + self.line_indent for i in range(0, len(parts), 5)])
         printed_param = printed_param[:re.search(r'\s+$', printed_param).span()[0]]
-        return f"{self.number}\t{self.material}\t{self.density}{self.get_inline_comment()}\n{self.line_indent}{printed_geom}\n{self.line_indent}{printed_param}"
+        printed_fill = ""
+        if self.fill:
+            printed_fill = f'\n{self.line_indent}{self.fill_range}\n{self.line_indent}' + f'\n{self.line_indent}'.join([' '.join(self.fill[i:i + 5]) for i in range(0, len(self.fill), 5)])
+        return f"{self.number}\t{self.material}\t{self.density}{self.get_inline_comment()}\n{self.line_indent}{printed_geom}\n{self.line_indent}{printed_param}{printed_fill}"
 
 
 class VoidCell(Cell):
     def __init__(self, line):
         super().__init__(line)
-        number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
-        self.number = line[0: number_end].strip()
+        number_end = re.search(r'^\d{1,6}', self.essentials).span()[1] + 1
+        self.number = self.essentials[0: number_end].strip()
 
-        material_end = re.search(r'^\d{1,6}[ \t]+0', line).span()[1] + 1
-        self.material = line[number_end: material_end].strip()
+        material_end = re.search(r'^\d{1,6}[ \t]+0', self.essentials).span()[1] + 1
+        self.material = self.essentials[number_end: material_end].strip()
 
         self.density = 0
 
-        geom_end = re.search(r'^\d{1,6}[ \t]+0[ \t][^a-zA-z]+', line).span()[1]
-        self.geom = line[material_end: geom_end].strip()
-
-        self.param = line[geom_end:].strip()
+        geom_end = re.search(r'^\d{1,6}[ \t]+0[ \t][^a-zA-z]+', self.essentials).span()[1]
+        self.geom = self.essentials[material_end: geom_end].strip()
 
         self.children = []
 
@@ -221,32 +234,41 @@ class VoidCell(Cell):
         if digit_par is not None:
             printed_geom = printed_geom[:digit_par.span()[0] + 1] + f"\n{self.line_indent}" + printed_geom[
                                                                                          digit_par.span()[0] + 2:]
-        return f"{self.number}\t{self.material}{self.get_inline_comment()}\n{self.line_indent}{printed_geom}\n{self.line_indent}{self.param}"
+        parts = self.param.split()
+        printed_param = f'\n{self.line_indent}'.join(
+            [' '.join(parts[i:i + 5]) + self.line_indent for i in range(0, len(parts), 5)])
+        printed_param = printed_param[:re.search(r'\s+$', printed_param).span()[0]]
+        printed_fill = ""
+        if self.fill:
+            printed_fill = f'\n{self.line_indent}{self.fill_range}\n{self.line_indent}' + f'\n{self.line_indent}'.join([' '.join(self.fill[i:i + 5]) for i in range(0, len(self.fill), 5)])
+        return f"{self.number}\t{self.material}{self.get_inline_comment()}\n{self.line_indent}{printed_geom}\n{self.line_indent}{printed_param}{printed_fill}"
 
 
 class LikeCell(Cell):
     def __init__(self, line):
         super().__init__(line)
-        number_end = re.search(r'^\d{1,6}', line).span()[1] + 1
-        self.number = line[0: number_end].strip()
+        number_end = re.search(r'^\d{1,6}', self.essentials).span()[1] + 1
+        self.number = self.essentials[0: number_end].strip()
 
-        like_end = re.search(r'^\d{1,6}[ \t]+like', line).span()[1] + 1
-        origin_cell_end = re.search(r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}', line).span()[1] + 1
-        self.origin_cell = line[like_end: origin_cell_end].strip()
+        like_end = re.search(r'^\d{1,6}[ \t]+like', self.essentials).span()[1] + 1
+        origin_cell_end = re.search(r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}', self.essentials).span()[1] + 1
+        self.origin_cell = self.essentials[like_end: origin_cell_end].strip()
 
-        but_end = re.search(r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]+but', line).span()[1] + 1
-        self.changes = line[but_end:].strip()
+        but_end = re.search(r'^\d{1,6}[ \t]+like[ \t]+\d{1,6}[ \t]+but', self.essentials).span()[1] + 1
+        self.changes = self.param
 
         self.material = ""
         self.density = ""
         self.geom = ""
-        self.param = ""
 
     def __str__(self):
         parts = self.changes.split()
         # Print changes with newlines every 5 spaces
         printed_changes = f'\n {self.line_indent}'.join([' '.join(parts[i:i + 5]) for i in range(0, len(parts), 5)])
-        return f"{self.number} like {self.origin_cell} but {printed_changes}\t{self.get_inline_comment()}"
+        printed_fill = ""
+        if self.fill:
+            printed_fill = f'\n{self.line_indent}{self.fill_range}\n{self.line_indent}' + f'\n{self.line_indent}'.join([' '.join(self.fill[i:i + 5]) for i in range(0, len(self.fill), 5)])
+        return f"{self.number} like {self.origin_cell} but {printed_changes}\t{self.get_inline_comment()}{printed_fill}"
 
 
 class Surface(Card):
