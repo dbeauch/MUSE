@@ -27,6 +27,13 @@ segment_width = 1
 segment_spacing = segment_height + 0.5
 column_spacing = segment_thickness + 0.5
 
+# Fuel Management Scheme
+assembly_translator = [
+    '23', '11', '31',
+    '32', '12', '22',
+    '21', '13', '33',
+]
+
 
 def create_3d_trace(center, width, height, thickness, color=default_color):
     # x, y, z define vertices of rectangular prism
@@ -92,7 +99,7 @@ assembly_plots = [
 
 # One (Two) group(s) of 21 plates stacked vertically and horizontally
 groups = 1  # (2)
-plate_plots = [create_3d_plane([j * plate_spacing, 0, i * group_spacing], plate_width, plate_thickness, plate_height,
+plate_plots = [create_3d_plane([-j * plate_spacing, 0, i * group_spacing], plate_width, plate_thickness, plate_height,
                                color=default_color) for i in range(groups) for j in range(21)]
 
 segment_plots = [create_3d_plane([0, j * column_spacing, i * segment_spacing], segment_width, segment_thickness, segment_height,

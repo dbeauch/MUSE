@@ -192,9 +192,6 @@ class RegularCell(Cell):
         self.children = []
 
     def __str__(self):
-        if self.number == "1010":
-            print(self.fill_range)
-            print(self.fill)
         printed_geom = re.sub(r'\)[ \t]+\(', f")\n{self.line_indent}(", self.geom)
         printed_geom = re.sub(r':[ \t]+\(', f":\n{self.line_indent}(", printed_geom)
         digit_parenth = re.search(r'\d[ \t]+\(', printed_geom)
@@ -206,8 +203,11 @@ class RegularCell(Cell):
         printed_param = f'\n{self.line_indent}'.join([' '.join(parts[i:i + 5]) + self.line_indent for i in range(0, len(parts), 5)])
         printed_param = printed_param[:re.search(r'\s+$', printed_param).span()[0]]
         printed_fill = ""
-        if self.fill:
-            printed_fill = f'\n{self.line_indent}{self.fill_range}\n{self.line_indent}' + f'\n{self.line_indent}'.join([' '.join(self.fill[i:i + 5]) for i in range(0, len(self.fill), 5)])
+        if self.fill and len(self.fill) > 5:
+            printed_fill = f'\n{self.line_indent}{self.fill_range}\n{self.line_indent}' + f'\n{self.line_indent}'.join(
+                [' '.join(self.fill[i:i + 5]) for i in range(0, len(self.fill), 5)])
+        elif self.fill:
+            printed_fill = f'\n{self.line_indent}{self.fill_range}{" ".join(w for w in self.fill)}'
         return f"{self.number}\t{self.material}\t{self.density}{self.get_inline_comment()}\n{self.line_indent}{printed_geom}\n{self.line_indent}{printed_param}{printed_fill}"
 
 
@@ -239,8 +239,10 @@ class VoidCell(Cell):
             [' '.join(parts[i:i + 5]) + self.line_indent for i in range(0, len(parts), 5)])
         printed_param = printed_param[:re.search(r'\s+$', printed_param).span()[0]]
         printed_fill = ""
-        if self.fill:
+        if self.fill and len(self.fill) > 5:
             printed_fill = f'\n{self.line_indent}{self.fill_range}\n{self.line_indent}' + f'\n{self.line_indent}'.join([' '.join(self.fill[i:i + 5]) for i in range(0, len(self.fill), 5)])
+        elif self.fill:
+            printed_fill = f'\n{self.line_indent}{self.fill_range}{" ".join(w for w in self.fill)}'
         return f"{self.number}\t{self.material}{self.get_inline_comment()}\n{self.line_indent}{printed_geom}\n{self.line_indent}{printed_param}{printed_fill}"
 
 
@@ -266,8 +268,10 @@ class LikeCell(Cell):
         # Print changes with newlines every 5 spaces
         printed_changes = f'\n {self.line_indent}'.join([' '.join(parts[i:i + 5]) for i in range(0, len(parts), 5)])
         printed_fill = ""
-        if self.fill:
+        if self.fill and len(self.fill) > 5:
             printed_fill = f'\n{self.line_indent}{self.fill_range}\n{self.line_indent}' + f'\n{self.line_indent}'.join([' '.join(self.fill[i:i + 5]) for i in range(0, len(self.fill), 5)])
+        elif self.fill:
+            printed_fill = f'\n{self.line_indent}{self.fill_range}{" ".join(w for w in self.fill)}'
         return f"{self.number} like {self.origin_cell} but {printed_changes}\t{self.get_inline_comment()}{printed_fill}"
 
 
@@ -392,7 +396,6 @@ class Assembly:
         self.number = number
         self.fuel_section = fuel_section
         self.fuel_lattice = fuel_lattice
-        self.plates = []
         self.other_components = []
 
 

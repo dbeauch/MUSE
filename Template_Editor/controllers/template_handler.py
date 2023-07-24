@@ -349,10 +349,6 @@ class TemplateHandler(Singleton):
                 print("Error: Fuel section filled with multiple lattices")
             if len(self.all_universes.get(fuel_lattice_card.universe)) != 1:
                 print("Error: Fuel lattice universe has multiple Cells")
-            # Store plate universes in Assembly.plates
-            for fill in fuel_lattice_card.fill:
-                if fill != fuel_lattice_card.universe:  # filter out lat since fills itself in NBSR
-                    curr_assembly.plates.append(fill)
 
             # Find other pieces of fuel assembly & append to Assembly
             for card in self.all_universes.get(assembly_universe):

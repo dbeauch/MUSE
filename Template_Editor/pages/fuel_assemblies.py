@@ -12,7 +12,7 @@ from Template_Editor.controllers.template_handler_instance import template_handl
 # do not compare correctly with mcnp_cards.<Class>
 from Template_Editor.models.mcnp_cards import LikeCell
 from Template_Editor.pages.select_graphs import assembly_graph, plate_graph, segment_graph
-from Template_Editor.pages.select_graphs import selected_color, default_color
+from Template_Editor.pages.select_graphs import selected_color, default_color, assembly_translator
 
 
 def layout(page_background):
@@ -83,7 +83,7 @@ def layout(page_background):
                         ], align='center', className='input-row'),
 
                         dbc.Row([
-                            dbc.Col('Plate:', className='input-label', width=2),
+                            dbc.Col('Plate Type:', className='input-label', width=2),
                             dbc.Col(dcc.Dropdown(id='assembly_plate_selector', placeholder="", clearable=True,
                                                  persistence=True, persistence_type='session', className='dropdown'), width=3),
                             dbc.Col(id='assembly_plate_description', children='Plate Description',
@@ -180,15 +180,17 @@ def update_material_description(plate_number):
     Output('assembly_plot', 'figure', allow_duplicate=True),
     Output('assembly_plot_camera', 'data'),
     Output('assembly_plot_selected', 'data', allow_duplicate=True),
+    Output('assembly_selector', 'value', allow_duplicate=True),
     Input('assembly_plot', 'clickData'),
     State('assembly_plot', 'relayoutData'),
     State('assembly_plot', 'figure'),
     State('assembly_plot_selected', 'data'),
     State('assembly_plot_camera', 'data'),
+    State('assembly_selector', 'options'),
     State('select_mode', 'value'),
     prevent_initial_call=True
 )
-def handle_click_assembly(clickData, relayoutData, figure, selected, camera_data, select_mode):
+def handle_click_assembly(clickData, relayoutData, figure, selected, camera_data, assembly_options, select_mode):
     if clickData:
         clicked_object = int(clickData['points'][0]['curveNumber'])
 
@@ -215,8 +217,8 @@ def handle_click_assembly(clickData, relayoutData, figure, selected, camera_data
             if obj['color'] == selected_color:
                 selected.append(i)
 
-        return figure, camera_data, selected
-    return dash.no_update, dash.no_update, dash.no_update
+        return figure, camera_data, selected, assembly_translator[int(clicked_object)]
+    return dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
 
 # Plate plot callback
@@ -268,7 +270,7 @@ def handle_click_plate(clickData, relayoutData, figure, selected, camera_data, s
     Input('section_plot', 'clickData'),
     State('section_plot', 'relayoutData'),
     State('section_plot', 'figure'),
-    State('assembly_plot_selected', 'data'),
+    State('section_plot_selected', 'data'),
     State('section_plot_camera', 'data'),
     State('select_mode', 'value'),
     prevent_initial_call=True
@@ -311,10 +313,10 @@ def handle_click_section(clickData, relayoutData, figure, selected, camera_data,
 )
 def select_all_assemblies(n, figure, selected):
     if n:
+        selected = []
         for i, obj in enumerate(figure['data']):
-            if obj['color'] != selected_color:
-                obj['color'] = selected_color
-                selected.append(i)
+            obj['color'] = selected_color
+            selected.append(i)
         return figure, selected
     return dash.no_update, dash.no_update
 
@@ -329,10 +331,10 @@ def select_all_assemblies(n, figure, selected):
 )
 def select_all_plates(n, figure, selected):
     if n:
+        selected = []
         for i, obj in enumerate(figure['data']):
-            if obj['color'] != selected_color:
-                obj['color'] = selected_color
-                selected.append(i)
+            obj['color'] = selected_color
+            selected.append(i)
         return figure, selected
     return dash.no_update, dash.no_update
 
@@ -347,10 +349,10 @@ def select_all_plates(n, figure, selected):
 )
 def select_all_sections(n, figure, selected):
     if n:
+        selected = []
         for i, obj in enumerate(figure['data']):
-            if obj['color'] != selected_color:
-                obj['color'] = selected_color
-                selected.append(i)
+            obj['color'] = selected_color
+            selected.append(i)
         return figure, selected
     return dash.no_update, dash.no_update
 
@@ -422,7 +424,6 @@ def update_assembly_preview(assembly_u, descr, assembly_selected, plate_selected
                 description_results = template.data_comments.get(assembly_u)
 
             selected_assembly = template.all_fuel_assemblies.get(assembly_u)
-            lat_universe = selected_assembly.fuel_lattice.universe
             if selected_assembly is not None:
                 assembly_results = f'Fuel Section Cell:\n'
                 assembly_results += f'{selected_assembly.fuel_section}'
@@ -433,29 +434,29 @@ def update_assembly_preview(assembly_u, descr, assembly_selected, plate_selected
 
                 # Not worth readability sacrifice to use list comprehension
                 plate_preview = ""
-                for plate_num in OrderedDict.fromkeys(selected_assembly.plates):     # OrderedDict to remove duplicates
+                for plate_num in OrderedDict.fromkeys(selected_assembly.fuel_lattice.fill):     # OrderedDict to remove duplicates
                     plate_preview += f'Plate Universe {plate_num}:\n'
                     for meat_cell in template.all_fuel_plates.get(plate_num):
                         plate_preview += str(meat_cell) + f'\n'
                     plate_preview += f'\n\n'
 
                 return assembly_results, plate_preview, assembly_figure, plate_figure, section_figure
-    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+    return dash.no_update, dash.no_update, assembly_figure, plate_figure, section_figure
 
 
 @callback(
     Output('console_output', 'children', allow_duplicate=True),
-    Output('assembly_selector', 'value'),
+    Output('assembly_selector', 'value', allow_duplicate=True),
+    Output('assembly_description', 'value', allow_duplicate=True),
     Input('assembly_apply_button', 'n_clicks'),
     State('url', 'pathname'),
-    State('assembly_material_selector', 'value'),
+    State('assembly_plate_selector', 'value'),
     State('assembly_plot_selected', 'data'),
     State('plate_plot_selected', 'data'),
-    State('section_plot_selected', 'data'),
     State('console_output', 'children'),
     prevent_initial_call=True
 )
-def update_console(apply_clicked, pathname, material, assembly_selected, plate_selected, section_selected, current_messages):
+def update_console(apply_clicked, pathname, plate, assembly_selected, plate_selected, current_messages):
     if pathname == '/assembly':
         if not current_messages:
             current_messages = []
@@ -465,19 +466,32 @@ def update_console(apply_clicked, pathname, material, assembly_selected, plate_s
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
 
         if button_id == 'assembly_apply_button' and apply_clicked:
-            if material is None:
-                return current_messages, dash.no_update
+            if plate is None:
+                message = f'({timestamp})\tWarning: No plate change selected'
+                current_messages.insert(0, html.P(message))
+                return current_messages, dash.no_update, ""
             else:
                 if not assembly_selected:
-                    message = f'({timestamp})\tWarning: No assemblies selected'
+                    message = f'({timestamp})\tWarning: No plot assemblies selected'
                     current_messages.insert(0, html.P(message))
-                    return current_messages, dash.no_update
+                    return current_messages, dash.no_update, ""
                 if not plate_selected:
-                    message = f'({timestamp})\tWarning: No plates selected'
+                    message = f'({timestamp})\tWarning: No plot plates selected'
                     current_messages.insert(0, html.P(message))
-                    return current_messages, dash.no_update
+                    return current_messages, dash.no_update, ""
 
-        return current_messages, dash.no_update
+            for assembly in assembly_selected:
+                translated_assembly = assembly_translator[int(assembly)]
+                for change_plate in plate_selected:
+                    if template.all_fuel_assemblies.get(translated_assembly).fuel_lattice.fill[int(change_plate)+1] is not None:
+                        template.all_fuel_assemblies.get(translated_assembly).fuel_lattice.fill[int(change_plate)+1] = plate
+                    else:
+                        print('Error: Selected assemblies or plates not found')
+            message = f'({timestamp})\tApplied changes to Plates {", ".join(str(int(p)+1) for p in plate_selected)} in Assemblies {", ".join(assembly_translator[int(a)] for a in assembly_selected)}'
+            current_messages.insert(0, html.P(message))
+            return current_messages, dash.no_update, ""
+
+        return current_messages, dash.no_update, ""
 
 
 @callback(
@@ -488,13 +502,17 @@ def update_console(apply_clicked, pathname, material, assembly_selected, plate_s
     State('assembly_plot', 'figure'),
     State('plate_plot', 'figure'),
     State('section_plot', 'figure'),
+    State('assembly_selector', 'options')
 )
-def update_selected_on_selected(assembly_selected, plate_selected,  section_selected, assembly_plot, plate_plot, section_plot):
+def update_selected_on_selected(assembly_selected, plate_selected,  section_selected, assembly_plot, plate_plot, section_plot, assembly_options):
     # Find highlighted objects in each plot
+    assemblies = ""
+    if assembly_selected is not None:
+        assemblies = "\n".join(assembly_translator[int(x)] for x in assembly_selected)
     preview = ["Assemblies Selected:",
-               "\n".join(str(x) for x in assembly_selected),
+               assemblies,
                "Plates Selected:",
-               "\n".join(str(x) for x in plate_selected),
+               "\n".join(str(int(x)+1) for x in plate_selected),
                "Sections Selected:",
                "\n".join(str(x) for x in section_selected)
                ]
