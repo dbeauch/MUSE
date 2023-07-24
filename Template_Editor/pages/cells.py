@@ -42,7 +42,7 @@ def layout(page_background):
                             dbc.Col(dcc.Dropdown(id='cell_material_selector', placeholder="", clearable=False,
                                                  className='dropdown'), width=3),
                             dbc.Col(id='cell_material_description', children='Material Description',
-                                    style={'textAlign': 'left', 'fontSize': 'calc(5px + 0.5vw)', 'color': 'black'},
+                                    className='text-description',
                                     width=7),
                         ], align='center', className='input-row'),
 

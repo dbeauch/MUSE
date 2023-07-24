@@ -37,7 +37,7 @@ def layout(page_background):
                                         ],
                                         value="single"  # Single by default
                                     )),
-                                    dbc.Row("Mass Highlight Options", className='input-label'),
+                                    dbc.Row("Mass Highlight Options", className='input-label', style={'marginTop': '2vh'}),
                                     dbc.Button("All Assemblies", id='select_all_assemblies', className='unselect-button'),
                                     dbc.Button("All Plates", id='select_all_plates', className='unselect-button'),
                                     dbc.Button("All Sections", id='select_all_sections', className='unselect-button'),
@@ -74,11 +74,22 @@ def layout(page_background):
                         html.Hr(),
 
                         dbc.Row([
+                            dbc.Col('Assemblies:', className='input-label', width=2),
+                            dbc.Col(id='selected_assemblies_preview', style={'textAlign': 'left', 'fontSize': 'calc(5px + 0.5vw)', 'color': 'black'},
+                                    width=3),
+                            dbc.Col('Plates:', className='input-label', width=2),
+                            dbc.Col(id='selected_plates_preview', style={'textAlign': 'left', 'fontSize': 'calc(5px + 0.5vw)', 'color': 'black'},
+                                    width=5),
+                        ], align='center', className='input-row'),
+
+                        html.Hr(),
+
+                        dbc.Row([
                             dbc.Col('Material:', className='input-label', width=2),
                             dbc.Col(dcc.Dropdown(id='assembly_material_selector', placeholder="", clearable=True,
                                                  persistence=True, persistence_type='session', className='dropdown'), width=3),
                             dbc.Col(id='assembly_material_description', children='Material Description',
-                                    style={'textAlign': 'left', 'fontSize': 'calc(5px + 0.5vw)', 'color': 'black'},
+                                    className='text-description',
                                     width=7),
                         ], align='center', className='input-row'),
 
@@ -87,7 +98,7 @@ def layout(page_background):
                             dbc.Col(dcc.Dropdown(id='assembly_plate_selector', placeholder="", clearable=True,
                                                  persistence=True, persistence_type='session', className='dropdown'), width=3),
                             dbc.Col(id='assembly_plate_description', children='Plate Description',
-                                    style={'textAlign': 'left', 'fontSize': 'calc(5px + 0.5vw)', 'color': 'black'},
+                                    className='text-description',
                                     width=7),
                         ], align='center', className='input-row'),
 
@@ -495,47 +506,26 @@ def update_console(apply_clicked, pathname, plate, assembly_selected, plate_sele
 
 
 @callback(
-    Output('selected_preview', 'value'),
+    Output('selected_assemblies_preview', 'children'),
+    Output('selected_plates_preview', 'children'),
     Input('assembly_plot_selected', 'data'),
     Input('plate_plot_selected', 'data'),
-    Input('section_plot_selected', 'data'),
     State('assembly_plot', 'figure'),
     State('plate_plot', 'figure'),
-    State('section_plot', 'figure'),
-    State('assembly_selector', 'options')
+    State('assembly_selector', 'options'),
 )
-def update_selected_on_selected(assembly_selected, plate_selected,  section_selected, assembly_plot, plate_plot, section_plot, assembly_options):
+def update_selected_on_selected(assembly_selected, plate_selected, assembly_plot, plate_plot, assembly_options):
     # Find highlighted objects in each plot
-    assemblies = ""
-    if assembly_selected is not None:
-        assemblies = "\n".join(assembly_translator[int(x)] for x in assembly_selected)
-    preview = ["Assemblies Selected:",
-               assemblies,
-               "Plates Selected:",
-               "\n".join(str(int(x)+1) for x in plate_selected),
-               "Sections Selected:",
-               "\n".join(str(x) for x in section_selected)
-               ]
-    return "\n".join(preview)
+    assemblies = "None"
+    if assembly_selected:
+        assemblies = ", ".join(assembly_translator[int(x)] for x in assembly_selected)
+    plates = "None"
+    if plate_selected:
+        plates = ", ".join(str(int(x) + 1) for x in plate_selected)
+    return assemblies, plates
 
 
 assembly_tabs = dcc.Tabs([
-    dcc.Tab(label='Selected Preview',
-            className='tab',
-            children=dcc.Textarea(
-                id='selected_preview',
-                style={
-                    'fontSize': 'calc(5px + 0.5vw)',
-                    'backgroundColor': '#333333',
-                    'color': '#A9A9A9',
-                    'border': '3px solid black',
-                    'height': '60vh',
-                    'width': '100%',
-                    'overflow': 'scrollX',
-                    'inputMode': 'email',
-                },
-            )
-            ),
     dcc.Tab(label='Assembly',
             className='tab',
             children=dcc.Textarea(
