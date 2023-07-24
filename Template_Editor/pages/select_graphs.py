@@ -102,8 +102,8 @@ groups = 1  # (2)
 plate_plots = [create_3d_plane([-j * plate_spacing, 0, i * group_spacing], plate_width, plate_thickness, plate_height,
                                color=default_color) for i in range(groups) for j in range(21)]
 
-segment_plots = [create_3d_plane([0, j * column_spacing, i * segment_spacing], segment_width, segment_thickness, segment_height,
-                                 color=default_color) for i in range(10) for j in range(3)]
+segment_plots = [create_3d_plane([0, j * column_spacing, -i * segment_spacing], segment_width, segment_thickness, segment_height,
+                                 color=default_color) for j in range(3) for i in range(10)]
 
 assembly_graph = html.Div([dcc.Graph(
     id='assembly_plot',
@@ -176,6 +176,6 @@ segment_graph = html.Div([dcc.Graph(
         )
     }, config={'displayModeBar': False}, className='d-plot'
 ),
-    html.Div(id='single-plate-click-data', style={'display': 'none'})
+    html.Div(id='section-click-data', style={'display': 'none'})
 ],
 )

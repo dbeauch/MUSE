@@ -92,7 +92,7 @@ class CardFactory:
                     self.template.all_universes[made_card.universe].append(made_card)
             #   Add cell card to fill dicts
             if made_card.fill is not None:
-                for fill in OrderedDict.fromkeys(made_card.fill):    # OrderedDict to remove duplicates
+                for fill in list(set(made_card.fill)):    # Set to remove duplicates
                     if fill not in self.template.all_fills:
                         self.template.all_fills[fill] = [made_card]
                     else:
@@ -156,9 +156,12 @@ class Cell(Card):
             self.fill = []
             for i, fill in enumerate(fills):
                 if 'r' in fill:
-                    repeats = re.search(r'r', fill)
-                    continue  # TODO: Catches repeated fills and expands: '200 20r' -> 200 200 ... 200
-                self.fill.append(fill)
+                    repeats = int(re.search(r'\d+', fill).group())  # extract the number before 'r'
+                    if i > 0 and fills[i - 1].isdigit():  # check if preceding element is a number
+                        self.fill.extend(
+                            [fills[i - 1]] * repeats)  # add the preceding element repeated 'repeats' times
+                else:
+                    self.fill.append(fill)  # if current element doesn't contain 'r', just add it to the new list
             self.param = self.param[:complex_fill_param.span()[0]] + self.param[complex_fill_param.span()[1] + 1:]
         else:
             self.fill_range = ""
