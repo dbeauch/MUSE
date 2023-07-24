@@ -37,7 +37,7 @@ def layout(page_background):
                                         ],
                                         value="single"  # Single by default
                                     )),
-                                    dbc.Row("Mass Highlight Options", className='input-label', style={'marginTop': '2vh'}),
+                                    dbc.Row("Highlight Options", className='input-label', style={'marginTop': '2vh'}),
                                     dbc.Button("All Sections", id='select_all_sections', className='unselect-button'),
                                     dbc.Button("Unselect All", id='plate_unselect_all_button', className='unselect-button')
                                 ], className='plot-options'),
