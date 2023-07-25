@@ -297,7 +297,9 @@ def update_console(apply_clicked, pathname, plate_u, section_selected, new_mat, 
 )
 def update_selected_on_selected(section_selected, plate_u):
     sections = "None"
-    if section_selected:
+    print(section_selected)
+    print(plate_u)
+    if section_selected and plate_u:
         sections = ", ".join(template.all_fuel_plates.get(plate_u)[int(x)].number for x in section_selected)
     return sections
 

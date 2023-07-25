@@ -6,7 +6,8 @@ import dash
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
-from flask_caching import Cache
+import webbrowser
+from threading import Timer
 
 from pages import home, cells, surfaces, materials, universes, fuel_assemblies, plate, legacy_fuel_assemblies, options
 from Template_Editor.controllers.template_handler_instance import template_handler_instance as template
@@ -238,5 +239,11 @@ def print_button(print_clicked, file_path, element_comments, current_messages):
     return current_messages
 
 
+def open_browser():
+    webbrowser.open_new('http://127.0.0.1:8050/')
+
+
 if __name__ == '__main__':
+    if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':  # Only opens browser on start if main process
+        Timer(1, open_browser).start()
     app.run_server(debug=True, threaded=True)
