@@ -21,9 +21,6 @@ navbar_color = '#004a80'
 # Only runs preprocessing operation for the main server process not for monitor process
 if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     sys.setrecursionlimit(8000)
-    # file_to_read = input(f"Template to read (default to run default template):")
-    # if file_to_read == 'default':
-    #     file_to_read = '../mcnp_templates/NBSR_HEU_720[236]/NBSR_HEU_720.i'
     # file_to_read = '../mcnp_templates/NNR/test.i'
     file_to_read = '../mcnp_templates/NNS/burn_Box9_v02_SU_cycle8.i'
     # file_to_read = '../mcnp_templates/NBSR_HEU_720[236]/NBSR_HEU_720.i'
@@ -35,21 +32,18 @@ app = dash.Dash(
     external_stylesheets=[dbc.themes.LUX]
 )
 
-banner = html.Header(
-    "Py2MCNP Editor",
+banner = html.Img(
+    src="/assets/logo.png",  # replace 'your-logo.png' with the name of your logo file
     style={
-        'backgroundColor': navbar_color,
-        'color': 'white',
-        'padding': '0px',
-        'fontSize': 'calc((3vh + 1vw) / 2)',
-        'font-weight': 'bold',
+        'width': f'calc({navbar_width})',
+        'padding': '1vw',
         'textAlign': 'center'
     }
 )
 
-navbar = html.Div([
-    banner,
-    dbc.Nav(
+navbar = dbc.Container([
+    dbc.Row(banner),
+    dbc.Row(dbc.Nav(
         [
             dbc.NavLink("Home", href="/", active="exact", class_name="nav-item"),
             dbc.NavLink("Fuel Assembly", href="/assembly", active="exact", class_name="nav-item"),
@@ -72,9 +66,9 @@ navbar = html.Div([
         ],
         vertical=True,
         pills=True,
-    ),
+    )),
 
-    html.A(
+    dbc.Row(html.A(
         html.Img(src='/assets/ncnrBWLogo.png',
                  style={
                      'width': navbar_width,
@@ -84,7 +78,7 @@ navbar = html.Div([
                  }),
         href='https://www.nist.gov/ncnr',
         target='_blank',
-    ),
+    )),
 ], style={
     'backgroundColor': navbar_color,
     'width': navbar_width,

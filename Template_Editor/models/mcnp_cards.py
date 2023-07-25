@@ -310,13 +310,9 @@ class KCode(DataCard):
     def __init__(self, line):
         self.number = "kcode"
         self.param = line[5:].strip()
-        # self.nsrck = " "
-        # self.rkk = " "
-        # self.ikz = " "
-        # self.kct = " "
 
     def __str__(self):
-        return f"{super().__str__()}kcode\t{self.param}"  # {self.nsrck}\t{self.rkk}\t{self.ikz}\t{self.kct}"
+        return f"{super().__str__()}kcode\t{self.param}"
 
 
 class KSrc(DataCard):
@@ -330,7 +326,6 @@ class KSrc(DataCard):
         self.comment = ""
 
     def __str__(self):
-        locations_str = ""
         locations_str = '\n'.join([f"{self.line_indent}{triplet[0]}  {triplet[1]}  {triplet[2]}" for triplet in self.locations])
         return f"{super().__str__()}ksrc{locations_str}"
 

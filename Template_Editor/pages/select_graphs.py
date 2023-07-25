@@ -49,7 +49,7 @@ def create_3d_trace(center, width, height, thickness, color=default_color):
     j = [3, 4, 1, 2, 5, 6, 5, 2, 0, 1, 6, 3]
     k = [0, 7, 2, 3, 6, 7, 1, 1, 5, 5, 7, 6]
     return go.Mesh3d(x=x, y=y, z=z, color=color, opacity=1, i=i, j=j, k=k,
-                     lighting=lighting_effects)  # , hoverinfo='none')
+                     lighting=lighting_effects, hoverinfo='none')
 
 
 def create_3d_plane(center, width, thickness, height, color=default_color):
@@ -64,7 +64,7 @@ def create_3d_plane(center, width, thickness, height, color=default_color):
     j = [3, 4, 1, 2, 5, 6, 5, 2, 0, 1, 6, 3]
     k = [0, 7, 2, 3, 6, 7, 1, 1, 5, 5, 7, 6]
     return go.Mesh3d(x=x, y=y, z=z, color=color, opacity=1, i=i, j=j, k=k,
-                     lighting=lighting_effects)  # , hoverinfo='none')
+                     lighting=lighting_effects, hoverinfo='none')
 
 
 def create_3d_segment(center, width, thickness, height, color=default_color):
@@ -79,7 +79,7 @@ def create_3d_segment(center, width, thickness, height, color=default_color):
     j = [3, 4, 1, 2, 5, 6, 5, 2, 0, 1, 6, 3]
     k = [0, 7, 2, 3, 6, 7, 1, 1, 5, 5, 7, 6]
     return go.Mesh3d(x=x, y=y, z=z, color=color, opacity=1, i=i, j=j, k=k,
-                     lighting=lighting_effects)  # , hoverinfo='none')
+                     lighting=lighting_effects, hoverinfo='none')
 
 
 # 30 slices in a plate
