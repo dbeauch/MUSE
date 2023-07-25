@@ -283,7 +283,7 @@ def update_console(apply_clicked, pathname, plate_u, section_selected, new_mat, 
                     meat.material = new_mat
                     if type(meat) is LikeCell:
                         template.dissect_like_param(meat)
-            message = f'({timestamp})\tApplied change to Plate {plate_u} for cells {", ".join(section_cells)}'
+            message = f'({timestamp})\tApplied change to Plate {plate_u} for Cell {", ".join(section_cells)}'
             current_messages.insert(0, html.P(message))
             return current_messages, ""
 
@@ -297,15 +297,13 @@ def update_console(apply_clicked, pathname, plate_u, section_selected, new_mat, 
 )
 def update_selected_on_selected(section_selected, plate_u):
     sections = "None"
-    print(section_selected)
-    print(plate_u)
     if section_selected and plate_u:
         sections = ", ".join(template.all_fuel_plates.get(plate_u)[int(x)].number for x in section_selected)
     return sections
 
 
 plate_tabs = dcc.Tabs([
-    dcc.Tab(label='Plates',
+    dcc.Tab(label='Plate',
             className='tab',
             children=dcc.Textarea(
                 id='plate_preview',

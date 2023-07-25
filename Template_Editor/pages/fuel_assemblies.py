@@ -390,7 +390,7 @@ def update_console(apply_clicked, pathname, plate, assembly_selected, plate_sele
                         template.all_fuel_assemblies.get(translated_assembly).fuel_lattice.fill[int(change_plate)+1] = plate
                     else:
                         print('Error: Selected assemblies or plates not found')
-            message = f'({timestamp})\tApplied changes to Plates {", ".join(str(int(p)+1) for p in plate_selected)} in Assemblies {", ".join(assembly_translator[int(a)] for a in assembly_selected)}'
+            message = f'({timestamp})\tApplied changes to Plate {", ".join(str(int(p)+1) for p in plate_selected)} in Assembly {", ".join(assembly_translator[int(a)] for a in assembly_selected)}'
             current_messages.insert(0, html.P(message))
             return current_messages, dash.no_update, ""
 
