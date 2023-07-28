@@ -70,17 +70,6 @@ navbar = dbc.Container([
         pills=True,
     )),
 
-    dbc.Row(html.A(
-        html.Img(src='/assets/ncnrBWLogo.png',
-                 style={
-                     'width': navbar_width,
-                     'position': 'fixed',
-                     'bottom': 0,
-                     'padding': '1vw',
-                 }),
-        href='https://www.nist.gov/ncnr',
-        target='_blank',
-    )),
 ], style={
     'backgroundColor': navbar_color,
     'width': navbar_width,
