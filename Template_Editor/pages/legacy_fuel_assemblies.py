@@ -109,7 +109,7 @@ def layout(page_background):
 )
 def update_plate_options(search_value, assembly_u):
     if assembly_u is not None:
-        result = list(set([o for o in template.all_fuel_assemblies.get(assembly_u).plates]))
+        result = list(set([o for o in template.all_fuel_assemblies.get(assembly_u).fuel_lattice.fill]))
         result.append("All Plates")
         result.sort(key=lambda x: int(x) if x.isdigit() else float('inf'))
         return result
@@ -167,7 +167,7 @@ def update_assembly_display(assembly_u, descr):
 
                 # Not worth readability sacrifice to use list comprehension
                 legacy_plate_preview = ""
-                for plate_num in selected_assembly.plates:
+                for plate_num in selected_assembly.fuel_lattice.fill:
                     legacy_plate_preview += f'Plate Universe {plate_num}:\n'
                     for meat_cell in template.all_fuel_plates.get(plate_num):
                         legacy_plate_preview += str(meat_cell) + f'\n'
@@ -204,7 +204,7 @@ def update_console(apply_clicked, new_mat, descr, pathname, current_messages):
             current_messages.insert(0, html.P(message))
             return current_messages, descr
         for assembly in template.all_fuel_assemblies.values():
-            for plate in assembly.plates:
+            for plate in assembly.fuel_lattice.fill:
                 for sect in template.all_fuel_plates.get(plate):
                     sect.material = new_mat
                     if type(sect) is LikeCell:

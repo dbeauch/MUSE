@@ -86,7 +86,7 @@ def plate_apply_changes(plate_apply_button, assembly_u, descr, plate_u, section_
             current_messages.insert(0, html.P(message))
             return current_messages, ""
         if plate_u == "All Plates":
-            for plate in template.all_fuel_assemblies.get(assembly_u).plates:
+            for plate in template.all_fuel_assemblies.get(assembly_u).fuel_lattice.fill:
                 for sect in template.all_fuel_plates.get(plate):
                     sect.material = new_mat
                     if type(sect) is LikeCell:

@@ -49,6 +49,7 @@ navbar = dbc.Container([
             dbc.NavLink("Home", href="/", active="exact", class_name="nav-item"),
             dbc.NavLink("Fuel Assembly", href="/assembly", active="exact", class_name="nav-item"),
             dbc.NavLink("Plate Maker", href="/plate", active="exact", class_name="nav-item"),
+            dbc.NavLink("Legacy Assembly", href="/legacy_assembly", active="exact", class_name="nav-item"),
             dbc.Card(
                 [
                     dbc.NavLink("\u25BC Card Views ", id="card-views-toggle", class_name="nav-item"),
@@ -195,6 +196,8 @@ def display_page(pathname, manually_closed):
         return fuel_assemblies.layout(page_background), console_should_open
     elif pathname == '/plate':
         return plate.layout(page_background), console_should_open
+    elif pathname == '/legacy_assembly':
+        return legacy_fuel_assemblies.layout(page_background), console_should_open
     elif pathname == '/options':
         return options.layout(page_background), console_should_open
     else:
