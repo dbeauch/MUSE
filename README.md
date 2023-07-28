@@ -1,5 +1,5 @@
 ## ABOUT
-MUSE stands for MCNP Uranium Scout and Editor. This is a project designed to produce Monte Carlo N-Particle transport code (MCNP) card decks using Python. It was built by Duncan Beauch as part of his 11-week CORE internship at NIST.
+MUSE stands for MCNP Uranium Scout and Editor. This is a project designed to produce Monte Carlo N-Particle transport code (MCNP) card decks using Python. It was built by Duncan Beauch as part of his 11-week CORE internship at NIST. The project has been modified for personal release.
 
 ## MCNP AND ITS SIGNIFICANCE
 Monte Carlo N-Particle Transport Code (MCNP) is a radiation simulation software commonly used to design and analyze nuclear reactors. MCNP enables researchers to create a virtual environment and activate sources of particle radiation to determine how a system will behave over time.
