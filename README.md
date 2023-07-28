@@ -14,4 +14,4 @@ An MCNP simulation is created from an input file consisting of instruction cards
 ## SOLUTION: MUSE
 Our project aims to combat this problem with a user interface capable of creating and managing MCNP input files by allowing the user to directly control reactor parameters from the interface. It can be used to enhance input files, perform sensitivity analyses, and simulate modifications. The program is written in Python and piloted through a Dash app interface.
 
-The main features of this project allow a user to modify types of fuel within the reactor and rearrange the fuel element lattice structure. To get started, click on the Fuel Assembly or Plate Maker tabs to view the NNS MCNP input file.
+The main features of this project allow a user to modify types of fuel within the reactor and rearrange the fuel element lattice structure.
