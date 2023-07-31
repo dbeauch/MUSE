@@ -415,8 +415,8 @@ def update_selected_on_selected(assembly_selected, plate_selected, assembly_plot
     if plate_selected:
         plates = ", ".join(str(int(x) + 1) for x in plate_selected)
     return assemblies, plates
-#
-#
+
+
 assembly_tabs = dcc.Tabs([
     dcc.Tab(label='Assembly',
             className='tab',

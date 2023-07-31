@@ -23,27 +23,30 @@ def toggle_modal(n1, n2, is_open):
 
 
 @callback(
-    Output("legacy_plate_cell_selector", "options"),
-    Output("legacy_plate_cell_selector", "value"),
+    Output("legacy_section_selector", "options"),
+    Output("legacy_section_selector", "value"),
     Input("legacy_plate_open", "n_clicks"),
     State("legacy_assembly_selector", "value"),
     State("legacy_plate_selector", "value"),
 )
 def modal_display(plate_button, assembly_u, plate_u):
     if assembly_u is not None and plate_u is not None:
+        drop_result = ""
         if plate_u == "All Plates":
-            plate_options = ["All Sections"]
+            plate_options = []
+            drop_result = "All Sections"
         else:
             plate_options = [o.number for o in template.all_fuel_plates.get(plate_u)]
+        plate_options.append("All Sections")
         plate_options.sort()
 
-        return plate_options, plate_options[0]
+        return plate_options, drop_result
     return [], ""
 
 
 @callback(
     Output("legacy_current_material", "value"),
-    Input("legacy_plate_cell_selector", "value"),
+    Input("legacy_section_selector", "value"),
     State("legacy_plate_selector", "value"),
 )
 def update_material(section_cell, plate_u):
@@ -65,7 +68,7 @@ def update_material(section_cell, plate_u):
     State('legacy_assembly_selector', 'value'),
     State('legacy_assembly_description', 'children'),
     State("legacy_plate_selector", "value"),
-    State("legacy_plate_cell_selector", "value"),
+    State("legacy_section_selector", "value"),
     State("legacy_current_material", "value"),
     State("legacy_new_material", "value"),
     State('console_output', 'children'),
@@ -87,16 +90,24 @@ def plate_apply_changes(plate_apply_button, assembly_u, descr, plate_u, section_
             return current_messages, ""
         if plate_u == "All Plates":
             for plate in template.all_fuel_assemblies.get(assembly_u).fuel_lattice.fill:
-                for sect in template.all_fuel_plates.get(plate):
-                    sect.material = new_mat
-                    if type(sect) is LikeCell:
-                        template.dissect_like_param(sect)
+                if template.all_fuel_plates.get(plate) is not None:
+                    for sect in template.all_fuel_plates.get(plate):
+                        sect.material = new_mat
+                        if type(sect) is LikeCell:
+                            template.dissect_like_param(sect)
             message = f'({timestamp})\tApplied changes made to all plate sections'
             current_messages.insert(0, html.P(message))
             return current_messages, ""
         else:
             if section_cell == "All Sections":
-                pass
+                if template.all_fuel_plates.get(plate_u) is not None:
+                    for sect in template.all_fuel_plates.get(plate_u):
+                        sect.material = new_mat
+                        if type(sect) is LikeCell:
+                            template.dissect_like_param(sect)
+                    message = f'({timestamp})\tApplied changes made to all plate sections'
+                    current_messages.insert(0, html.P(message))
+                    return current_messages, ""
             else:
                 selected_cell = None
                 # Search for section
@@ -121,8 +132,8 @@ plate_modal = dbc.Modal(id="plate_modal",
                                   dbc.ModalBody(
                                       [
                                           dbc.Label("Section:"),
-                                          dcc.Dropdown(id='legacy_plate_cell_selector',
-                                                       placeholder='Select a Plate',
+                                          dcc.Dropdown(id='legacy_section_selector',
+                                                       placeholder='Select a Section',
                                                        clearable=True,
                                                        persistence=True, persistence_type='session',
                                                        className='dropdown'),

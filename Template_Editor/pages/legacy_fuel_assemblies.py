@@ -59,15 +59,6 @@ def layout(page_background):
                             ], className='input-box'),
                         ], align='center', className='input-row'),
 
-                        # Other Components row
-                        dbc.Row([
-                            dbc.Col('Other Component:', className='input-label', width=2),
-                            dbc.Col(
-                                [dcc.Dropdown(id='legacy_component_selector', placeholder='Select a Component', clearable=True,
-                                              persistence=True, persistence_type='session', className='dropdown'
-                                              )], className='input-box', width=3),
-                        ], align='center', className='input-row'),
-
                         html.Hr(),
 
                         # Master row
@@ -89,8 +80,6 @@ def layout(page_background):
                             ], className='input-box'),
                         ], align='center', className='input-row'),
 
-                        # html.Button('Apply Changes', id='legacy_assembly_apply_button', n_clicks=0,
-                        #             className='apply-button'),
                     ], width=6),
 
                     dbc.Col([
@@ -156,7 +145,6 @@ def update_assembly_display(assembly_u, descr):
                 description_results = template.data_comments.get(assembly_u)
 
             selected_assembly = template.all_fuel_assemblies.get(assembly_u)
-            lat_universe = selected_assembly.fuel_lattice.universe
             if selected_assembly is not None:
                 assembly_results = f'Fuel Section Cell:\n'
                 assembly_results += f'{selected_assembly.fuel_section}'
@@ -167,11 +155,12 @@ def update_assembly_display(assembly_u, descr):
 
                 # Not worth readability sacrifice to use list comprehension
                 legacy_plate_preview = ""
-                for plate_num in selected_assembly.fuel_lattice.fill:
-                    legacy_plate_preview += f'Plate Universe {plate_num}:\n'
-                    for meat_cell in template.all_fuel_plates.get(plate_num):
-                        legacy_plate_preview += str(meat_cell) + f'\n'
-                    legacy_plate_preview += f'\n\n'
+                for plate_num in list(set(selected_assembly.fuel_lattice.fill)):    # Remove duplicates
+                    if template.all_fuel_plates.get(plate_num) is not None:
+                        legacy_plate_preview += f'Plate Universe {plate_num}:\n'
+                        for meat_cell in template.all_fuel_plates.get(plate_num):
+                            legacy_plate_preview += str(meat_cell) + f'\n'
+                        legacy_plate_preview += f'\n\n'
 
                 return assembly_results, legacy_plate_preview, description_results, selected_assembly.number, \
                     selected_assembly.fuel_lattice.number
@@ -205,10 +194,11 @@ def update_console(apply_clicked, new_mat, descr, pathname, current_messages):
             return current_messages, descr
         for assembly in template.all_fuel_assemblies.values():
             for plate in assembly.fuel_lattice.fill:
-                for sect in template.all_fuel_plates.get(plate):
-                    sect.material = new_mat
-                    if type(sect) is LikeCell:
-                        template.dissect_like_param(sect)
+                if template.all_fuel_plates.get(plate) is not None:
+                    for sect in template.all_fuel_plates.get(plate):
+                        sect.material = new_mat
+                        if type(sect) is LikeCell:
+                            template.dissect_like_param(sect)
         message = f'({timestamp})\tApplied changes made to all plate sections'
         current_messages.insert(0, html.P(message))
         return current_messages, descr
