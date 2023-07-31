@@ -98,7 +98,8 @@ def layout(page_background):
 )
 def update_plate_options(search_value, assembly_u):
     if assembly_u is not None:
-        result = list(set([o for o in template.all_fuel_assemblies.get(assembly_u).fuel_lattice.fill]))
+        result = list(set([o for o in template.all_fuel_assemblies.get(assembly_u).fuel_lattice.fill
+                           if o != template.all_fuel_assemblies.get(assembly_u).fuel_lattice.universe]))
         result.append("All Plates")
         result.sort(key=lambda x: int(x) if x.isdigit() else float('inf'))
         return result
