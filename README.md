@@ -1,5 +1,5 @@
 ![Plate Edit Page of MUSE App](./MUSE_example.jpg)
-[Watch demonstration](https://youtu.be/VsZNa7hB57g).
+[Watch demonstration](https://youtu.be/VsZNa7hB57g)
 
 ## ABOUT
 MUSE stands for MCNP Uranium Scout and Editor. This is a project designed to produce Monte Carlo N-Particle transport code (MCNP) card decks using Python. It was built by Duncan Beauch as part of his 11-week CORE internship at NIST. The project has been modified for public release.
